@@ -4,18 +4,21 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 REPO_NAME="${GITHUB_REPO_NAME:-la-gazette-du-faubourg}"
 
-# Lire GH_TOKEN depuis .env si absent de l’environnement (fichier gitignored)
+# Lire GH_TOKEN ou GITHUB_TOKEN depuis .env (gh utilise la variable GH_TOKEN)
 if [ -z "${GH_TOKEN:-}" ] && [ -f .env ]; then
-  line="$(grep -E '^[[:space:]]*GH_TOKEN=' .env 2>/dev/null | tail -1 || true)"
-  if [ -n "${line}" ]; then
-    val="${line#*=}"
-    val="${val%$'\r'}"
-    val="${val#\"}"
-    val="${val%\"}"
-    val="${val#\'}"
-    val="${val%\'}"
-    export GH_TOKEN="${val}"
-  fi
+  for key in GH_TOKEN GITHUB_TOKEN; do
+    line="$(grep -E "^[[:space:]]*${key}=" .env 2>/dev/null | tail -1 || true)"
+    if [ -n "${line}" ]; then
+      val="${line#*=}"
+      val="${val%$'\r'}"
+      val="${val#\"}"
+      val="${val%\"}"
+      val="${val#\'}"
+      val="${val%\'}"
+      export GH_TOKEN="${val}"
+      break
+    fi
+  done
 fi
 
 if ! gh auth status &>/dev/null 2>&1; then
@@ -32,14 +35,24 @@ fi
 
 if git remote get-url origin &>/dev/null 2>&1; then
   echo "Remote origin déjà défini, push de main…"
+  gh auth setup-git
   git push -u origin main
 else
-  gh repo create "$REPO_NAME" \
+  if ! gh repo create "$REPO_NAME" \
     --public \
     --description "La Gazette du Faubourg — Next.js, Prisma, Auth.js" \
     --source=. \
     --remote=origin \
-    --push
+    --push 2>&1; then
+    echo ""
+    echo "Création via l’API impossible avec ce jeton (droits insuffisants)."
+    echo "1) Crée un dépôt vide sur https://github.com/new (nom : ${REPO_NAME}, sans README), puis :"
+    login="$(gh api user --jq .login)"
+    echo "   git remote add origin https://github.com/${login}/${REPO_NAME}.git"
+    echo "   gh auth setup-git && git push -u origin main"
+    echo "2) Ou un PAT classic avec scope « repo » : https://github.com/settings/tokens/new"
+    exit 1
+  fi
 fi
 
 login="$(gh api user --jq .login)"
