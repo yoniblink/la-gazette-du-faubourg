@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# Applique les migrations et le seed (SQLite par défaut : DATABASE_URL=file:./prisma/dev.db dans .env).
-# Si vous utilisez Postgres + Docker : docker compose up -d puis mettez DATABASE_URL en conséquence.
+# Applique les migrations et le seed. Prérequis : .env avec DATABASE_URL + DIRECT_URL (voir .env.example, ex. Supabase).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 

@@ -26,7 +26,7 @@ export function tryPrisma(): PrismaClient | null {
 }
 
 const missingUrlMessage =
-  "DATABASE_URL manquant. Copiez .env.example vers .env, démarrez PostgreSQL (docker compose up -d), puis : npx prisma migrate deploy && npm run db:seed";
+  "DATABASE_URL manquant. Copiez .env.example vers .env (DATABASE_URL + DIRECT_URL pour Supabase), puis : npx prisma migrate deploy && npm run db:seed";
 
 /**
  * Prisma client; throws if DATABASE_URL is missing. Use for admin, auth, uploads.
