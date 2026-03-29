@@ -12,9 +12,15 @@ const credentialsSchema = z.object({
 /**
  * Auth.js exige un secret pour signer les JWT. Sans AUTH_SECRET, la connexion échoue avec
  * "There was a problem with the server configuration".
+ *
+ * Pendant `next build` (collecte des données), Next définit NEXT_PHASE=phase-production-build
+ * alors que les variables Vercel peuvent ne pas être résolues comme en runtime — on utilise un
+ * secret factice uniquement pour finir la compilation. En prod runtime, AUTH_SECRET (ou NEXTAUTH_SECRET) est obligatoire.
  */
 function authSecret(): string {
-  const fromEnv = process.env.AUTH_SECRET?.trim();
+  const fromEnv =
+    process.env.AUTH_SECRET?.trim() ||
+    process.env.NEXTAUTH_SECRET?.trim();
   if (fromEnv && fromEnv.length >= 16) {
     return fromEnv;
   }
@@ -24,8 +30,11 @@ function authSecret(): string {
     );
     return "dev-only-insecure-auth-secret-min-32-chars!!";
   }
+  if (process.env.NEXT_PHASE === "phase-production-build") {
+    return "build-only-placeholder-secret-do-not-use!!";
+  }
   throw new Error(
-    "AUTH_SECRET est requis en production (min. 16 caractères). Ex. : openssl rand -base64 32",
+    "AUTH_SECRET est requis en production (min. 16 caractères). Ex. : openssl rand -base64 32 — sur Vercel : Environment Variables → AUTH_SECRET",
   );
 }
 
