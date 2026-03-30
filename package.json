@@ -14,6 +14,7 @@
     "db:admin": "tsx prisma/seed-admin.ts",
     "db:setup": "prisma migrate deploy && prisma db seed",
     "db:studio": "prisma studio",
+    "import:wp-mode": "tsx scripts/import-wp-mode-articles.ts",
     "github:publish": "bash scripts/publish-to-github.sh",
     "postinstall": "prisma generate"
   },

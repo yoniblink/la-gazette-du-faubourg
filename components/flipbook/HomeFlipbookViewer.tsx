@@ -1,12 +1,11 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useState, type ComponentType } from "react";
+import { useCallback, useLayoutEffect, useState, type ComponentType } from "react";
 import { FlipbookPageImage } from "@/components/flipbook/FlipbookPageImage";
 import { useFlipbookLinkPreload } from "@/hooks/useFlipbookLinkPreload";
 import { useFlipbookLoadedPages } from "@/hooks/useFlipbookLoadedPages";
 import { useFlipbookPreload } from "@/hooks/useFlipbookPreload";
-import { useIsClientAfterHydration } from "@/hooks/useIsClientAfterHydration";
 import { FLIPBOOK_STPAGE_FLIP_VISUAL } from "@/lib/flipbook-stpageflip-visual";
 
 const HTMLFlipBook = dynamic(() => import("react-pageflip").then((m) => m.default), {
@@ -63,7 +62,11 @@ export function HomeFlipbookViewer({
   pageH,
   totalPdfPages,
 }: HomeFlipbookViewerProps) {
-  const mounted = useIsClientAfterHydration();
+  /** Premier rendu aligné SSR + hydratation (évite useSyncExternalStore → client true trop tôt). */
+  const [mounted, setMounted] = useState(false);
+  useLayoutEffect(() => {
+    setMounted(true);
+  }, []);
   const [currentPage, setCurrentPage] = useState(0);
   const [sceneFlipping, setSceneFlipping] = useState(false);
   const { markLoaded } = useFlipbookLoadedPages(pageUrls.length);

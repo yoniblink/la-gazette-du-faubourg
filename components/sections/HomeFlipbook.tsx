@@ -12,9 +12,12 @@ type ManifestResponse = { manifest: FlipbookManifest | null };
 export function HomeFlipbook({
   pdfUrl,
   initialManifest,
+  /** Sur une rubrique (ex. La Revue) : fond transparent, sans bordures ni dégradé. */
+  embedded = false,
 }: {
   pdfUrl: string;
   initialManifest: FlipbookManifest | null;
+  embedded?: boolean;
 }) {
   const [manifest, setManifest] = useState<FlipbookManifest | null>(initialManifest);
   const [pollN, setPollN] = useState(0);
@@ -64,25 +67,39 @@ export function HomeFlipbook({
   return (
     <section
       id="flipbook"
-      className="scroll-mt-24 border-y border-black/[0.06] bg-[radial-gradient(ellipse_120%_85%_at_50%_18%,#fcfcfb_0%,#f6f3ee_45%,#ece8e2_100%)] py-20 md:py-28"
+      className={
+        embedded
+          ? "scroll-mt-24 bg-transparent py-12 md:py-16"
+          : "scroll-mt-24 border-y border-black/[0.06] bg-[radial-gradient(ellipse_120%_85%_at_50%_18%,#fcfcfb_0%,#f6f3ee_45%,#ece8e2_100%)] py-20 md:py-28"
+      }
     >
-      <div className="mx-auto max-w-6xl px-6 md:px-10">
-        <MotionDiv
-          variants={fadeUp}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: "-10% 0px" }}
-          className="text-center"
-        >
-          <h2 className="font-[family-name:var(--font-serif)] text-[clamp(1.65rem,3vw,2.35rem)] font-light leading-snug text-[#0a0a0a]">
-            Découvrez La Gazette du Faubourg en format papier.
-            <span className="mt-2 block text-[0.92em] text-[#3a3a3a]">
-              Présente là où l’élégance se vit…
-            </span>
-          </h2>
-        </MotionDiv>
+      <div
+        className={
+          embedded
+            ? "mx-auto w-full max-w-none px-0"
+            : "mx-auto max-w-6xl px-6 md:px-10"
+        }
+      >
+        {!embedded ? (
+          <MotionDiv
+            variants={fadeUp}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-10% 0px" }}
+            className="text-center"
+          >
+            <h2 className="font-[family-name:var(--font-serif)] text-[clamp(1.65rem,3vw,2.35rem)] font-light leading-snug text-[#0a0a0a]">
+              Découvrez La Gazette du Faubourg en format papier.
+              <span className="mt-2 block text-[0.92em] text-[#3a3a3a]">
+                Présente là où l’élégance se vit…
+              </span>
+            </h2>
+          </MotionDiv>
+        ) : null}
 
-        <div className="mt-12 flex min-h-[min(70vh,520px)] w-full flex-col items-center justify-center">
+        <div
+          className={`flex min-h-[min(70vh,520px)] w-full flex-col items-center justify-center ${embedded ? "mt-0" : "mt-12"}`}
+        >
           {phase === "waiting" ? (
             <div className="flex flex-col items-center gap-3 text-center">
               <p className="font-[family-name:var(--font-sans)] text-sm text-[#5a5a5a]">

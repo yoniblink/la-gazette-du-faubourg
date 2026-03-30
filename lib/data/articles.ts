@@ -11,6 +11,8 @@ export type RubriqueArticleListItem = {
   slug: string;
   title: string;
   excerpt: string;
+  coverImageUrl: string;
+  coverImageAlt: string;
   category: { title: string; slug: string };
 };
 
@@ -22,6 +24,8 @@ function staticArticlesForCategory(categorySlug: string): RubriqueArticleListIte
     slug: a.articleSlug,
     title: a.title,
     excerpt: a.excerpt,
+    coverImageUrl: a.imageSrc,
+    coverImageAlt: a.imageAlt,
     category: { title: a.rubrique, slug: categorySlug },
   }));
 }
@@ -43,6 +47,8 @@ export const getPublishedArticlesByCategorySlug = cache(
         slug: r.slug,
         title: r.title,
         excerpt: r.excerpt,
+        coverImageUrl: r.coverImageUrl,
+        coverImageAlt: r.coverImageAlt,
         category: r.category,
       }));
     }
