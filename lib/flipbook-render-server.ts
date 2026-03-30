@@ -13,11 +13,15 @@ import { prisma } from "@/lib/prisma";
 import { HOME_FLIPBOOK_MANIFEST_KEY } from "@/lib/site-settings";
 import { createSupabaseServiceRoleClient } from "@/lib/supabase-service";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { FLIPBOOK_DEFAULT_MAX_PAGES, FLIPBOOK_MAX_PAGES_CAP } from "@/lib/flipbook-config";
+import {
+  FLIPBOOK_DEFAULT_HALF_SPREAD_CSS_PX,
+  FLIPBOOK_DEFAULT_ILOVEPDF_DPI,
+  FLIPBOOK_DEFAULT_MAX_PAGES,
+  FLIPBOOK_DEFAULT_RENDER_DPR,
+  FLIPBOOK_MAX_PAGES_CAP,
+} from "@/lib/flipbook-config";
 
 const PNG_COMPRESSION_LEVEL = 6;
-const DEFAULT_RENDER_DPR = 1.12;
-const DEFAULT_HALF_SPREAD_CSS_PX = 400;
 
 type LayoutMode = "auto" | "portrait" | "spread";
 
@@ -39,15 +43,25 @@ function maxRenderPages(): number {
 
 function cssHalfSpreadPx(): number {
   const n = parseInt(
-    process.env.FLIPBOOK_RENDER_HALF_SPREAD_PX ?? String(DEFAULT_HALF_SPREAD_CSS_PX),
+    process.env.FLIPBOOK_RENDER_HALF_SPREAD_PX ?? String(FLIPBOOK_DEFAULT_HALF_SPREAD_CSS_PX),
     10,
   );
-  return Number.isFinite(n) ? Math.min(Math.max(n, 160), 900) : DEFAULT_HALF_SPREAD_CSS_PX;
+  return Number.isFinite(n)
+    ? Math.min(Math.max(n, 160), 900)
+    : FLIPBOOK_DEFAULT_HALF_SPREAD_CSS_PX;
 }
 
 function renderDpr(): number {
-  const n = parseFloat(process.env.FLIPBOOK_RENDER_DPR ?? String(DEFAULT_RENDER_DPR));
-  return Number.isFinite(n) ? Math.min(Math.max(n, 0.75), 1.5) : DEFAULT_RENDER_DPR;
+  const n = parseFloat(process.env.FLIPBOOK_RENDER_DPR ?? String(FLIPBOOK_DEFAULT_RENDER_DPR));
+  return Number.isFinite(n) ? Math.min(Math.max(n, 0.75), 3) : FLIPBOOK_DEFAULT_RENDER_DPR;
+}
+
+function ilovePdfDpi(): number {
+  const n = parseInt(
+    process.env.FLIPBOOK_ILOVEPDF_DPI ?? String(FLIPBOOK_DEFAULT_ILOVEPDF_DPI),
+    10,
+  );
+  return Number.isFinite(n) ? Math.min(Math.max(n, 96), 300) : FLIPBOOK_DEFAULT_ILOVEPDF_DPI;
 }
 
 function pdfLayoutMode(): LayoutMode {
@@ -95,7 +109,7 @@ async function ilovePdfPdfToJpegZip(publicPdfUrl: string): Promise<Buffer> {
   const task = instance.newTask("pdfjpg");
   await task.start();
   await task.addFile(publicPdfUrl);
-  await task.process({ pdfjpg_mode: "pages" });
+  await task.process({ pdfjpg_mode: "pages", dpi: ilovePdfDpi() });
   const data = await task.download();
   return Buffer.from(data);
 }
@@ -150,7 +164,18 @@ export async function renderFlipbookPdfToStorageAndPersist(args: {
     }
 
     const layout = pdfLayoutMode();
-    console.info("[flipbook-render] iLovePDF pdfjpg", args.pdfStoragePath, "layout=", layout);
+    console.info(
+      "[flipbook-render] iLovePDF pdfjpg",
+      args.pdfStoragePath,
+      "layout=",
+      layout,
+      "dpi=",
+      ilovePdfDpi(),
+      "dpr=",
+      renderDpr(),
+      "halfSpreadWx=",
+      cssHalfSpreadPx(),
+    );
 
     const zipBuf = await ilovePdfPdfToJpegZip(args.publicPdfUrl);
     const allJpegs = await extractJpegsFromZip(zipBuf);
