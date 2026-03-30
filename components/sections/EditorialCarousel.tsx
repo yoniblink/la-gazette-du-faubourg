@@ -9,7 +9,9 @@ import type { FeaturedItem } from "@/lib/content/featured-item";
 const EDITORIAL_EASE = [0.43, 0.13, 0.23, 0.96] as const;
 const AUTOPLAY_MS = 4000;
 const TRANSITION_S = 0.32;
-const SIDE_LINE_S = 0.36;
+/** Aligné sur `md:w-[72px]` + `md:gap-2` (8px) pour le scroll auto des vignettes */
+const THUMB_W_MD = 72;
+const THUMB_GAP_MD = 8;
 
 type Props = { items: FeaturedItem[] };
 
@@ -45,9 +47,7 @@ export function EditorialCarousel({ items }: Props) {
   useEffect(() => {
     const el = thumbRef.current;
     if (!el) return;
-    const w = 116;
-    const gap = 16;
-    const scroll = Math.max(0, (activeIndex - 1) * (w + gap));
+    const scroll = Math.max(0, (activeIndex - 1) * (THUMB_W_MD + THUMB_GAP_MD));
     el.scrollTo({ left: scroll, behavior: "smooth" });
   }, [activeIndex]);
 
@@ -104,30 +104,8 @@ export function EditorialCarousel({ items }: Props) {
         </p>
       </div>
 
-      {/* Titre vertical latéral */}
-      <div
-        className="pointer-events-none absolute left-5 top-1/2 z-[3] hidden -translate-y-1/2 flex-col items-center gap-5 md:left-8 lg:flex"
-        aria-hidden
-      >
-        <motion.div
-          initial={{ scaleY: 0 }}
-          animate={{ scaleY: 1 }}
-          transition={{ duration: SIDE_LINE_S, ease: EDITORIAL_EASE }}
-          className="h-16 w-px origin-bottom bg-white/50"
-        />
-        <span className="max-h-[160px] overflow-hidden text-ellipsis font-[family-name:var(--font-sans)] text-[11px] font-medium uppercase tracking-[0.22em] text-white/85 [writing-mode:vertical-rl] [text-orientation:mixed]">
-          {active.rubrique}
-        </span>
-        <motion.div
-          initial={{ scaleY: 0 }}
-          animate={{ scaleY: 1 }}
-          transition={{ duration: SIDE_LINE_S, ease: EDITORIAL_EASE }}
-          className="h-16 w-px origin-top bg-white/50"
-        />
-      </div>
-
       {/* Contenu central */}
-      <div className="absolute left-1/2 top-1/2 z-[2] w-[88%] max-w-[640px] -translate-x-1/2 -translate-y-1/2 md:left-[calc(50%+28px)] md:w-[75%] md:max-w-[720px] lg:left-1/2 lg:w-[90%]">
+      <div className="absolute left-1/2 top-1/2 z-[2] w-[88%] max-w-[640px] -translate-x-1/2 -translate-y-1/2 md:w-[75%] md:max-w-[720px] lg:w-[90%]">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={active.id}
@@ -155,96 +133,96 @@ export function EditorialCarousel({ items }: Props) {
         aria-label={`Lire : ${active.title}`}
       />
 
-      {/* Navigation */}
-      <div className="absolute bottom-5 left-5 z-20 flex items-center gap-3 md:bottom-8 md:left-8 md:gap-5">
-        <motion.button
-          type="button"
-          aria-label="Article précédent"
-          whileHover={reduceMotion ? {} : { scale: 1.06 }}
-          whileTap={reduceMotion ? {} : { scale: 0.96 }}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            prev();
-          }}
-          className="relative flex h-12 w-12 items-center justify-center rounded-full border border-white/35 bg-black/20 text-white backdrop-blur-sm transition-colors hover:border-white/60 md:h-14 md:w-14"
-        >
-          <span className="absolute inset-0 rounded-full border border-white/15 md:h-14 md:w-14" aria-hidden />
-          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" className="relative" aria-hidden>
-            <path
-              d="M12 4L6 10L12 16"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </motion.button>
-        <motion.button
-          type="button"
-          aria-label="Article suivant"
-          whileHover={reduceMotion ? {} : { scale: 1.06 }}
-          whileTap={reduceMotion ? {} : { scale: 0.96 }}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            next();
-          }}
-          className="relative flex h-12 w-12 items-center justify-center rounded-full border border-white/35 bg-black/20 text-white backdrop-blur-sm transition-colors hover:border-white/60 md:h-14 md:w-14"
-        >
-          <span className="absolute inset-0 rounded-full border border-white/15 md:h-14 md:w-14" aria-hidden />
-          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" className="relative" aria-hidden>
-            <path
-              d="M8 4L14 10L8 16"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </motion.button>
-      </div>
-
-      {/* Vignettes — desktop */}
-      <div
-        ref={thumbRef}
-        className="absolute bottom-5 right-0 z-20 hidden max-w-[calc(100%-8rem)] gap-3 overflow-x-auto scroll-smooth px-2 md:flex md:max-w-[min(100%,480px)] md:gap-4 md:px-0 md:pr-6 [&::-webkit-scrollbar]:hidden"
-        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+      {/* Navigation — milieu vertical, bords gauche / droite */}
+      <motion.button
+        type="button"
+        aria-label="Article précédent"
+        whileHover={reduceMotion ? {} : { scale: 1.02 }}
+        whileTap={reduceMotion ? {} : { scale: 0.98 }}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          prev();
+        }}
+        className="absolute left-3 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/[0.12] bg-black/5 text-white/55 opacity-80 backdrop-blur-[1px] transition-all duration-200 hover:border-white/22 hover:bg-black/15 hover:text-white/90 hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-1 focus-visible:ring-white/30 md:left-5 md:h-10 md:w-10 lg:left-7"
       >
-        {items.map((item, i) => {
-          const isActive = i === activeIndex;
-          return (
-            <motion.button
-              key={item.id}
-              type="button"
-              aria-label={`Afficher ${item.title}`}
-              aria-current={isActive ? "true" : undefined}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                goTo(i);
-              }}
-              whileHover={reduceMotion ? {} : { y: -2 }}
-              className={`relative h-[52px] w-[88px] flex-shrink-0 overflow-hidden rounded-lg border transition-colors md:h-[68px] md:w-[116px] md:rounded-xl ${
-                isActive
-                  ? "border-white/75 ring-2 ring-white/40"
-                  : "border-white/10 opacity-90 hover:border-white/35"
-              }`}
-            >
-              <Image
-                src={item.imageSrc}
-                alt=""
-                fill
-                sizes="116px"
-                className="object-cover"
-                style={{ objectPosition: item.imageObjectPosition ?? "50% 50%" }}
-              />
-            </motion.button>
-          );
-        })}
+        <span className="absolute inset-0 rounded-full border border-white/[0.06]" aria-hidden />
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none" className="relative" aria-hidden>
+          <path
+            d="M12 4L6 10L12 16"
+            stroke="currentColor"
+            strokeWidth="1.35"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </motion.button>
+      <motion.button
+        type="button"
+        aria-label="Article suivant"
+        whileHover={reduceMotion ? {} : { scale: 1.02 }}
+        whileTap={reduceMotion ? {} : { scale: 0.98 }}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          next();
+        }}
+        className="absolute right-3 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/[0.12] bg-black/5 text-white/55 opacity-80 backdrop-blur-[1px] transition-all duration-200 hover:border-white/22 hover:bg-black/15 hover:text-white/90 hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-1 focus-visible:ring-white/30 md:right-5 md:h-10 md:w-10 lg:right-7"
+      >
+        <span className="absolute inset-0 rounded-full border border-white/[0.06]" aria-hidden />
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none" className="relative" aria-hidden>
+          <path
+            d="M8 4L14 10L8 16"
+            stroke="currentColor"
+            strokeWidth="1.35"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </motion.button>
+
+      {/* Vignettes — desktop, centrées en bas */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-4 z-20 hidden md:flex md:justify-center md:pb-0">
+        <div
+          ref={thumbRef}
+          className="pointer-events-auto flex max-w-[min(100%,calc(100%-1.5rem))] gap-2 overflow-x-auto scroll-smooth px-3 md:max-w-[min(100%,420px)] md:gap-2 [&::-webkit-scrollbar]:hidden"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
+          {items.map((item, i) => {
+            const isActive = i === activeIndex;
+            return (
+              <motion.button
+                key={item.id}
+                type="button"
+                aria-label={`Afficher ${item.title}`}
+                aria-current={isActive ? "true" : undefined}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  goTo(i);
+                }}
+                whileHover={reduceMotion ? {} : { y: -2 }}
+                className={`relative h-[40px] w-[64px] flex-shrink-0 overflow-hidden rounded-md border transition-colors md:h-[44px] md:w-[72px] md:rounded-lg ${
+                  isActive
+                    ? "border-white/70 ring-1 ring-white/35"
+                    : "border-white/10 opacity-90 hover:border-white/35"
+                }`}
+              >
+                <Image
+                  src={item.imageSrc}
+                  alt=""
+                  fill
+                  sizes="72px"
+                  className="object-cover"
+                  style={{ objectPosition: item.imageObjectPosition ?? "50% 50%" }}
+                />
+              </motion.button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Indicateur mobile (points) — côté droit pour laisser les flèches à gauche */}
+      {/* Indicateur mobile (points) */}
       <div
         className="absolute bottom-5 right-5 z-20 flex gap-2 md:hidden"
         role="tablist"

@@ -49,7 +49,7 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
         isVisible ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-5 opacity-0"
       }`}
     >
-      <div className="mx-auto grid h-14 w-full max-w-[100rem] grid-cols-[auto_1fr_auto] items-center gap-x-4 px-4 md:h-16 md:gap-x-6 md:px-8 lg:gap-x-8 lg:px-10 xl:px-12">
+      <div className="mx-auto grid h-14 w-full max-w-[100rem] grid-cols-[auto_1fr] items-center gap-x-4 px-4 md:h-16 md:gap-x-6 md:px-8 lg:gap-x-8 lg:px-10 xl:px-12">
         <div className="flex shrink-0 items-center">
           <Link
             href="/"
@@ -114,17 +114,6 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
             Contact
           </Link>
         </nav>
-
-        <div className="flex shrink-0 justify-end">
-          <Link
-            href={site.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="border border-[#0a0a0a]/15 px-2.5 py-1.5 text-center font-[family-name:var(--font-sans)] text-[8px] font-medium uppercase tracking-[0.16em] transition-[border-color,opacity] hover:border-[#0a0a0a]/35 sm:px-3 sm:text-[9px] md:px-3.5 md:text-[10px] md:tracking-[0.18em]"
-          >
-            Magazine
-          </Link>
-        </div>
       </div>
     </header>
   );

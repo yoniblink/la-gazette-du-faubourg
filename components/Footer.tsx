@@ -138,9 +138,6 @@ export function Footer({ categories }: { categories: FooterCategory[] }) {
               </Link>
             </li>
           </ul>
-          <p className="mt-8 font-[family-name:var(--font-sans)] text-[11px] leading-relaxed text-[#8a8a8a]">
-            Visuels de démonstration — remplacer en production.
-          </p>
         </div>
       </div>
       <div className="border-t border-black/[0.06] bg-[#fafafa] px-6 py-6">
