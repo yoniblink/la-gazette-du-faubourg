@@ -7,6 +7,7 @@ import { auth } from "@/auth";
 import { renderFlipbookPdfToStorageAndPersist } from "@/lib/flipbook-render-server";
 import { prisma } from "@/lib/prisma";
 import { HOME_FLIPBOOK_MANIFEST_KEY, HOME_FLIPBOOK_PDF_URL_KEY } from "@/lib/site-settings";
+import { parseSupabaseStoragePublicUrl } from "@/lib/supabase-storage-public-url";
 import {
   createSupabaseServiceRoleClient,
   getFlipbookStorageBucket,
@@ -184,6 +185,48 @@ export async function POST(req: Request) {
       });
 
       return NextResponse.json({ ok: true, url: publicUrl, renderingScheduled: true as const });
+    }
+
+    /** Relance la génération WebP (même PDF que l’URL enregistrée) — utile si le job initial a échoué / timeout. */
+    if (action === "renderPages") {
+      if (!hasSupabaseFlipbookStorageEnv()) {
+        return NextResponse.json(
+          { error: "SUPABASE_SERVICE_ROLE_KEY requis pour rasteriser le PDF." },
+          { status: 503 },
+        );
+      }
+      const row = await prisma.siteSetting.findUnique({
+        where: { key: HOME_FLIPBOOK_PDF_URL_KEY },
+      });
+      const publicUrl = row?.value?.trim();
+      if (!publicUrl?.startsWith("https://")) {
+        return NextResponse.json(
+          { error: "Aucun PDF Supabase enregistré (URL HTTPS attendue)." },
+          { status: 400 },
+        );
+      }
+      const parsed = parseSupabaseStoragePublicUrl(publicUrl);
+      if (!parsed) {
+        return NextResponse.json(
+          { error: "URL du PDF non reconnue (format Supabase Storage public attendu)." },
+          { status: 400 },
+        );
+      }
+      if (!isAllowedFlipbookStoragePath(parsed.objectPath)) {
+        return NextResponse.json({ error: "Chemin du PDF non autorisé pour le flipbook." }, { status: 400 });
+      }
+
+      await prisma.siteSetting.deleteMany({ where: { key: HOME_FLIPBOOK_MANIFEST_KEY } });
+
+      after(async () => {
+        await renderFlipbookPdfToStorageAndPersist({
+          publicPdfUrl: publicUrl,
+          pdfStoragePath: parsed.objectPath,
+          bucket: parsed.bucket,
+        });
+      });
+
+      return NextResponse.json({ ok: true, renderingScheduled: true as const });
     }
 
     return NextResponse.json({ error: "Action inconnue" }, { status: 400 });

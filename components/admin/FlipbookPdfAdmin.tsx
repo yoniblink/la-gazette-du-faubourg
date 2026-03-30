@@ -9,9 +9,44 @@ import { createClient } from "@/utils/supabase/client";
 
 type PrepareOk = { mode: "local" } | { mode: "supabase"; bucket: string; path: string; token: string };
 
-export function FlipbookPdfAdmin({ currentPdfUrl }: { currentPdfUrl: string | null }) {
+export function FlipbookPdfAdmin({
+  currentPdfUrl,
+  hasManifest,
+}: {
+  currentPdfUrl: string | null;
+  hasManifest: boolean;
+}) {
   const router = useRouter();
   const [uploading, setUploading] = useState(false);
+  const [renderingPages, setRenderingPages] = useState(false);
+
+  const canRegenerateWebp = Boolean(currentPdfUrl?.startsWith("https://"));
+
+  const onRegeneratePages = useCallback(async () => {
+    if (!canRegenerateWebp) return;
+    setRenderingPages(true);
+    try {
+      const res = await fetch("/api/admin/flipbook-pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ action: "renderPages" }),
+      });
+      const data = (await res.json()) as { ok?: boolean; error?: string };
+      if (!res.ok) {
+        toast.error(typeof data.error === "string" ? data.error : "Impossible de lancer la génération");
+        return;
+      }
+      toast.success(
+        "Génération des pages WebP lancée en arrière-plan (1–3 min). Vérifiez le dossier slots/ dans Supabase, puis l’accueil.",
+      );
+      router.refresh();
+    } catch {
+      toast.error("Erreur réseau");
+    } finally {
+      setRenderingPages(false);
+    }
+  }, [canRegenerateWebp, router]);
 
   const onDrop = useCallback(
     async (accepted: File[]) => {
@@ -124,17 +159,40 @@ export function FlipbookPdfAdmin({ currentPdfUrl }: { currentPdfUrl: string | nu
       </p>
 
       {currentPdfUrl ? (
-        <p className="mt-4 text-sm text-stone-700">
-          Fichier actif :{" "}
-          <Link
-            href={currentPdfUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="break-all font-mono text-xs text-stone-900 underline"
-          >
-            {currentPdfUrl}
-          </Link>
-        </p>
+        <div className="mt-4 space-y-3">
+          <p className="text-sm text-stone-700">
+            Fichier actif :{" "}
+            <Link
+              href={currentPdfUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="break-all font-mono text-xs text-stone-900 underline"
+            >
+              {currentPdfUrl}
+            </Link>
+          </p>
+          {!hasManifest && canRegenerateWebp ? (
+            <p className="rounded-lg border border-amber-200 bg-amber-50/80 px-3 py-2 text-xs text-amber-950">
+              Aucune image WebP enregistrée pour le flipbook (dossier <code className="font-mono">slots/</code> absent
+              ou génération non terminée). Utilisez le bouton ci-dessous pour relancer la création des pages à partir de
+              ce PDF.
+            </p>
+          ) : null}
+          {canRegenerateWebp ? (
+            <button
+              type="button"
+              onClick={() => void onRegeneratePages()}
+              disabled={renderingPages || uploading}
+              className="rounded-lg border border-stone-300 bg-stone-50 px-4 py-2 text-xs font-medium uppercase tracking-wider text-stone-800 transition-colors hover:bg-stone-100 disabled:opacity-50"
+            >
+              {renderingPages
+                ? "Génération lancée…"
+                : hasManifest
+                  ? "Régénérer les images WebP"
+                  : "Générer les pages WebP (flipbook)"}
+            </button>
+          ) : null}
+        </div>
       ) : (
         <p className="mt-4 text-sm text-amber-800">Aucun PDF — la section flipbook est masquée sur le site.</p>
       )}

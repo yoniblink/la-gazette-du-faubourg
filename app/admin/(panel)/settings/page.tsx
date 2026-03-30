@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { FlipbookPdfAdmin } from "@/components/admin/FlipbookPdfAdmin";
-import { getHomeFlipbookPdfUrl } from "@/lib/site-settings";
+import { getHomeFlipbookManifest, getHomeFlipbookPdfUrl } from "@/lib/site-settings";
 
 export default async function AdminSettingsPage() {
   const flipbookPdfUrl = await getHomeFlipbookPdfUrl();
+  const flipbookManifest = await getHomeFlipbookManifest();
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -11,7 +12,10 @@ export default async function AdminSettingsPage() {
       <p className="mt-2 text-sm text-stone-500">
         Paramètres globaux du site pourront être ajoutés ici (métadonnées, intégrations).
       </p>
-      <FlipbookPdfAdmin currentPdfUrl={flipbookPdfUrl} />
+      <FlipbookPdfAdmin
+        currentPdfUrl={flipbookPdfUrl}
+        hasManifest={Boolean(flipbookManifest?.pageUrls?.length)}
+      />
       <div className="mt-10 rounded-xl border border-stone-200 bg-white p-8 text-sm text-stone-600">
         <p>
           Variables d’environnement : voir <code className="rounded bg-stone-100 px-1.5 py-0.5 font-mono text-xs">.env.example</code> à la racine du projet (
