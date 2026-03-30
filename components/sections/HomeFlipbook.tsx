@@ -1,15 +1,11 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { HomeFlipbookViewer } from "@/components/flipbook/HomeFlipbookViewer";
 import type { FlipbookManifest } from "@/lib/flipbook-manifest";
 import { MotionDiv } from "@/components/motion-prefers";
 import { fadeUp } from "@/lib/motion";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const HTMLFlipBook = dynamic(() => import("react-pageflip").then((m) => m.default), { ssr: false }) as any;
 
 type ManifestResponse = { manifest: FlipbookManifest | null };
 
@@ -63,6 +59,7 @@ export function HomeFlipbook({
     totalPdfPages = 0,
     renderedPdfPages = 0,
   } = manifest ?? {};
+  const flipbookInstanceKey = pageUrls.length ? pageUrls.join("\u0000") : "empty";
 
   return (
     <section id="flipbook" className="scroll-mt-24 border-y border-black/[0.06] bg-[#fafafa] py-20 md:py-28">
@@ -98,53 +95,15 @@ export function HomeFlipbook({
             </p>
           ) : null}
 
-          {phase === "ready" && HTMLFlipBook ? (
-            <HTMLFlipBook
-              width={pageW}
-              height={pageH}
-              size="stretch"
-              minWidth={280}
-              maxWidth={680}
-              minHeight={380}
-              maxHeight={1100}
-              showCover
-              maxShadowOpacity={0.45}
-              mobileScrollSupport
-              className="mx-auto w-full max-w-[min(100%,1360px)]"
-              style={{ marginTop: "0.5rem" }}
-            >
-              {pageUrls.map((src, i) => {
-                const full = fullSpreadSlot[i] === true;
-                const edgeLabel =
-                  totalPdfPages <= 1
-                    ? ""
-                    : i === 0
-                      ? " — couverture"
-                      : i === pageUrls.length - 1
-                        ? " — fin"
-                        : "";
-                return (
-                  <div
-                    key={`${src}-${i}`}
-                    className={`relative h-full w-full overflow-hidden border border-black/[0.08] bg-stone-200 ${
-                      full ? "" : "flex items-stretch justify-stretch"
-                    }`}
-                  >
-                    <Image
-                      src={src}
-                      alt={full ? `Page PDF${edgeLabel}` : `Page intérieure ${i + 1}`}
-                      width={Math.max(120, Math.round(pageW))}
-                      height={Math.max(160, Math.round(pageH))}
-                      className="h-full w-full select-none object-contain"
-                      draggable={false}
-                      sizes="(max-width: 768px) 95vw, 680px"
-                      priority={i < 3}
-                      loading={i < 6 ? "eager" : "lazy"}
-                    />
-                  </div>
-                );
-              })}
-            </HTMLFlipBook>
+          {phase === "ready" ? (
+            <HomeFlipbookViewer
+              key={flipbookInstanceKey}
+              pageUrls={pageUrls}
+              fullSpreadSlot={fullSpreadSlot}
+              pageW={pageW}
+              pageH={pageH}
+              totalPdfPages={totalPdfPages}
+            />
           ) : null}
         </div>
 
