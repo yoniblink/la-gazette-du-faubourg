@@ -62,7 +62,10 @@ export function HomeFlipbook({
   const flipbookInstanceKey = pageUrls.length ? pageUrls.join("\u0000") : "empty";
 
   return (
-    <section id="flipbook" className="scroll-mt-24 border-y border-black/[0.06] bg-[#fafafa] py-20 md:py-28">
+    <section
+      id="flipbook"
+      className="scroll-mt-24 border-y border-black/[0.06] bg-[radial-gradient(ellipse_120%_85%_at_50%_18%,#fcfcfb_0%,#f6f3ee_45%,#ece8e2_100%)] py-20 md:py-28"
+    >
       <div className="mx-auto max-w-6xl px-6 md:px-10">
         <MotionDiv
           variants={fadeUp}

@@ -41,6 +41,10 @@ export const FlipbookPageImage = memo(function FlipbookPageImage({
   }, [onLoadComplete]);
 
   const eagerNear = Math.abs(index - currentPage) <= eagerRadius;
+  const isPriority = index < priorityCount;
+  /** Next.js : `priority` et `loading="lazy"` sont incompatibles sur la même image. */
+  const loadingProp =
+    isPriority ? undefined : eagerNear ? ("eager" as const) : ("lazy" as const);
 
   return (
     <div className="relative h-full w-full">
@@ -58,8 +62,8 @@ export const FlipbookPageImage = memo(function FlipbookPageImage({
         sizes={sizes}
         quality={100}
         unoptimized
-        priority={index < priorityCount}
-        loading={eagerNear ? "eager" : "lazy"}
+        priority={isPriority}
+        {...(loadingProp !== undefined ? { loading: loadingProp } : {})}
         draggable={false}
         className={`h-full w-full select-none object-contain transition-opacity duration-500 ease-out motion-reduce:transition-none ${
           visible ? "opacity-100" : "opacity-0"

@@ -65,6 +65,179 @@ body {
   }
 }
 
+/* ——— Flipbook : scène 3D premium (StPageFlip / react-pageflip) ——— */
+@keyframes flipbook-premium-levitate {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotateX(5.2deg) rotateY(0.15deg) translateZ(14px);
+  }
+  50% {
+    transform: translate3d(0, -12px, 0) rotateX(5.8deg) rotateY(-0.4deg) translateZ(22px);
+  }
+}
+
+@keyframes flipbook-premium-shadow-breathe {
+  0%,
+  100% {
+    opacity: 0.82;
+    transform: translate3d(-50%, 0, 0) scaleX(0.92) scaleY(0.42);
+  }
+  50% {
+    opacity: 0.92;
+    transform: translate3d(-50%, 0, 0) scaleX(0.96) scaleY(0.46);
+  }
+}
+
+.flipbook-premium-scene {
+  position: relative;
+  isolation: isolate;
+  perspective: 4200px;
+  perspective-origin: 50% 32%;
+}
+
+.flipbook-premium-scene::before {
+  content: "";
+  position: absolute;
+  inset: -6% -12% 8% -12%;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 65% 50% at 50% 40%,
+    rgba(255, 255, 255, 0.72) 0%,
+    rgba(250, 249, 247, 0.35) 42%,
+    transparent 70%
+  );
+}
+
+.flipbook-premium-stage {
+  position: relative;
+  z-index: 1;
+}
+
+.flipbook-premium-tilt {
+  position: relative;
+  z-index: 2;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  animation: flipbook-premium-levitate 7s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  will-change: transform;
+}
+
+/* Ombres portées du livre (s’additionnent aux ombres canvas StPageFlip) */
+.flipbook-premium-scene .stf__parent {
+  position: relative;
+  z-index: 1;
+  border-radius: 3px;
+  filter: drop-shadow(0 36px 72px rgba(0, 0, 0, 0.16)) drop-shadow(0 14px 28px rgba(0, 0, 0, 0.1))
+    drop-shadow(0 4px 12px rgba(0, 0, 0, 0.07));
+}
+
+.flipbook-premium-scene.flipbook-premium-scene--flipping .stf__parent {
+  filter: drop-shadow(0 44px 88px rgba(0, 0, 0, 0.2)) drop-shadow(0 18px 36px rgba(0, 0, 0, 0.12))
+    drop-shadow(0 6px 16px rgba(0, 0, 0, 0.09));
+}
+
+.flipbook-premium-scene .stf__block {
+  perspective: 4400px;
+  perspective-origin: 48% 34%;
+  transform-style: preserve-3d;
+}
+
+/* Pages au repos : léger relief « carnet », compatible avec le positionnement StPageFlip */
+.flipbook-premium-scene .stf__item.--simple {
+  box-shadow:
+    -3px 0 14px rgba(0, 0, 0, 0.07),
+    3px 0 14px rgba(0, 0, 0, 0.05),
+    0 8px 24px rgba(0, 0, 0, 0.04);
+}
+
+/* Ombres générées pendant le flip : jointure plus naturelle */
+.flipbook-premium-scene .stf__innerShadow {
+  mix-blend-mode: multiply;
+  filter: saturate(1.05);
+}
+
+.flipbook-premium-scene .stf__outerShadow {
+  filter: blur(0.35px);
+  opacity: 0.98;
+}
+
+/* Ombre de contact au sol (magazine qui flotte) */
+.flipbook-premium-contact {
+  position: relative;
+  z-index: 0;
+  left: 50%;
+  width: min(78%, 34rem);
+  height: 2.75rem;
+  margin-top: 0.25rem;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(12, 10, 8, 0.42) 0%,
+    rgba(12, 10, 8, 0.16) 42%,
+    transparent 72%
+  );
+  filter: blur(18px);
+  opacity: 0.88;
+  transform: translate3d(-50%, 0, 0) scaleX(0.94) scaleY(0.44);
+  transform-origin: center top;
+  animation: flipbook-premium-shadow-breathe 7s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  transition: opacity 0.35s ease, filter 0.35s ease, transform 0.35s ease;
+}
+
+.flipbook-premium-scene.flipbook-premium-scene--flipping .flipbook-premium-contact {
+  opacity: 1;
+  filter: blur(22px);
+  transform: translate3d(-50%, 2px, 0) scaleX(1.02) scaleY(0.48);
+}
+
+@media (max-width: 767px) {
+  .flipbook-premium-scene .stf__block {
+    perspective: 3800px;
+  }
+
+  @keyframes flipbook-premium-levitate {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) rotateX(3.2deg) rotateY(0.1deg) translateZ(9px);
+    }
+    50% {
+      transform: translate3d(0, -8px, 0) rotateX(3.5deg) rotateY(-0.2deg) translateZ(12px);
+    }
+  }
+
+  .flipbook-premium-scene .stf__parent {
+    filter: drop-shadow(0 26px 48px rgba(0, 0, 0, 0.14)) drop-shadow(0 10px 20px rgba(0, 0, 0, 0.09));
+  }
+
+  .flipbook-premium-contact {
+    width: min(85%, 28rem);
+    height: 2.25rem;
+    filter: blur(14px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flipbook-premium-tilt {
+    animation: none;
+    will-change: auto;
+    transform: translate3d(0, 0, 0) rotateX(4.2deg) translateZ(12px);
+  }
+
+  .flipbook-premium-scene .stf__outerShadow {
+    filter: none;
+  }
+
+  .flipbook-premium-contact {
+    animation: none;
+  }
+
+  .flipbook-premium-scene.flipbook-premium-scene--flipping .flipbook-premium-contact {
+    transform: translate3d(-50%, 0, 0) scaleX(0.94) scaleY(0.44);
+  }
+}
+
 /* TipTap (admin) */
 .prose-rubrique-admin .ProseMirror h2 {
   margin-top: 1.25rem;
