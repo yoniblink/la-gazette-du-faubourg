@@ -90,21 +90,21 @@ export default async function RubriquePage({ params }: Props) {
               articles.map((a) => (
                 <li key={a.id} className="py-12 md:py-16 first:pt-0">
                   <Link
-                    href={`/${slug}/${a.slug}`}
+                    href={`/${a.category.slug}/${a.slug}`}
                     className="group grid grid-cols-1 items-center gap-10 md:grid-cols-12 md:gap-12 lg:gap-16"
                   >
-                    <div className="md:col-span-5">
+                    <div className="md:col-span-6 lg:col-span-7">
                       <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-[#eaeaea] shadow-[inset_0_0_0_1px_rgba(10,10,10,0.04)]">
                         <Image
                           src={a.coverImageUrl}
                           alt={a.coverImageAlt}
                           fill
-                          sizes="(max-width:768px) 100vw, 42vw"
+                          sizes="(max-width:768px) 100vw, (max-width:1024px) 50vw, 58vw"
                           className="object-cover transition-[transform,filter] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.02] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
                         />
                       </div>
                     </div>
-                    <div className="flex min-w-0 flex-col justify-center md:col-span-7">
+                    <div className="flex min-w-0 flex-col justify-center md:col-span-6 lg:col-span-5">
                       <h3 className="font-[family-name:var(--font-serif)] text-[clamp(1.6rem,3.4vw,2.75rem)] font-light italic leading-[1.15] tracking-[-0.02em] text-[#0a0a0a]">
                         {a.title}
                       </h3>

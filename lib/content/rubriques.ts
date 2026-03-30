@@ -2,6 +2,16 @@ import type { Rubrique } from "./types";
 
 export const rubriques: Rubrique[] = [
   {
+    slug: "actualite",
+    title: "Actualité",
+    tagline: "Le Faubourg en mouvement",
+    description:
+      "Les temps forts, les ouvertures et les regards qui rythment le quartier et l’univers du luxe.",
+    imageSrc:
+      "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2000&auto=format&fit=crop",
+    imageAlt: "Façades élégantes, perspective urbaine",
+  },
+  {
     slug: "horlogerie-joaillerie",
     title: "Horlogerie / Joaillerie",
     tagline: "Mouvements, matière, lumière",

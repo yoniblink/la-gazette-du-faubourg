@@ -1,4 +1,5 @@
 export type RubriqueSlug =
+  | "actualite"
   | "horlogerie-joaillerie"
   | "mode"
   | "art-culture"

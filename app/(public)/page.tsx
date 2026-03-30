@@ -14,7 +14,7 @@ export default async function Home() {
   const flipbookManifest = hasDatabaseUrl() ? await getHomeFlipbookManifest() : null;
 
   const featuredItems = hasDatabaseUrl()
-    ? (await getFeaturedArticlesForHome(8)).map((a) => ({
+    ? (await getFeaturedArticlesForHome()).map((a) => ({
         id: a.id,
         rubrique: a.category.title,
         title: a.title,

@@ -1,9 +1,13 @@
 import { cache } from "react";
 import type { Article, Category } from "@prisma/client";
-import { getArticleBySlugs, getArticlesForRubrique } from "@/lib/content/rubrique-articles";
+import type { RubriqueSlug } from "@/lib/content/types";
+import { getArticleBySlugs, getArticlesForRubrique, rubriqueArticlesBySlug } from "@/lib/content/rubrique-articles";
 import { getRubriqueBySlug } from "@/lib/content/rubriques";
 import { paragraphsToTipTapDoc } from "@/lib/tiptap/empty-doc";
 import { tryPrisma } from "@/lib/prisma";
+
+/** Rubrique « fil » : tous les articles publiés (pas seulement ceux catégorisés « Actualité »). */
+export const ACTUALITE_HUB_SLUG = "actualite";
 
 /** Rubrique listing row (DB or static). */
 export type RubriqueArticleListItem = {
@@ -30,16 +34,44 @@ function staticArticlesForCategory(categorySlug: string): RubriqueArticleListIte
   }));
 }
 
+/** Sans DB : tous les articles statiques de toutes les rubriques (pour /actualite). */
+function staticAllPublishedForActualiteHub(): RubriqueArticleListItem[] {
+  const out: RubriqueArticleListItem[] = [];
+  for (const [rubriqueSlug, list] of Object.entries(rubriqueArticlesBySlug) as [
+    RubriqueSlug,
+    NonNullable<(typeof rubriqueArticlesBySlug)[RubriqueSlug]>,
+  ][]) {
+    if (rubriqueSlug === "actualite" || !list?.length) continue;
+    const rubrique = getRubriqueBySlug(rubriqueSlug);
+    if (!rubrique) continue;
+    for (const a of list) {
+      out.push({
+        id: a.id,
+        slug: a.articleSlug,
+        title: a.title,
+        excerpt: a.excerpt,
+        coverImageUrl: a.imageSrc,
+        coverImageAlt: a.imageAlt,
+        category: { title: rubrique.title, slug: rubriqueSlug },
+      });
+    }
+  }
+  return out;
+}
+
 export const getPublishedArticlesByCategorySlug = cache(
   async (categorySlug: string): Promise<RubriqueArticleListItem[]> => {
     const db = tryPrisma();
     if (db) {
+      const isActualiteHub = categorySlug === ACTUALITE_HUB_SLUG;
       const rows = await db.article.findMany({
-        where: {
-          status: "PUBLISHED",
-          category: { slug: categorySlug },
-        },
-        orderBy: { publishedAt: "desc" },
+        where: isActualiteHub
+          ? { status: "PUBLISHED" }
+          : { status: "PUBLISHED", category: { slug: categorySlug } },
+        orderBy: [
+          { publishedAt: { sort: "desc", nulls: "last" } },
+          { createdAt: "desc" },
+        ],
         include: { category: { select: { title: true, slug: true } } },
       });
       return rows.map((r) => ({
@@ -51,6 +83,9 @@ export const getPublishedArticlesByCategorySlug = cache(
         coverImageAlt: r.coverImageAlt,
         category: r.category,
       }));
+    }
+    if (categorySlug === ACTUALITE_HUB_SLUG) {
+      return staticAllPublishedForActualiteHub();
     }
     return staticArticlesForCategory(categorySlug);
   },
@@ -119,13 +154,17 @@ export const getPublishedArticleBySlugs = cache(async (categorySlug: string, art
   return staticArticleBySlugs(categorySlug, articleSlug);
 });
 
-export const getFeaturedArticlesForHome = cache(async (take = 8) => {
+/** Articles pour le carrousel « L’actualité du Faubourg » : tous les publiés, du plus récent au plus ancien. */
+export const getFeaturedArticlesForHome = cache(async (take?: number) => {
   const db = tryPrisma();
   if (db) {
     return db.article.findMany({
-      where: { featuredOnHome: true, status: "PUBLISHED" },
-      orderBy: [{ featuredSortOrder: "asc" }, { publishedAt: "desc" }],
-      take,
+      where: { status: "PUBLISHED" },
+      orderBy: [
+        { publishedAt: { sort: "desc", nulls: "last" } },
+        { createdAt: "desc" },
+      ],
+      ...(take != null ? { take } : {}),
       include: { category: { select: { title: true, slug: true } } },
     });
   }
