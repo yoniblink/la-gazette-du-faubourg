@@ -23,6 +23,34 @@ const DEFAULT_RENDER_DPR = 1.12;
 const DEFAULT_HALF_SPREAD_CSS_PX = 400;
 const DEFAULT_MAX_PAGES = 12;
 
+/**
+ * pdf.js impose une URL de base se terminant par « / » (slash).
+ * Sous Node, les chargements passent par fs.readFile : chemins absolus avec « / ».
+ */
+function pdfDataBaseUrl(absoluteDir: string): string {
+  return `${absoluteDir.replace(/\\/g, "/").replace(/\/?$/, "/")}`;
+}
+
+function pdfJsDistDir(): string {
+  return path.join(process.cwd(), "node_modules", "pdfjs-dist");
+}
+
+/** Paramètres requis côté Node pour polices / CMap / wasm (évite rendu texte en paths → « ratures »). */
+function pdfDocumentLoadOptions() {
+  const root = pdfJsDistDir();
+  const useSystemFonts = process.env.FLIPBOOK_PDF_USE_SYSTEM_FONTS === "true";
+  const disableFontFace = process.env.FLIPBOOK_PDF_DISABLE_FONT_FACE === "true";
+  return {
+    cMapUrl: pdfDataBaseUrl(path.join(root, "cmaps")),
+    cMapPacked: true,
+    standardFontDataUrl: pdfDataBaseUrl(path.join(root, "standard_fonts")),
+    wasmUrl: pdfDataBaseUrl(path.join(root, "wasm")),
+    /** false = vraies fontes + fillText ; true (défaut pdf.js en Node) = paths uniquement, souvent illisible sur Skia */
+    disableFontFace,
+    useSystemFonts,
+  };
+}
+
 type LayoutMode = "auto" | "portrait" | "spread";
 
 export type FlipbookRenderResult = { ok: true } | { ok: false; error: string };
@@ -97,10 +125,6 @@ async function uploadWebpSlot(
   return { ok: true, publicUrl: pub.publicUrl };
 }
 
-function toWebp(png: Buffer): Promise<Buffer> {
-  return sharp(png).webp({ quality: WEBP_QUALITY, effort: WEBP_EFFORT }).toBuffer();
-}
-
 async function renderPageToWebpFromPage(
   pdfjs: typeof import("pdfjs-dist/legacy/build/pdf.mjs"),
   page: PdfPage,
@@ -109,36 +133,34 @@ async function renderPageToWebpFromPage(
 ): Promise<Buffer> {
   const base = page.getViewport({ scale: 1 });
   const fitScale = Math.min(pxSingleColW / base.width, pxSpreadH / base.height);
-  const vp = page.getViewport({ scale: fitScale });
-  const c = createCanvas(pxSingleColW, pxSpreadH);
-  const ctx = c.getContext("2d");
-  ctx.fillStyle = "#f5f5f4";
-  ctx.fillRect(0, 0, pxSingleColW, pxSpreadH);
-  const tile = createCanvas(Math.ceil(vp.width), Math.ceil(vp.height));
+  const vp0 = page.getViewport({ scale: fitScale });
+  const tw = Math.max(1, Math.round(vp0.width));
+  const th = Math.max(1, Math.round(vp0.height));
+  const vp = page.getViewport({ scale: fitScale * (tw / vp0.width) });
+  const tile = createCanvas(tw, th);
   const tctx = tile.getContext("2d");
-  tctx.imageSmoothingEnabled = true;
-  const tileCtx = tctx as unknown as CanvasRenderingContext2D;
-  tileCtx.imageSmoothingQuality = "high";
+  tctx.fillStyle = "#f5f5f4";
+  tctx.fillRect(0, 0, tw, th);
   await page
     .render({
       canvasContext: tctx as unknown as CanvasRenderingContext2D,
       viewport: vp,
       canvas: tile as unknown as HTMLCanvasElement,
       annotationMode: pdfjs.AnnotationMode.DISABLE,
-      intent: "print",
+      intent: "display",
       background: "#f5f5f4",
     })
     .promise;
-  ctx.imageSmoothingEnabled = true;
-  const outCtx = ctx as unknown as CanvasRenderingContext2D;
-  outCtx.imageSmoothingQuality = "high";
-  ctx.drawImage(
-    tile as unknown as import("@napi-rs/canvas").Canvas,
-    (pxSingleColW - vp.width) / 2,
-    (pxSpreadH - vp.height) / 2,
-  );
-  const png = await c.encode("png");
-  return toWebp(Buffer.from(png));
+  const png = Buffer.from(await tile.encode("png"));
+  return sharp(png)
+    .resize(pxSingleColW, pxSpreadH, {
+      fit: "contain",
+      position: "centre",
+      background: "#f5f5f4",
+      kernel: sharp.kernel.lanczos3,
+    })
+    .webp({ quality: WEBP_QUALITY, effort: WEBP_EFFORT, smartSubsample: true })
+    .toBuffer();
 }
 
 async function renderSpreadToPngFromPage(
@@ -149,35 +171,34 @@ async function renderSpreadToPngFromPage(
 ): Promise<Buffer> {
   const base = page.getViewport({ scale: 1 });
   const fitScale = Math.min(pxSpreadW / base.width, pxSpreadH / base.height);
-  const vp = page.getViewport({ scale: fitScale });
-  const spread = createCanvas(pxSpreadW, pxSpreadH);
-  const sctx = spread.getContext("2d");
-  sctx.fillStyle = "#f5f5f4";
-  sctx.fillRect(0, 0, pxSpreadW, pxSpreadH);
-  const tile = createCanvas(Math.ceil(vp.width), Math.ceil(vp.height));
+  const vp0 = page.getViewport({ scale: fitScale });
+  const tw = Math.max(1, Math.round(vp0.width));
+  const th = Math.max(1, Math.round(vp0.height));
+  const vp = page.getViewport({ scale: fitScale * (tw / vp0.width) });
+  const tile = createCanvas(tw, th);
   const tctx = tile.getContext("2d");
-  tctx.imageSmoothingEnabled = true;
-  const tileCtxSp = tctx as unknown as CanvasRenderingContext2D;
-  tileCtxSp.imageSmoothingQuality = "high";
+  tctx.fillStyle = "#f5f5f4";
+  tctx.fillRect(0, 0, tw, th);
   await page
     .render({
       canvasContext: tctx as unknown as CanvasRenderingContext2D,
       viewport: vp,
       canvas: tile as unknown as HTMLCanvasElement,
       annotationMode: pdfjs.AnnotationMode.DISABLE,
-      intent: "print",
+      intent: "display",
       background: "#f5f5f4",
     })
     .promise;
-  sctx.imageSmoothingEnabled = true;
-  const spreadCtx = sctx as unknown as CanvasRenderingContext2D;
-  spreadCtx.imageSmoothingQuality = "high";
-  sctx.drawImage(
-    tile as unknown as import("@napi-rs/canvas").Canvas,
-    (pxSpreadW - vp.width) / 2,
-    (pxSpreadH - vp.height) / 2,
-  );
-  return Buffer.from(await spread.encode("png"));
+  const raw = Buffer.from(await tile.encode("png"));
+  return sharp(raw)
+    .resize(pxSpreadW, pxSpreadH, {
+      fit: "contain",
+      position: "centre",
+      background: "#f5f5f4",
+      kernel: sharp.kernel.lanczos3,
+    })
+    .png()
+    .toBuffer();
 }
 
 export async function renderFlipbookPdfToStorageAndPersist(args: {
@@ -195,15 +216,13 @@ export async function renderFlipbookPdfToStorageAndPersist(args: {
     console.info("[flipbook-render] démarrage", args.pdfStoragePath, "layout=", layout);
 
     const pdfjs = await loadPdfJs();
-
-    /** true = polices OS (souvent décale le texte vs polices embarquées → ratures). */
-    const useSystemFonts = process.env.FLIPBOOK_PDF_USE_SYSTEM_FONTS === "true";
+    const docOpts = pdfDocumentLoadOptions();
 
     let pdf: PdfDoc;
     try {
       const loadingTask = pdfjs.getDocument({
         url: args.publicPdfUrl,
-        useSystemFonts,
+        ...docOpts,
       });
       pdf = await loadingTask.promise;
     } catch {
@@ -214,7 +233,7 @@ export async function renderFlipbookPdfToStorageAndPersist(args: {
       const data = new Uint8Array(await res.arrayBuffer());
       const loadingTask = pdfjs.getDocument({
         data,
-        useSystemFonts,
+        ...docOpts,
       });
       pdf = await loadingTask.promise;
     }
