@@ -75,7 +75,10 @@ export function HomeFlipbook({
           className="text-center"
         >
           <h2 className="font-[family-name:var(--font-serif)] text-[clamp(1.65rem,3vw,2.35rem)] font-light leading-snug text-[#0a0a0a]">
-            Feuilletez le magazine
+            Découvrez La Gazette du Faubourg en format papier.
+            <span className="mt-2 block text-[0.92em] text-[#3a3a3a]">
+              Présente là où l’élégance se vit…
+            </span>
           </h2>
         </MotionDiv>
 

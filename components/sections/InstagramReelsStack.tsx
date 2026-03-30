@@ -423,12 +423,21 @@ export function InstagramReelsStack({ reels }: { reels: InstagramReelPublic[] })
             if (Math.abs(pos) > 1) return null;
             const isCenter = pos === 0;
             return (
-              <motion.button
+              <motion.div
                 key={reel.id}
-                type="button"
+                role={isCenter ? undefined : "button"}
+                tabIndex={isCenter ? undefined : 0}
                 aria-current={isCenter ? "true" : undefined}
+                aria-label={isCenter ? undefined : `Afficher la vidéo ${i + 1} sur ${n}`}
                 onClick={() => !isCenter && setIndex(i)}
-                className="absolute left-1/2 top-1/2 w-[min(300px,28vw)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl bg-black text-left shadow-[0_32px_80px_-28px_rgba(0,0,0,0.45)] ring-1 ring-white/10 outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                onKeyDown={(e) => {
+                  if (isCenter) return;
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setIndex(i);
+                  }
+                }}
+                className={`absolute left-1/2 top-1/2 w-[min(300px,28vw)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl bg-black text-left shadow-[0_32px_80px_-28px_rgba(0,0,0,0.45)] ring-1 ring-white/10 outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${!isCenter ? "cursor-pointer" : ""}`}
                 initial={false}
                 animate={
                   reduceMotion
@@ -472,7 +481,7 @@ export function InstagramReelsStack({ reels }: { reels: InstagramReelPublic[] })
                   ) : null}
                   {isCenter && n > 1 ? <StoryNavArrows onPrev={() => go(-1)} onNext={() => go(1)} /> : null}
                 </div>
-              </motion.button>
+              </motion.div>
             );
           })}
         </div>
