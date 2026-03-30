@@ -1,4 +1,4 @@
-/** Données pré-rendues (PNG sur Supabase, conversion via API iLovePDF) pour le flipbook. */
+/** Données pré-rendues (WebP sur Supabase, conversion via API iLovePDF + Sharp) pour le flipbook. */
 export type FlipbookManifest = {
   v: 1;
   pageUrls: string[];

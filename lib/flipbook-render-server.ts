@@ -1,5 +1,5 @@
 /**
- * Flipbook : PDF → PNG dans Storage via l’API iLovePDF (outil pdfjpg), puis upload Supabase slots/.
+ * Flipbook : PDF → WebP dans Storage via l’API iLovePDF (outil pdfjpg), puis Sharp + upload Supabase slots/.
  * Plus de rendu local (pdf.js / Chromium).
  */
 import ILovePDFApi from "@ilovepdf/ilovepdf-nodejs";
@@ -18,10 +18,11 @@ import {
   FLIPBOOK_DEFAULT_ILOVEPDF_DPI,
   FLIPBOOK_DEFAULT_MAX_PAGES,
   FLIPBOOK_DEFAULT_RENDER_DPR,
+  FLIPBOOK_DEFAULT_WEBP_QUALITY,
   FLIPBOOK_MAX_PAGES_CAP,
 } from "@/lib/flipbook-config";
 
-const PNG_COMPRESSION_LEVEL = 6;
+const DEFAULT_WEBP_EFFORT = 4;
 
 type LayoutMode = "auto" | "portrait" | "spread";
 
@@ -53,7 +54,7 @@ function cssHalfSpreadPx(): number {
 
 function renderDpr(): number {
   const n = parseFloat(process.env.FLIPBOOK_RENDER_DPR ?? String(FLIPBOOK_DEFAULT_RENDER_DPR));
-  return Number.isFinite(n) ? Math.min(Math.max(n, 0.75), 3) : FLIPBOOK_DEFAULT_RENDER_DPR;
+  return Number.isFinite(n) ? Math.min(Math.max(n, 0.75), 4) : FLIPBOOK_DEFAULT_RENDER_DPR;
 }
 
 function ilovePdfDpi(): number {
@@ -71,10 +72,15 @@ function pdfLayoutMode(): LayoutMode {
   return "auto";
 }
 
-function pngOutOpts(): { compressionLevel: number; adaptiveFiltering: boolean } {
-  const n = parseInt(process.env.FLIPBOOK_RENDER_PNG_LEVEL ?? String(PNG_COMPRESSION_LEVEL), 10);
-  const level = Number.isFinite(n) ? Math.min(Math.max(n, 0), 9) : PNG_COMPRESSION_LEVEL;
-  return { compressionLevel: level, adaptiveFiltering: true };
+function webpOutOpts(): { quality: number; effort: number } {
+  const q = parseInt(
+    process.env.FLIPBOOK_RENDER_WEBP_QUALITY ?? String(FLIPBOOK_DEFAULT_WEBP_QUALITY),
+    10,
+  );
+  const quality = Number.isFinite(q) ? Math.min(Math.max(q, 50), 100) : FLIPBOOK_DEFAULT_WEBP_QUALITY;
+  const e = parseInt(process.env.FLIPBOOK_RENDER_WEBP_EFFORT ?? String(DEFAULT_WEBP_EFFORT), 10);
+  const effort = Number.isFinite(e) ? Math.min(Math.max(e, 0), 6) : DEFAULT_WEBP_EFFORT;
+  return { quality, effort };
 }
 
 function isLikelyMergedSpread(pageW: number, pageH: number): boolean {
@@ -114,16 +120,16 @@ async function ilovePdfPdfToJpegZip(publicPdfUrl: string): Promise<Buffer> {
   return Buffer.from(data);
 }
 
-async function uploadSlotPng(
+async function uploadSlotWebp(
   admin: SupabaseClient,
   bucket: string,
   slotsDir: string,
   slotIndex: number,
-  pngBytes: Buffer,
+  webpBytes: Buffer,
 ): Promise<{ ok: true; publicUrl: string } | { ok: false; error: string }> {
-  const objectPath = `${slotsDir}/${String(slotIndex).padStart(4, "0")}.png`;
-  const { error } = await admin.storage.from(bucket).upload(objectPath, pngBytes, {
-    contentType: "image/png",
+  const objectPath = `${slotsDir}/${String(slotIndex).padStart(4, "0")}.webp`;
+  const { error } = await admin.storage.from(bucket).upload(objectPath, webpBytes, {
+    contentType: "image/webp",
     upsert: true,
   });
   if (error) {
@@ -133,7 +139,7 @@ async function uploadSlotPng(
   return { ok: true, publicUrl: pub.publicUrl };
 }
 
-async function jpegToTargetPng(jpeg: Buffer, targetW: number, targetH: number): Promise<Buffer> {
+async function jpegToTargetWebp(jpeg: Buffer, targetW: number, targetH: number): Promise<Buffer> {
   return sharp(jpeg)
     .resize(targetW, targetH, {
       fit: "contain",
@@ -141,7 +147,7 @@ async function jpegToTargetPng(jpeg: Buffer, targetW: number, targetH: number): 
       background: "#f5f5f4",
       kernel: sharp.kernel.lanczos3,
     })
-    .png(pngOutOpts())
+    .webp(webpOutOpts())
     .toBuffer();
 }
 
@@ -217,30 +223,38 @@ export async function renderFlipbookPdfToStorageAndPersist(args: {
       }
 
       if (isEdge || !useVerticalSplit) {
-        const buf = await jpegToTargetPng(jpegBuf, pxSingleColW, pxSpreadH);
-        const up = await uploadSlotPng(admin, args.bucket, slotsDir, slotIndex++, buf);
+        const buf = await jpegToTargetWebp(jpegBuf, pxSingleColW, pxSpreadH);
+        const up = await uploadSlotWebp(admin, args.bucket, slotsDir, slotIndex++, buf);
         if (!up.ok) return up;
         pageUrls.push(up.publicUrl);
         fullSpreadSlot.push(isEdge);
       } else {
-        const spreadPng = await jpegToTargetPng(jpegBuf, pxSpreadW, pxSpreadH);
+        const spread = sharp(jpegBuf).resize(pxSpreadW, pxSpreadH, {
+          fit: "contain",
+          position: "centre",
+          background: "#f5f5f4",
+          kernel: sharp.kernel.lanczos3,
+        });
         const mid = Math.floor(pxSpreadW / 2);
         const rightW = pxSpreadW - mid;
+        const wopts = webpOutOpts();
 
-        const leftBuf = await sharp(spreadPng)
+        const leftBuf = await spread
+          .clone()
           .extract({ left: 0, top: 0, width: mid, height: pxSpreadH })
-          .png(pngOutOpts())
+          .webp(wopts)
           .toBuffer();
-        let up = await uploadSlotPng(admin, args.bucket, slotsDir, slotIndex++, leftBuf);
+        let up = await uploadSlotWebp(admin, args.bucket, slotsDir, slotIndex++, leftBuf);
         if (!up.ok) return up;
         pageUrls.push(up.publicUrl);
         fullSpreadSlot.push(false);
 
-        const rightBuf = await sharp(spreadPng)
+        const rightBuf = await spread
+          .clone()
           .extract({ left: mid, top: 0, width: rightW, height: pxSpreadH })
-          .png(pngOutOpts())
+          .webp(wopts)
           .toBuffer();
-        up = await uploadSlotPng(admin, args.bucket, slotsDir, slotIndex++, rightBuf);
+        up = await uploadSlotWebp(admin, args.bucket, slotsDir, slotIndex++, rightBuf);
         if (!up.ok) return up;
         pageUrls.push(up.publicUrl);
         fullSpreadSlot.push(false);
@@ -274,7 +288,7 @@ export async function renderFlipbookPdfToStorageAndPersist(args: {
       /* */
     }
 
-    console.info("[flipbook-render] terminé", pageUrls.length, "PNG (iLovePDF)");
+    console.info("[flipbook-render] terminé", pageUrls.length, "WebP (iLovePDF)");
     return { ok: true };
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);

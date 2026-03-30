@@ -18,8 +18,8 @@ import {
 } from "@/lib/supabase-service";
 
 /**
- * Génération flipbook : Chromium peut dépasser 60 s (cold start + N pages).
- * Vercel Hobby plafonne quand même à 60 s ; Pro → jusqu’à 300 s selon le projet.
+ * Génération flipbook (iLovePDF + Sharp → WebP) : peut dépasser 60 s sur de gros PDF.
+ * Vercel Hobby plafonne à 60 s ; Pro → jusqu’à 300 s selon le projet.
  */
 export const maxDuration = 300;
 
@@ -204,7 +204,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true, url: publicUrl, renderingScheduled: true as const });
     }
 
-    /** Relance la génération PNG (même PDF que l’URL enregistrée) — utile si le job initial a échoué / timeout. */
+    /** Relance la génération WebP (même PDF que l’URL enregistrée) — utile si le job initial a échoué / timeout. */
     if (action === "renderPages") {
       if (!hasSupabaseFlipbookStorageEnv()) {
         return NextResponse.json(

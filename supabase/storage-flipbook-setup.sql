@@ -3,7 +3,7 @@
 --
 -- Ce script ne touche pas à Postgres (articles, etc.) : uniquement Storage.
 
--- 1) Bucket public (lecture site + URLs getPublicUrl pour PDF + PNG flipbook)
+-- 1) Bucket public (lecture site + URLs getPublicUrl pour PDF + images flipbook WebP)
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 VALUES (
   'flipbook-pdf',

@@ -58,8 +58,8 @@ export function HomeFlipbook({
   const {
     pageUrls = [],
     fullSpreadSlot = [],
-    pageW = 400,
-    pageH = 560,
+    pageW = 480,
+    pageH = 672,
     totalPdfPages = 0,
     renderedPdfPages = 0,
   } = manifest ?? {};

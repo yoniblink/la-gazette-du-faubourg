@@ -14,7 +14,7 @@ const STEPS_REGENERATE = [
   "Connexion à iLovePDF…",
   "Conversion du PDF en images…",
   "Téléchargement et découpe des pages…",
-  "Envoi des PNG vers le stockage…",
+  "Envoi des images WebP vers le stockage…",
 ];
 
 const STEPS_WAIT_MANIFEST = [
@@ -106,7 +106,7 @@ export function FlipbookPdfAdmin({
         toast.error(typeof data.error === "string" ? data.error : "Impossible de générer les pages");
         return;
       }
-      toast.success("Pages PNG générées. Vérifiez le dossier slots/ dans Supabase et l’accueil.");
+      toast.success("Pages WebP générées. Vérifiez le dossier slots/ dans Supabase et l’accueil.");
       router.refresh();
     } catch {
       toast.error("Erreur réseau");
@@ -286,7 +286,7 @@ export function FlipbookPdfAdmin({
           </p>
           {!hasManifest && canRegeneratePages ? (
             <p className="rounded-lg border border-amber-200 bg-amber-50/80 px-3 py-2 text-xs text-amber-950">
-              Aucune image PNG enregistrée pour le flipbook (dossier <code className="font-mono">slots/</code> absent
+              Aucune image WebP enregistrée pour le flipbook (dossier <code className="font-mono">slots/</code> absent
               ou génération non terminée). Utilisez le bouton ci-dessous pour relancer la création des pages à partir de
               ce PDF.
             </p>
@@ -301,8 +301,8 @@ export function FlipbookPdfAdmin({
               {renderingPages
                 ? "Génération en cours…"
                 : hasManifest
-                  ? "Régénérer les images PNG"
-                  : "Générer les pages PNG (flipbook)"}
+                  ? "Régénérer les images WebP"
+                  : "Générer les pages WebP (flipbook)"}
             </button>
           ) : null}
         </div>
