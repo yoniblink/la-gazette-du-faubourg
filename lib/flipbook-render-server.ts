@@ -1,7 +1,10 @@
 /**
  * Rasterise un PDF en PNG (sans perte) sur Supabase Storage (Node uniquement).
- * Chargement minimal (getDocument url/data uniquement) : pdf.js applique le fichier tel qu’interprété par le moteur.
- * Sur-échantillon raster puis Sharp → cible (pas de dossiers standard_fonts/cmaps imposés par l’app).
+ *
+ * Sous Node, pdf.js défaut = `disableFontFace: true` → texte rendu en remplissage de chemins : Skia/napi canvas
+ * produit souvent bandes horizontales et texte illisible. Il faut `disableFontFace: false` + chemins vers les
+ * ressources du paquet `pdfjs-dist` (cmaps, standard_fonts, wasm) : ce sont des fichiers techniques du moteur,
+ * pas un remplacement de la maquette — les polices embarquées dans ton PDF restent prioritaires.
  *
  * Une page portrait ≠ double page : pas de découpe verticale sauf PDF paysage type 2-up.
  */
@@ -50,6 +53,30 @@ function renderDpr(): number {
 function superSample(): number {
   const n = parseFloat(process.env.FLIPBOOK_RENDER_SUPER_SAMPLE ?? String(DEFAULT_SUPER_SAMPLE));
   return Number.isFinite(n) ? Math.min(Math.max(n, 1), 3) : DEFAULT_SUPER_SAMPLE;
+}
+
+/** Bases attendues par pdf.js (chaîne finissant par « / », slashes forwards). */
+function pdfJsFactoryBases(): { cMapUrl: string; standardFontDataUrl: string; wasmUrl: string } {
+  const root = path.join(process.cwd(), "node_modules", "pdfjs-dist");
+  const dirUrl = (sub: string) =>
+    `${path.join(root, sub).replace(/\\/g, "/").replace(/\/?$/, "/")}`;
+  return {
+    cMapUrl: dirUrl("cmaps"),
+    standardFontDataUrl: dirUrl("standard_fonts"),
+    wasmUrl: dirUrl("wasm"),
+  };
+}
+
+/** Indispensable en Node pour un texte lisible (sinon tracés vectoriels dégradés). */
+function pdfDocumentOptions() {
+  const useSystemFonts = process.env.FLIPBOOK_PDF_USE_SYSTEM_FONTS === "true";
+  const disableFontFace = process.env.FLIPBOOK_PDF_DISABLE_FONT_FACE === "true";
+  return {
+    ...pdfJsFactoryBases(),
+    cMapPacked: true,
+    disableFontFace,
+    useSystemFonts,
+  };
 }
 
 function pdfLayoutMode(): LayoutMode {
@@ -184,7 +211,7 @@ async function renderSpreadToPngFromPage(
       background: "#f5f5f4",
       kernel: sharp.kernel.lanczos3,
     })
-    .png()
+    .png(pngOutOpts())
     .toBuffer();
 }
 
@@ -204,10 +231,14 @@ export async function renderFlipbookPdfToStorageAndPersist(args: {
     console.info("[flipbook-render] démarrage", args.pdfStoragePath, "layout=", layout, "superSample=", ss);
 
     const pdfjs = await loadPdfJs();
+    const docBase = pdfDocumentOptions();
 
     let pdf: PdfDoc;
     try {
-      const loadingTask = pdfjs.getDocument({ url: args.publicPdfUrl });
+      const loadingTask = pdfjs.getDocument({
+        url: args.publicPdfUrl,
+        ...docBase,
+      });
       pdf = await loadingTask.promise;
     } catch {
       const res = await fetch(args.publicPdfUrl);
@@ -215,7 +246,10 @@ export async function renderFlipbookPdfToStorageAndPersist(args: {
         return { ok: false, error: `Téléchargement du PDF refusé (HTTP ${res.status}).` };
       }
       const data = new Uint8Array(await res.arrayBuffer());
-      const loadingTask = pdfjs.getDocument({ data });
+      const loadingTask = pdfjs.getDocument({
+        data,
+        ...docBase,
+      });
       pdf = await loadingTask.promise;
     }
 
