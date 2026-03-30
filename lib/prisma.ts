@@ -1,5 +1,20 @@
 import { PrismaClient } from "@prisma/client";
 
+/**
+ * Supabase ↔ Vercel fournit souvent POSTGRES_PRISMA_URL / POSTGRES_URL_NON_POOLING,
+ * alors que Prisma lit DATABASE_URL et DIRECT_URL (schema.prisma).
+ */
+function ensureSupabasePostgresEnvAliases(): void {
+  if (!process.env.DATABASE_URL?.trim() && process.env.POSTGRES_PRISMA_URL?.trim()) {
+    process.env.DATABASE_URL = process.env.POSTGRES_PRISMA_URL.trim();
+  }
+  if (!process.env.DIRECT_URL?.trim() && process.env.POSTGRES_URL_NON_POOLING?.trim()) {
+    process.env.DIRECT_URL = process.env.POSTGRES_URL_NON_POOLING.trim();
+  }
+}
+
+ensureSupabasePostgresEnvAliases();
+
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
 const log =
