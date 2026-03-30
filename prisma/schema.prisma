@@ -49,8 +49,10 @@ model Article {
   title              String
   kicker             String?
   excerpt            String
-  coverImageUrl      String
-  coverImageAlt      String
+  coverImageUrl       String
+  coverImageAlt       String
+  /** Recadrage (CSS object-position), ex. « 50% 30% » */
+  coverObjectPosition String       @default("50% 50%")
   content            Json
   status             ArticleStatus @default(DRAFT)
   publishedAt        DateTime?

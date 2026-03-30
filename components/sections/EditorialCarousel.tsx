@@ -81,6 +81,7 @@ export function EditorialCarousel({ items }: Props) {
             fill
             sizes="(max-width: 768px) 100vw, 1152px"
             className="object-cover"
+            style={{ objectPosition: active.imageObjectPosition ?? "50% 50%" }}
             priority={activeIndex === 0}
           />
         </motion.div>
@@ -236,6 +237,7 @@ export function EditorialCarousel({ items }: Props) {
                 fill
                 sizes="116px"
                 className="object-cover"
+                style={{ objectPosition: item.imageObjectPosition ?? "50% 50%" }}
               />
             </motion.button>
           );

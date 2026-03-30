@@ -4,6 +4,7 @@ import type { RubriqueSlug } from "@/lib/content/types";
 import { getArticleBySlugs, getArticlesForRubrique, rubriqueArticlesBySlug } from "@/lib/content/rubrique-articles";
 import { getRubriqueBySlug } from "@/lib/content/rubriques";
 import { paragraphsToTipTapDoc } from "@/lib/tiptap/empty-doc";
+import { DEFAULT_COVER_OBJECT_POSITION } from "@/lib/cover-object-position";
 import { tryPrisma } from "@/lib/prisma";
 
 /** Rubrique « fil » : tous les articles publiés (pas seulement ceux catégorisés « Actualité »). */
@@ -17,6 +18,7 @@ export type RubriqueArticleListItem = {
   excerpt: string;
   coverImageUrl: string;
   coverImageAlt: string;
+  coverObjectPosition: string;
   category: { title: string; slug: string };
 };
 
@@ -30,6 +32,7 @@ function staticArticlesForCategory(categorySlug: string): RubriqueArticleListIte
     excerpt: a.excerpt,
     coverImageUrl: a.imageSrc,
     coverImageAlt: a.imageAlt,
+    coverObjectPosition: DEFAULT_COVER_OBJECT_POSITION,
     category: { title: a.rubrique, slug: categorySlug },
   }));
 }
@@ -52,6 +55,7 @@ function staticAllPublishedForActualiteHub(): RubriqueArticleListItem[] {
         excerpt: a.excerpt,
         coverImageUrl: a.imageSrc,
         coverImageAlt: a.imageAlt,
+        coverObjectPosition: DEFAULT_COVER_OBJECT_POSITION,
         category: { title: rubrique.title, slug: rubriqueSlug },
       });
     }
@@ -81,6 +85,7 @@ export const getPublishedArticlesByCategorySlug = cache(
         excerpt: r.excerpt,
         coverImageUrl: r.coverImageUrl,
         coverImageAlt: r.coverImageAlt,
+        coverObjectPosition: r.coverObjectPosition,
         category: r.category,
       }));
     }
@@ -132,6 +137,7 @@ function staticArticleBySlugs(
     layout: a.layout,
     featuredOnHome: false,
     featuredSortOrder: 0,
+    coverObjectPosition: DEFAULT_COVER_OBJECT_POSITION,
     categoryId: cat.id,
     createdAt: new Date(0),
     updatedAt: new Date(0),

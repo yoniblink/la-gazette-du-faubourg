@@ -85,6 +85,7 @@ export default async function RubriqueArticlePage({ params }: Props) {
             priority
             sizes="(max-width:768px) 100vw, 48rem"
             className="object-cover"
+            style={{ objectPosition: article.coverObjectPosition }}
           />
           <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-black/[0.06]" />
         </div>

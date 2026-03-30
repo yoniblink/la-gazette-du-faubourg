@@ -21,6 +21,7 @@ export default async function Home() {
         excerpt: a.excerpt,
         imageSrc: a.coverImageUrl,
         imageAlt: a.coverImageAlt,
+        imageObjectPosition: a.coverObjectPosition,
         href: `/${a.category.slug}/${a.slug}`,
         layout: a.layout === "lead" ? ("lead" as const) : ("standard" as const),
       }))

@@ -6,6 +6,7 @@ import { ArticleLayout, ArticleStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/slugify";
 import { requireAdmin } from "@/lib/server/admin-auth";
+import { normalizeCoverObjectPosition } from "@/lib/cover-object-position";
 import { emptyTipTapDoc } from "@/lib/tiptap/empty-doc";
 
 export type ArticleActionResult = { ok: true } | { ok: false; error: string };
@@ -17,6 +18,7 @@ const articleFormSchema = z.object({
   excerpt: z.string().min(1),
   coverImageUrl: z.string().min(1),
   coverImageAlt: z.string().min(1),
+  coverObjectPosition: z.string().optional(),
   categoryId: z.string().min(1),
   authorName: z.string().min(1),
   seoTitle: z.string().optional(),
@@ -38,6 +40,7 @@ function revalidateArticlePaths(categorySlug: string, articleSlug: string) {
   revalidatePath("/", "layout");
   revalidatePath(`/${categorySlug}`);
   revalidatePath(`/${categorySlug}/${articleSlug}`);
+  revalidatePath("/actualite");
 }
 
 export async function createArticle(_prev: ArticleActionResult | null, formData: FormData): Promise<ArticleActionResult> {
@@ -64,6 +67,7 @@ export async function createArticle(_prev: ArticleActionResult | null, formData:
       excerpt: String(formData.get("excerpt") ?? ""),
       coverImageUrl: String(formData.get("coverImageUrl") ?? ""),
       coverImageAlt: String(formData.get("coverImageAlt") ?? ""),
+      coverObjectPosition: optStr(formData.get("coverObjectPosition")),
       categoryId: String(formData.get("categoryId") ?? ""),
       authorName: optStr(formData.get("authorName")) ?? "La Gazette",
       seoTitle: optStr(formData.get("seoTitle")),
@@ -87,6 +91,10 @@ export async function createArticle(_prev: ArticleActionResult | null, formData:
     const status = publish ? ArticleStatus.PUBLISHED : ArticleStatus.DRAFT;
     const publishedAt = publish ? new Date() : null;
 
+    const coverObjectPosition = normalizeCoverObjectPosition(
+      parsed.data.coverObjectPosition ?? "50% 50%",
+    );
+
     await prisma.article.create({
       data: {
         title: rest.title,
@@ -95,6 +103,7 @@ export async function createArticle(_prev: ArticleActionResult | null, formData:
         excerpt: rest.excerpt,
         coverImageUrl: rest.coverImageUrl,
         coverImageAlt: rest.coverImageAlt,
+        coverObjectPosition,
         content,
         categoryId: rest.categoryId,
         authorName: rest.authorName,
@@ -153,6 +162,7 @@ export async function updateArticle(_prev: ArticleActionResult | null, formData:
       excerpt: String(formData.get("excerpt") ?? ""),
       coverImageUrl: String(formData.get("coverImageUrl") ?? ""),
       coverImageAlt: String(formData.get("coverImageAlt") ?? ""),
+      coverObjectPosition: optStr(formData.get("coverObjectPosition")),
       categoryId: String(formData.get("categoryId") ?? ""),
       authorName: optStr(formData.get("authorName")) ?? "La Gazette",
       seoTitle: optStr(formData.get("seoTitle")),
@@ -176,6 +186,10 @@ export async function updateArticle(_prev: ArticleActionResult | null, formData:
     const status = publish ? ArticleStatus.PUBLISHED : ArticleStatus.DRAFT;
     const publishedAt = publish ? (existing.publishedAt ?? new Date()) : null;
 
+    const coverObjectPosition = normalizeCoverObjectPosition(
+      parsed.data.coverObjectPosition ?? "50% 50%",
+    );
+
     await prisma.article.update({
       where: { id },
       data: {
@@ -185,6 +199,7 @@ export async function updateArticle(_prev: ArticleActionResult | null, formData:
         excerpt: rest.excerpt,
         coverImageUrl: rest.coverImageUrl,
         coverImageAlt: rest.coverImageAlt,
+        coverObjectPosition,
         content,
         categoryId: rest.categoryId,
         authorName: rest.authorName,
@@ -226,6 +241,7 @@ export async function deleteArticle(id: string): Promise<ArticleActionResult> {
     revalidatePath("/", "layout");
     revalidatePath(`/${row.category.slug}`);
     revalidatePath(`/${row.category.slug}/${row.slug}`);
+    revalidatePath("/actualite");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Erreur" };

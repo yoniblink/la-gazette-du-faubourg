@@ -1,6 +1,6 @@
 "use client";
 
-import { startTransition, useActionState, useEffect, useState } from "react";
+import { startTransition, useActionState, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -9,6 +9,7 @@ import type { Article, Category } from "@prisma/client";
 import type { JSONContent } from "@tiptap/core";
 import { TipTapEditor } from "@/components/admin/TipTapEditor";
 import { createArticle, updateArticle, type ArticleActionResult } from "@/app/admin/(panel)/articles/actions";
+import { parseCoverFocus } from "@/lib/cover-object-position";
 import { emptyTipTapDoc } from "@/lib/tiptap/empty-doc";
 
 function Submit({ label }: { label: string }) {
@@ -42,6 +43,23 @@ export function ArticleForm({
     }
     return structuredClone(emptyTipTapDoc) as unknown as JSONContent;
   });
+
+  const initialFocus = parseCoverFocus(article?.coverObjectPosition);
+  const [coverImageUrl, setCoverImageUrl] = useState(article?.coverImageUrl ?? "");
+  const [coverFocusX, setCoverFocusX] = useState(initialFocus.x);
+  const [coverFocusY, setCoverFocusY] = useState(initialFocus.y);
+  const coverPreviewRef = useRef<HTMLDivElement>(null);
+
+  function applyCropFromClient(clientX: number, clientY: number) {
+    const el = coverPreviewRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    if (r.width <= 0 || r.height <= 0) return;
+    const x = ((clientX - r.left) / r.width) * 100;
+    const y = ((clientY - r.top) / r.height) * 100;
+    setCoverFocusX(Math.min(100, Math.max(0, x)));
+    setCoverFocusY(Math.min(100, Math.max(0, y)));
+  }
 
   useEffect(() => {
     if (!state) return;
@@ -136,7 +154,8 @@ export function ArticleForm({
           <input
             name="coverImageUrl"
             required
-            defaultValue={article?.coverImageUrl}
+            value={coverImageUrl}
+            onChange={(e) => setCoverImageUrl(e.target.value)}
             className="mt-2 w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm"
           />
         </div>
@@ -148,6 +167,68 @@ export function ArticleForm({
             defaultValue={article?.coverImageAlt}
             className="mt-2 w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm"
           />
+        </div>
+        <div className="md:col-span-2">
+          <input
+            type="hidden"
+            name="coverObjectPosition"
+            value={`${coverFocusX}% ${coverFocusY}%`}
+          />
+          <p className="text-[11px] font-medium uppercase tracking-wider text-stone-500">Cadrage (aperçu 4∶3)</p>
+          <p className="mt-1 text-xs text-stone-600">Maintenez le clic enfoncé et bougez la souris sur l’image.</p>
+          <div
+            ref={coverPreviewRef}
+            className={`relative mt-4 aspect-[4/3] w-full max-w-sm overflow-hidden rounded-xl bg-stone-200 ring-1 ring-stone-300/60 touch-none select-none ${
+              coverImageUrl.trim() ? "cursor-grab active:cursor-grabbing" : ""
+            }`}
+            onMouseDown={(e) => {
+              if (!coverImageUrl.trim() || e.button !== 0) return;
+              e.preventDefault();
+              const move = (ev: MouseEvent) => {
+                if ((ev.buttons & 1) === 0) return;
+                applyCropFromClient(ev.clientX, ev.clientY);
+              };
+              const up = () => {
+                window.removeEventListener("mousemove", move);
+                window.removeEventListener("mouseup", up);
+              };
+              window.addEventListener("mousemove", move);
+              window.addEventListener("mouseup", up);
+            }}
+            onTouchStart={(e) => {
+              if (!coverImageUrl.trim()) return;
+              const move = (ev: TouchEvent) => {
+                ev.preventDefault();
+                const t2 = ev.touches[0];
+                if (t2) applyCropFromClient(t2.clientX, t2.clientY);
+              };
+              const end = () => {
+                document.removeEventListener("touchmove", move);
+                document.removeEventListener("touchend", end);
+                document.removeEventListener("touchcancel", end);
+              };
+              document.addEventListener("touchmove", move, { passive: false });
+              document.addEventListener("touchend", end);
+              document.addEventListener("touchcancel", end);
+            }}
+          >
+            {coverImageUrl.trim() ? (
+              // eslint-disable-next-line @next/next/no-img-element -- aperçu admin (URL externe)
+              <img
+                src={coverImageUrl.trim()}
+                alt=""
+                className="pointer-events-none h-full w-full object-cover"
+                draggable={false}
+                style={{ objectPosition: `${coverFocusX}% ${coverFocusY}%` }}
+                loading="lazy"
+                decoding="async"
+              />
+            ) : (
+              <div className="flex h-full min-h-[120px] items-center justify-center px-4 text-center text-xs text-stone-500">
+                Ajoutez une URL d’image.
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
