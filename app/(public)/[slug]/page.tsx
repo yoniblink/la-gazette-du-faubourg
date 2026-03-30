@@ -80,7 +80,7 @@ export default async function RubriquePage({ params }: Props) {
           />
         ) : null}
 
-        <section className="mt-16 border-t border-black/[0.06] pt-16 md:mt-24 md:pt-20">
+        <section className="mt-16 md:mt-24">
           <ul className="divide-y divide-black/[0.06]">
             {articles.length === 0 ? (
               <li className="py-12 font-[family-name:var(--font-sans)] text-sm text-[#5a5a5a]">
@@ -123,19 +123,6 @@ export default async function RubriquePage({ params }: Props) {
             )}
           </ul>
         </section>
-
-        <p className="mt-14 font-[family-name:var(--font-sans)] text-sm text-[#5a5a5a]">
-          Pour l’ensemble des articles : consultez le{" "}
-          <Link
-            href={site.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline decoration-black/20 underline-offset-4 hover:decoration-black/50"
-          >
-            magazine en ligne
-          </Link>
-          .
-        </p>
       </article>
     </main>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { startTransition, useActionState, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -60,7 +60,9 @@ export function ArticleForm({
         e.preventDefault();
         const fd = new FormData(e.currentTarget);
         fd.set("content", JSON.stringify(contentJson));
-        formAction(fd);
+        startTransition(() => {
+          formAction(fd);
+        });
       }}
       className="space-y-8"
     >
