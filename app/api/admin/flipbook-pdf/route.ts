@@ -188,7 +188,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true, url: publicUrl, renderingScheduled: true as const });
     }
 
-    /** Relance la génération WebP (même PDF que l’URL enregistrée) — utile si le job initial a échoué / timeout. */
+    /** Relance la génération PNG (même PDF que l’URL enregistrée) — utile si le job initial a échoué / timeout. */
     if (action === "renderPages") {
       if (!hasSupabaseFlipbookStorageEnv()) {
         return NextResponse.json(

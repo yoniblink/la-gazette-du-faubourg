@@ -1,4 +1,4 @@
-/** Données pré-rendues côté serveur (WebP sur Supabase) pour le flipbook. */
+/** Données pré-rendues côté serveur (PNG sur Supabase) pour le flipbook. */
 export type FlipbookManifest = {
   v: 1;
   pageUrls: string[];

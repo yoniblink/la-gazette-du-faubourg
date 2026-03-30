@@ -20,10 +20,10 @@ export function FlipbookPdfAdmin({
   const [uploading, setUploading] = useState(false);
   const [renderingPages, setRenderingPages] = useState(false);
 
-  const canRegenerateWebp = Boolean(currentPdfUrl?.startsWith("https://"));
+  const canRegeneratePages = Boolean(currentPdfUrl?.startsWith("https://"));
 
   const onRegeneratePages = useCallback(async () => {
-    if (!canRegenerateWebp) return;
+    if (!canRegeneratePages) return;
     setRenderingPages(true);
     try {
       const res = await fetch("/api/admin/flipbook-pdf", {
@@ -37,14 +37,14 @@ export function FlipbookPdfAdmin({
         toast.error(typeof data.error === "string" ? data.error : "Impossible de générer les pages");
         return;
       }
-      toast.success("Pages WebP générées. Vérifiez le dossier slots/ dans Supabase et l’accueil.");
+      toast.success("Pages PNG générées. Vérifiez le dossier slots/ dans Supabase et l’accueil.");
       router.refresh();
     } catch {
       toast.error("Erreur réseau");
     } finally {
       setRenderingPages(false);
     }
-  }, [canRegenerateWebp, router]);
+  }, [canRegeneratePages, router]);
 
   const onDrop = useCallback(
     async (accepted: File[]) => {
@@ -169,14 +169,14 @@ export function FlipbookPdfAdmin({
               {currentPdfUrl}
             </Link>
           </p>
-          {!hasManifest && canRegenerateWebp ? (
+          {!hasManifest && canRegeneratePages ? (
             <p className="rounded-lg border border-amber-200 bg-amber-50/80 px-3 py-2 text-xs text-amber-950">
-              Aucune image WebP enregistrée pour le flipbook (dossier <code className="font-mono">slots/</code> absent
+              Aucune image PNG enregistrée pour le flipbook (dossier <code className="font-mono">slots/</code> absent
               ou génération non terminée). Utilisez le bouton ci-dessous pour relancer la création des pages à partir de
               ce PDF.
             </p>
           ) : null}
-          {canRegenerateWebp ? (
+          {canRegeneratePages ? (
             <button
               type="button"
               onClick={() => void onRegeneratePages()}
@@ -186,8 +186,8 @@ export function FlipbookPdfAdmin({
               {renderingPages
                 ? "Génération lancée…"
                 : hasManifest
-                  ? "Régénérer les images WebP"
-                  : "Générer les pages WebP (flipbook)"}
+                  ? "Régénérer les images PNG"
+                  : "Générer les pages PNG (flipbook)"}
             </button>
           ) : null}
         </div>

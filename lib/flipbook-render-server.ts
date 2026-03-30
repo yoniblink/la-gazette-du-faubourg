@@ -1,9 +1,9 @@
 /**
- * Rasterise un PDF en images WebP sur Supabase Storage (Node uniquement).
- * Pipeline basse mémoire : une image à la fois.
+ * Rasterise un PDF en PNG (sans perte) sur Supabase Storage (Node uniquement).
+ * Chargement minimal (getDocument url/data uniquement) : pdf.js applique le fichier tel qu’interprété par le moteur.
+ * Sur-échantillon raster puis Sharp → cible (pas de dossiers standard_fonts/cmaps imposés par l’app).
  *
- * PDF « une page portrait = une page magazine » : pas de découpe verticale (évite le texte illisible).
- * PDF paysage type « deux pages fusionnées » : découpe au milieu (mode spread).
+ * Une page portrait ≠ double page : pas de découpe verticale sauf PDF paysage type 2-up.
  */
 import { createCanvas } from "@napi-rs/canvas";
 import path from "path";
@@ -17,39 +17,13 @@ import { HOME_FLIPBOOK_MANIFEST_KEY } from "@/lib/site-settings";
 import { createSupabaseServiceRoleClient } from "@/lib/supabase-service";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-const WEBP_QUALITY = 88;
-const WEBP_EFFORT = 3;
+/** 0–9 ; plus haut = fichiers plus petits, encode un peu plus lent. */
+const PNG_COMPRESSION_LEVEL = 6;
 const DEFAULT_RENDER_DPR = 1.12;
 const DEFAULT_HALF_SPREAD_CSS_PX = 400;
 const DEFAULT_MAX_PAGES = 12;
-
-/**
- * pdf.js impose une URL de base se terminant par « / » (slash).
- * Sous Node, les chargements passent par fs.readFile : chemins absolus avec « / ».
- */
-function pdfDataBaseUrl(absoluteDir: string): string {
-  return `${absoluteDir.replace(/\\/g, "/").replace(/\/?$/, "/")}`;
-}
-
-function pdfJsDistDir(): string {
-  return path.join(process.cwd(), "node_modules", "pdfjs-dist");
-}
-
-/** Paramètres requis côté Node pour polices / CMap / wasm (évite rendu texte en paths → « ratures »). */
-function pdfDocumentLoadOptions() {
-  const root = pdfJsDistDir();
-  const useSystemFonts = process.env.FLIPBOOK_PDF_USE_SYSTEM_FONTS === "true";
-  const disableFontFace = process.env.FLIPBOOK_PDF_DISABLE_FONT_FACE === "true";
-  return {
-    cMapUrl: pdfDataBaseUrl(path.join(root, "cmaps")),
-    cMapPacked: true,
-    standardFontDataUrl: pdfDataBaseUrl(path.join(root, "standard_fonts")),
-    wasmUrl: pdfDataBaseUrl(path.join(root, "wasm")),
-    /** false = vraies fontes + fillText ; true (défaut pdf.js en Node) = paths uniquement, souvent illisible sur Skia */
-    disableFontFace,
-    useSystemFonts,
-  };
-}
+/** Raster interne plus grand puis réduction Sharp : meilleure fidélité sans toucher aux polices du PDF. */
+const DEFAULT_SUPER_SAMPLE = 2;
 
 type LayoutMode = "auto" | "portrait" | "spread";
 
@@ -71,6 +45,11 @@ function cssHalfSpreadPx(): number {
 function renderDpr(): number {
   const n = parseFloat(process.env.FLIPBOOK_RENDER_DPR ?? String(DEFAULT_RENDER_DPR));
   return Number.isFinite(n) ? Math.min(Math.max(n, 0.75), 1.5) : DEFAULT_RENDER_DPR;
+}
+
+function superSample(): number {
+  const n = parseFloat(process.env.FLIPBOOK_RENDER_SUPER_SAMPLE ?? String(DEFAULT_SUPER_SAMPLE));
+  return Number.isFinite(n) ? Math.min(Math.max(n, 1), 3) : DEFAULT_SUPER_SAMPLE;
 }
 
 function pdfLayoutMode(): LayoutMode {
@@ -106,16 +85,22 @@ type PdfDoc = any;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type PdfPage = any;
 
-async function uploadWebpSlot(
+function pngOutOpts(): { compressionLevel: number; adaptiveFiltering: boolean } {
+  const n = parseInt(process.env.FLIPBOOK_RENDER_PNG_LEVEL ?? String(PNG_COMPRESSION_LEVEL), 10);
+  const level = Number.isFinite(n) ? Math.min(Math.max(n, 0), 9) : PNG_COMPRESSION_LEVEL;
+  return { compressionLevel: level, adaptiveFiltering: true };
+}
+
+async function uploadSlotPng(
   admin: SupabaseClient,
   bucket: string,
   slotsDir: string,
   slotIndex: number,
-  webp: Buffer,
+  pngBytes: Buffer,
 ): Promise<{ ok: true; publicUrl: string } | { ok: false; error: string }> {
-  const objectPath = `${slotsDir}/${String(slotIndex).padStart(4, "0")}.webp`;
-  const { error } = await admin.storage.from(bucket).upload(objectPath, webp, {
-    contentType: "image/webp",
+  const objectPath = `${slotsDir}/${String(slotIndex).padStart(4, "0")}.png`;
+  const { error } = await admin.storage.from(bucket).upload(objectPath, pngBytes, {
+    contentType: "image/png",
     upsert: true,
   });
   if (error) {
@@ -125,14 +110,15 @@ async function uploadWebpSlot(
   return { ok: true, publicUrl: pub.publicUrl };
 }
 
-async function renderPageToWebpFromPage(
+async function renderPageToSlotPngFromPage(
   pdfjs: typeof import("pdfjs-dist/legacy/build/pdf.mjs"),
   page: PdfPage,
   pxSingleColW: number,
   pxSpreadH: number,
+  ss: number,
 ): Promise<Buffer> {
   const base = page.getViewport({ scale: 1 });
-  const fitScale = Math.min(pxSingleColW / base.width, pxSpreadH / base.height);
+  const fitScale = Math.min(pxSingleColW / base.width, pxSpreadH / base.height) * ss;
   const vp0 = page.getViewport({ scale: fitScale });
   const tw = Math.max(1, Math.round(vp0.width));
   const th = Math.max(1, Math.round(vp0.height));
@@ -159,7 +145,7 @@ async function renderPageToWebpFromPage(
       background: "#f5f5f4",
       kernel: sharp.kernel.lanczos3,
     })
-    .webp({ quality: WEBP_QUALITY, effort: WEBP_EFFORT, smartSubsample: true })
+    .png(pngOutOpts())
     .toBuffer();
 }
 
@@ -168,9 +154,10 @@ async function renderSpreadToPngFromPage(
   page: PdfPage,
   pxSpreadW: number,
   pxSpreadH: number,
+  ss: number,
 ): Promise<Buffer> {
   const base = page.getViewport({ scale: 1 });
-  const fitScale = Math.min(pxSpreadW / base.width, pxSpreadH / base.height);
+  const fitScale = Math.min(pxSpreadW / base.width, pxSpreadH / base.height) * ss;
   const vp0 = page.getViewport({ scale: fitScale });
   const tw = Math.max(1, Math.round(vp0.width));
   const th = Math.max(1, Math.round(vp0.height));
@@ -213,17 +200,14 @@ export async function renderFlipbookPdfToStorageAndPersist(args: {
     }
 
     const layout = pdfLayoutMode();
-    console.info("[flipbook-render] démarrage", args.pdfStoragePath, "layout=", layout);
+    const ss = superSample();
+    console.info("[flipbook-render] démarrage", args.pdfStoragePath, "layout=", layout, "superSample=", ss);
 
     const pdfjs = await loadPdfJs();
-    const docOpts = pdfDocumentLoadOptions();
 
     let pdf: PdfDoc;
     try {
-      const loadingTask = pdfjs.getDocument({
-        url: args.publicPdfUrl,
-        ...docOpts,
-      });
+      const loadingTask = pdfjs.getDocument({ url: args.publicPdfUrl });
       pdf = await loadingTask.promise;
     } catch {
       const res = await fetch(args.publicPdfUrl);
@@ -231,10 +215,7 @@ export async function renderFlipbookPdfToStorageAndPersist(args: {
         return { ok: false, error: `Téléchargement du PDF refusé (HTTP ${res.status}).` };
       }
       const data = new Uint8Array(await res.arrayBuffer());
-      const loadingTask = pdfjs.getDocument({
-        data,
-        ...docOpts,
-      });
+      const loadingTask = pdfjs.getDocument({ data });
       pdf = await loadingTask.promise;
     }
 
@@ -277,30 +258,30 @@ export async function renderFlipbookPdfToStorageAndPersist(args: {
         }
 
         if (isEdge || !useVerticalSplit) {
-          const buf = await renderPageToWebpFromPage(pdfjs, page, pxSingleColW, pxSpreadH);
-          const up = await uploadWebpSlot(admin, args.bucket, slotsDir, slotIndex++, buf);
+          const buf = await renderPageToSlotPngFromPage(pdfjs, page, pxSingleColW, pxSpreadH, ss);
+          const up = await uploadSlotPng(admin, args.bucket, slotsDir, slotIndex++, buf);
           if (!up.ok) return up;
           pageUrls.push(up.publicUrl);
           fullSpreadSlot.push(isEdge);
         } else {
-          const spreadPng = await renderSpreadToPngFromPage(pdfjs, page, pxSpreadW, pxSpreadH);
+          const spreadPng = await renderSpreadToPngFromPage(pdfjs, page, pxSpreadW, pxSpreadH, ss);
           const mid = Math.floor(pxSpreadW / 2);
           const rightW = pxSpreadW - mid;
 
           const leftBuf = await sharp(spreadPng)
             .extract({ left: 0, top: 0, width: mid, height: pxSpreadH })
-            .webp({ quality: WEBP_QUALITY, effort: WEBP_EFFORT })
+            .png(pngOutOpts())
             .toBuffer();
-          let up = await uploadWebpSlot(admin, args.bucket, slotsDir, slotIndex++, leftBuf);
+          let up = await uploadSlotPng(admin, args.bucket, slotsDir, slotIndex++, leftBuf);
           if (!up.ok) return up;
           pageUrls.push(up.publicUrl);
           fullSpreadSlot.push(false);
 
           const rightBuf = await sharp(spreadPng)
             .extract({ left: mid, top: 0, width: rightW, height: pxSpreadH })
-            .webp({ quality: WEBP_QUALITY, effort: WEBP_EFFORT })
+            .png(pngOutOpts())
             .toBuffer();
-          up = await uploadWebpSlot(admin, args.bucket, slotsDir, slotIndex++, rightBuf);
+          up = await uploadSlotPng(admin, args.bucket, slotsDir, slotIndex++, rightBuf);
           if (!up.ok) return up;
           pageUrls.push(up.publicUrl);
           fullSpreadSlot.push(false);
@@ -348,7 +329,7 @@ export async function renderFlipbookPdfToStorageAndPersist(args: {
       /* hors requête Next */
     }
 
-    console.info("[flipbook-render] terminé", pageUrls.length, "images WebP");
+    console.info("[flipbook-render] terminé", pageUrls.length, "PNG");
     return { ok: true };
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
