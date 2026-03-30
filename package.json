@@ -14,7 +14,10 @@
     "db:admin": "tsx prisma/seed-admin.ts",
     "db:setup": "prisma migrate deploy && prisma db seed",
     "db:studio": "prisma studio",
-    "import:wp-mode": "tsx scripts/import-wp-mode-articles.ts",
+    "import:wp-mode": "tsx scripts/import-wp-category-articles.ts",
+    "import:wp-art-culture": "WORDPRESS_IMPORT_CATEGORY_ID=17 GAZETTE_IMPORT_CATEGORY_SLUG=art-culture tsx scripts/import-wp-category-articles.ts",
+    "import:wp-gastronomie": "WORDPRESS_IMPORT_CATEGORY_ID=18 GAZETTE_IMPORT_CATEGORY_SLUG=gastronomie tsx scripts/import-wp-category-articles.ts",
+    "import:wp-rencontres": "WORDPRESS_IMPORT_POST_SLUGS=3-questions-a-john-nollet-directeur-artistique-maison-carila GAZETTE_IMPORT_CATEGORY_SLUG=rencontres tsx scripts/import-wp-category-articles.ts",
     "github:publish": "bash scripts/publish-to-github.sh",
     "postinstall": "prisma generate"
   },

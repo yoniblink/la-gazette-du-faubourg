@@ -1,12 +1,18 @@
 /**
- * Importe les articles WordPress d’une catégorie (ex. Mode) vers Prisma.
- * Par défaut : https://www.lagazettedufaubourg.fr — catégorie WP id 16 → rubrique Gazette `mode`.
+ * Importe les articles WordPress d’une catégorie vers Prisma.
+ * Site source par défaut : https://www.lagazettedufaubourg.fr
  *
- * Usage : npx tsx scripts/import-wp-mode-articles.ts
- * Variables optionnelles (.env) :
- *   WORDPRESS_IMPORT_BASE_URL  (défaut : https://www.lagazettedufaubourg.fr)
- *   WORDPRESS_IMPORT_CATEGORY_ID (défaut : 16)
- *   GAZETTE_IMPORT_CATEGORY_SLUG (défaut : mode)
+ * Usage :
+ *   npm run import:wp-mode           → WP cat. Mode (id 16) → rubrique `mode`
+ *   npm run import:wp-art-culture    → WP cat. Arts (id 17) → rubrique `art-culture`
+ *   npm run import:wp-gastronomie   → WP cat. Restauration (id 18) → `gastronomie`
+ *   npm run import:wp-rencontres    → articles par slug (page Rencontres WP sans cat. dédiée)
+ *
+ * Ou à la carte (.env ou shell) :
+ *   WORDPRESS_IMPORT_BASE_URL
+ *   WORDPRESS_IMPORT_CATEGORY_ID   (ex. 16 = Mode, 17 = Arts, 18 = Restauration)
+ *   WORDPRESS_IMPORT_POST_SLUGS    (liste séparée par des virgules ; ignore la catégorie)
+ *   GAZETTE_IMPORT_CATEGORY_SLUG  (slug Prisma : mode, art-culture, …)
  */
 import "dotenv/config";
 import { generateJSON } from "@tiptap/html";
@@ -18,6 +24,7 @@ const WP_BASE = (process.env.WORDPRESS_IMPORT_BASE_URL ?? "https://www.lagazette
   /\/$/,
   "",
 );
+const WP_POST_SLUGS_RAW = process.env.WORDPRESS_IMPORT_POST_SLUGS?.trim() ?? "";
 const WP_CATEGORY_ID = Number(process.env.WORDPRESS_IMPORT_CATEGORY_ID ?? "16");
 const GAZETTE_CATEGORY_SLUG = process.env.GAZETTE_IMPORT_CATEGORY_SLUG ?? "mode";
 
@@ -78,7 +85,27 @@ async function fetchPostsPage(page: number): Promise<WpPost[]> {
   return r.json() as Promise<WpPost[]>;
 }
 
-async function fetchAllWpPosts(): Promise<WpPost[]> {
+async function fetchPostBySlug(slug: string): Promise<WpPost | null> {
+  const u = new URL("/wp-json/wp/v2/posts", WP_BASE);
+  u.searchParams.set("slug", slug);
+  u.searchParams.set("_embed", "1");
+  const r = await fetch(u);
+  if (!r.ok) throw new Error(`WordPress ${r.status} ${u.toString()}`);
+  const arr = (await r.json()) as WpPost[];
+  return arr[0] ?? null;
+}
+
+async function fetchPostsBySlugList(slugs: string[]): Promise<WpPost[]> {
+  const out: WpPost[] = [];
+  for (const slug of slugs) {
+    const post = await fetchPostBySlug(slug);
+    if (post) out.push(post);
+    else console.warn(`Article WordPress introuvable (slug) : ${slug}`);
+  }
+  return out;
+}
+
+async function fetchAllWpPostsByCategory(): Promise<WpPost[]> {
   const all: WpPost[] = [];
   let page = 1;
   while (true) {
@@ -89,6 +116,14 @@ async function fetchAllWpPosts(): Promise<WpPost[]> {
     page += 1;
   }
   return all;
+}
+
+async function fetchAllWpPosts(): Promise<WpPost[]> {
+  if (WP_POST_SLUGS_RAW) {
+    const slugs = WP_POST_SLUGS_RAW.split(",").map((s) => s.trim()).filter(Boolean);
+    return fetchPostsBySlugList(slugs);
+  }
+  return fetchAllWpPostsByCategory();
 }
 
 function firstImageSrcFromDoc(doc: object): string | null {
@@ -116,7 +151,10 @@ async function main() {
   }
 
   const posts = await fetchAllWpPosts();
-  console.log(`${posts.length} article(s) WordPress (categories=${WP_CATEGORY_ID})`);
+  const source = WP_POST_SLUGS_RAW
+    ? `slugs=${WP_POST_SLUGS_RAW}`
+    : `categories=${WP_CATEGORY_ID}`;
+  console.log(`${posts.length} article(s) WordPress (${source}) → Gazette /${GAZETTE_CATEGORY_SLUG}`);
 
   const extensions = getTiptapExtensions();
 
