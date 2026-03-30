@@ -23,6 +23,10 @@
   "dependencies": {
     "@prisma/client": "^6.19.0",
     "@radix-ui/react-alert-dialog": "^1.1.15",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.5.0",
+    "@supabase/ssr": "^0.10.0",
+    "@supabase/supabase-js": "^2.100.1",
     "@tiptap/extension-image": "^2.11.5",
     "@tiptap/extension-link": "^2.11.5",
     "@tiptap/extension-placeholder": "^2.11.5",
@@ -35,10 +39,13 @@
     "framer-motion": "^12.38.0",
     "next": "16.2.1",
     "next-auth": "^5.0.0-beta.30",
+    "pdfjs-dist": "^5.6.205",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-dropzone": "^14.3.8",
+    "react-pageflip": "^2.0.3",
     "sonner": "^2.0.3",
+    "three": "^0.183.2",
     "zod": "^4.3.6"
   },
   "devDependencies": {

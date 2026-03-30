@@ -3,12 +3,16 @@ import { HomeVideo } from "@/components/sections/HomeVideo";
 import { Featured } from "@/components/sections/Featured";
 import { InstagramStrip } from "@/components/sections/InstagramStrip";
 import { PrintRevue } from "@/components/sections/PrintRevue";
+import { HomeFlipbook } from "@/components/sections/HomeFlipbook";
 import { NewsletterSection } from "@/components/sections/NewsletterSection";
 import { featuredArticles } from "@/lib/content/featured";
 import { getFeaturedArticlesForHome } from "@/lib/data/articles";
 import { hasDatabaseUrl } from "@/lib/prisma";
+import { getHomeFlipbookPdfUrl } from "@/lib/site-settings";
 
 export default async function Home() {
+  const flipbookPdfUrl = hasDatabaseUrl() ? await getHomeFlipbookPdfUrl() : null;
+
   const featuredItems = hasDatabaseUrl()
     ? (await getFeaturedArticlesForHome(8)).map((a) => ({
         id: a.id,
@@ -38,6 +42,7 @@ export default async function Home() {
       <Featured items={featuredItems} />
       <InstagramStrip />
       <PrintRevue />
+      {flipbookPdfUrl ? <HomeFlipbook pdfUrl={flipbookPdfUrl} /> : null}
       <NewsletterSection />
     </>
   );

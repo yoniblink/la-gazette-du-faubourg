@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import type { CSSProperties } from "react";
 import { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
@@ -21,6 +22,16 @@ const ACCORDION_OPEN_MS = 900;
 const ACCORDION_CLOSE_MS = 1300;
 
 const accordionEase = "cubic-bezier(0.22, 1, 0.36, 1)";
+
+const heroInlineNavLinks = [
+  { href: "/", label: "Actualités" },
+  { href: "/horlogerie-joaillerie", label: "Horlogerie / Joaillerie" },
+  { href: "/mode", label: "Mode" },
+  { href: "/art-culture", label: "Art & Culture" },
+  { href: "/gastronomie", label: "Gastronomie" },
+  { href: "/rencontres", label: "Rencontres" },
+  { href: "/la-revue", label: "La Revue" },
+] as const;
 
 function ChevronDown({
   className,
@@ -78,14 +89,26 @@ export function Hero() {
                 priority
               />
             </motion.div>
-            <motion.p
+            <motion.nav
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, ease: easeLux, delay: 0.05 }}
-              className="mt-4 font-[family-name:var(--font-sans)] text-[10px] font-medium uppercase tracking-[0.28em] text-[#6b6b6b] md:mt-5 md:text-[11px]"
+              transition={{ duration: 0.7, ease: easeLux, delay: 0.1 }}
+              aria-label="Navigation sous le logo"
+              className="mt-4 py-2.5"
             >
-              {site.officialTitle}
-            </motion.p>
+              <ul className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                {heroInlineNavLinks.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="font-[family-name:var(--font-serif)] text-[18px] italic text-[#111111] transition-opacity hover:opacity-65"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </motion.nav>
           </div>
 
           <div className="mt-8 max-w-xl font-[family-name:var(--font-sans)] text-[15px] leading-[1.82] text-[#3a3a3a] lg:max-w-[28rem] lg:text-[16px]">

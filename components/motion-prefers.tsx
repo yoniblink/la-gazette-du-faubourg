@@ -3,6 +3,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import type { HTMLMotionProps } from "framer-motion";
 import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
 
 type Props = HTMLMotionProps<"div">;
 
@@ -16,7 +17,13 @@ export function MotionDiv({
   viewport,
   ...rest
 }: Props) {
-  const reduce = useReducedMotion();
+  const prefersReduced = useReducedMotion();
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
+
+  const reduce = hydrated && prefersReduced;
   const nodes = children as ReactNode;
 
   if (reduce) {

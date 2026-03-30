@@ -3,15 +3,52 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { site } from "@/lib/content/site";
 
 export type HeaderCategory = { slug: string; title: string };
 
 export function Header({ categories }: { categories: HeaderCategory[] }) {
   const pathname = usePathname();
+  const [isVisible, setIsVisible] = useState(pathname !== "/");
+  const [mounted, setMounted] = useState(false);
 
-  return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-black/[0.06] bg-[#fafafa]/95 backdrop-blur-md">
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (pathname !== "/") {
+      setIsVisible(true);
+      return;
+    }
+
+    const hero = document.getElementById("intro");
+    if (!hero) {
+      setIsVisible(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(!entry.isIntersecting);
+      },
+      {
+        threshold: 0.08,
+      },
+    );
+
+    observer.observe(hero);
+    return () => observer.disconnect();
+  }, [pathname]);
+
+  const headerNode = (
+    <header
+      className={`fixed inset-x-0 top-0 z-50 border-b border-black/[0.06] bg-[#fafafa]/92 backdrop-blur-md shadow-[0_8px_28px_rgba(10,10,10,0.05)] transition-[opacity,transform] duration-500 ease-in-out ${
+        isVisible ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-5 opacity-0"
+      }`}
+    >
       <div className="mx-auto grid h-14 w-full max-w-[100rem] grid-cols-[auto_1fr_auto] items-center gap-x-4 px-4 md:h-16 md:gap-x-6 md:px-8 lg:gap-x-8 lg:px-10 xl:px-12">
         <div className="flex shrink-0 items-center">
           <Link
@@ -91,4 +128,7 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
       </div>
     </header>
   );
+
+  if (!mounted) return headerNode;
+  return createPortal(headerNode, document.body);
 }
