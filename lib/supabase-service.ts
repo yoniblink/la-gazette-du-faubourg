@@ -1,6 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 import { getSupabaseUrl } from "@/utils/supabase/env";
 
+export { getInstagramReelsStorageBucket } from "@/lib/instagram-reels-storage";
+
 /** Client serveur avec droits Storage complets (ne jamais exposer au navigateur). */
 export function createSupabaseServiceRoleClient() {
   const url = getSupabaseUrl();
@@ -18,4 +20,9 @@ export function hasSupabaseFlipbookStorageEnv(): boolean {
 export function getFlipbookStorageBucket(): string {
   const b = (process.env.FLIPBOOK_STORAGE_BUCKET ?? "flipbook-pdf").trim();
   return b || "flipbook-pdf";
+}
+
+/** Même prérequis que le flipbook : URL projet + service role pour Storage. */
+export function hasInstagramReelsStorageEnv(): boolean {
+  return Boolean(getSupabaseUrl()?.trim() && process.env.SUPABASE_SERVICE_ROLE_KEY?.trim());
 }

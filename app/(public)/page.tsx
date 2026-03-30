@@ -2,7 +2,6 @@ import { Hero } from "@/components/sections/Hero";
 import { HomeVideo } from "@/components/sections/HomeVideo";
 import { Featured } from "@/components/sections/Featured";
 import { InstagramStrip } from "@/components/sections/InstagramStrip";
-import { PrintRevue } from "@/components/sections/PrintRevue";
 import { HomeFlipbook } from "@/components/sections/HomeFlipbook";
 import { NewsletterSection } from "@/components/sections/NewsletterSection";
 import { featuredArticles } from "@/lib/content/featured";
@@ -42,7 +41,6 @@ export default async function Home() {
       <HomeVideo />
       <Featured items={featuredItems} />
       <InstagramStrip />
-      <PrintRevue />
       {flipbookPdfUrl ? (
         <HomeFlipbook pdfUrl={flipbookPdfUrl} initialManifest={flipbookManifest} />
       ) : null}

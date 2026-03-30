@@ -86,3 +86,16 @@ model SiteSetting {
   value     String
   updatedAt DateTime @updatedAt
 }
+
+/** Vidéos type Reels affichées sur la section Instagram (fichiers sur Supabase Storage). */
+model InstagramReel {
+  id        String   @id @default(cuid())
+  videoUrl  String
+  posterUrl String?
+  caption   String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sortOrder])
+}

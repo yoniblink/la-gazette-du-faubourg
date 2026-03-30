@@ -10,6 +10,7 @@ const nav = [
   { href: "/admin/articles", label: "Articles" },
   { href: "/admin/categories", label: "Rubriques" },
   { href: "/admin/media", label: "Médias" },
+  { href: "/admin/instagram-reels", label: "Instagram Reels" },
   { href: "/admin/settings", label: "Réglages" },
 ] as const;
 
