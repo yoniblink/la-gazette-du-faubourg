@@ -1,6 +1,9 @@
 /**
  * Rasterise un PDF en images WebP sur Supabase Storage (Node uniquement).
- * Pipeline basse mémoire : une image à la fois (pas de tableau de buffers).
+ * Pipeline basse mémoire : une image à la fois.
+ *
+ * PDF « une page portrait = une page magazine » : pas de découpe verticale (évite le texte illisible).
+ * PDF paysage type « deux pages fusionnées » : découpe au milieu (mode spread).
  */
 import { createCanvas } from "@napi-rs/canvas";
 import path from "path";
@@ -14,14 +17,13 @@ import { HOME_FLIPBOOK_MANIFEST_KEY } from "@/lib/site-settings";
 import { createSupabaseServiceRoleClient } from "@/lib/supabase-service";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-const WEBP_QUALITY = 82;
-/** effort Sharp plus bas = moins de mémoire (défaut 4 → 2). */
-const WEBP_EFFORT = 2;
-/** 1.0 = moins de pixels qu’à 1.25 ; surcharger FLIPBOOK_RENDER_DPR. */
-const DEFAULT_RENDER_DPR = 1;
-/** Demi-largeur CSS ; plus bas = moins de RAM (défaut 360 au lieu de 480). */
-const DEFAULT_HALF_SPREAD_CSS_PX = 360;
+const WEBP_QUALITY = 88;
+const WEBP_EFFORT = 3;
+const DEFAULT_RENDER_DPR = 1.12;
+const DEFAULT_HALF_SPREAD_CSS_PX = 400;
 const DEFAULT_MAX_PAGES = 12;
+
+type LayoutMode = "auto" | "portrait" | "spread";
 
 export type FlipbookRenderResult = { ok: true } | { ok: false; error: string };
 
@@ -43,6 +45,27 @@ function renderDpr(): number {
   return Number.isFinite(n) ? Math.min(Math.max(n, 0.75), 1.5) : DEFAULT_RENDER_DPR;
 }
 
+function pdfLayoutMode(): LayoutMode {
+  const v = (process.env.FLIPBOOK_PDF_LAYOUT ?? "auto").trim().toLowerCase();
+  if (v === "spread" || v === "double") return "spread";
+  if (v === "portrait" || v === "single") return "portrait";
+  return "auto";
+}
+
+/**
+ * Dimensions intrinsèques (MediaBox / rotation PDF ignorée).
+ * Sinon une page portrait avec Rotate=90 apparaît « paysage » et on découpe au milieu → ratures.
+ */
+function naturalPageDimensions(page: PdfPage): { w: number; h: number } {
+  const v = page.getViewport({ scale: 1, rotation: 0 });
+  return { w: v.width, h: v.height };
+}
+
+/** Une page PDF paysage = probablement deux pages catalogue collées (2-up). */
+function isLikelyMergedSpread(pageW: number, pageH: number): boolean {
+  return pageW >= pageH * 1.12;
+}
+
 async function loadPdfJs() {
   const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
   const workerPath = path.join(process.cwd(), "node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs");
@@ -52,6 +75,8 @@ async function loadPdfJs() {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type PdfDoc = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type PdfPage = any;
 
 async function uploadWebpSlot(
   admin: SupabaseClient,
@@ -72,88 +97,87 @@ async function uploadWebpSlot(
   return { ok: true, publicUrl: pub.publicUrl };
 }
 
-async function renderPageToWebpBuffer(
-  pdfjs: typeof import("pdfjs-dist/legacy/build/pdf.mjs"),
-  pdf: PdfDoc,
-  pageNum: number,
-  pxSingleColW: number,
-  pxSpreadW: number,
-  pxSpreadH: number,
-): Promise<Buffer> {
-  const page = await pdf.getPage(pageNum);
-  try {
-    const base = page.getViewport({ scale: 1 });
-    const fitScale = Math.min(pxSingleColW / base.width, pxSpreadH / base.height);
-    const vp = page.getViewport({ scale: fitScale });
-    const c = createCanvas(pxSingleColW, pxSpreadH);
-    const ctx = c.getContext("2d");
-    ctx.fillStyle = "#f5f5f4";
-    ctx.fillRect(0, 0, pxSingleColW, pxSpreadH);
-    const tile = createCanvas(Math.ceil(vp.width), Math.ceil(vp.height));
-    const tctx = tile.getContext("2d");
-    await page
-      .render({
-        canvasContext: tctx as unknown as CanvasRenderingContext2D,
-        viewport: vp,
-        canvas: tile as unknown as HTMLCanvasElement,
-        annotationMode: pdfjs.AnnotationMode.DISABLE,
-      })
-      .promise;
-    ctx.drawImage(
-      tile as unknown as import("@napi-rs/canvas").Canvas,
-      (pxSingleColW - vp.width) / 2,
-      (pxSpreadH - vp.height) / 2,
-    );
-    const png = await c.encode("png");
-    return sharp(png).webp({ quality: WEBP_QUALITY, effort: WEBP_EFFORT }).toBuffer();
-  } finally {
-    try {
-      page.cleanup?.();
-    } catch {
-      /* ignore */
-    }
-  }
+function toWebp(png: Buffer): Promise<Buffer> {
+  return sharp(png).webp({ quality: WEBP_QUALITY, effort: WEBP_EFFORT }).toBuffer();
 }
 
-async function renderSpreadToPngBuffer(
+async function renderPageToWebpFromPage(
   pdfjs: typeof import("pdfjs-dist/legacy/build/pdf.mjs"),
-  pdf: PdfDoc,
-  pageNum: number,
+  page: PdfPage,
+  pxSingleColW: number,
+  pxSpreadH: number,
+): Promise<Buffer> {
+  const base = page.getViewport({ scale: 1 });
+  const fitScale = Math.min(pxSingleColW / base.width, pxSpreadH / base.height);
+  const vp = page.getViewport({ scale: fitScale });
+  const c = createCanvas(pxSingleColW, pxSpreadH);
+  const ctx = c.getContext("2d");
+  ctx.fillStyle = "#f5f5f4";
+  ctx.fillRect(0, 0, pxSingleColW, pxSpreadH);
+  const tile = createCanvas(Math.ceil(vp.width), Math.ceil(vp.height));
+  const tctx = tile.getContext("2d");
+  tctx.imageSmoothingEnabled = true;
+  const tileCtx = tctx as unknown as CanvasRenderingContext2D;
+  tileCtx.imageSmoothingQuality = "high";
+  await page
+    .render({
+      canvasContext: tctx as unknown as CanvasRenderingContext2D,
+      viewport: vp,
+      canvas: tile as unknown as HTMLCanvasElement,
+      annotationMode: pdfjs.AnnotationMode.DISABLE,
+      intent: "print",
+      background: "#f5f5f4",
+    })
+    .promise;
+  ctx.imageSmoothingEnabled = true;
+  const outCtx = ctx as unknown as CanvasRenderingContext2D;
+  outCtx.imageSmoothingQuality = "high";
+  ctx.drawImage(
+    tile as unknown as import("@napi-rs/canvas").Canvas,
+    (pxSingleColW - vp.width) / 2,
+    (pxSpreadH - vp.height) / 2,
+  );
+  const png = await c.encode("png");
+  return toWebp(Buffer.from(png));
+}
+
+async function renderSpreadToPngFromPage(
+  pdfjs: typeof import("pdfjs-dist/legacy/build/pdf.mjs"),
+  page: PdfPage,
   pxSpreadW: number,
   pxSpreadH: number,
 ): Promise<Buffer> {
-  const page = await pdf.getPage(pageNum);
-  try {
-    const base = page.getViewport({ scale: 1 });
-    const fitScale = Math.min(pxSpreadW / base.width, pxSpreadH / base.height);
-    const vp = page.getViewport({ scale: fitScale });
-    const spread = createCanvas(pxSpreadW, pxSpreadH);
-    const sctx = spread.getContext("2d");
-    sctx.fillStyle = "#f5f5f4";
-    sctx.fillRect(0, 0, pxSpreadW, pxSpreadH);
-    const tile = createCanvas(Math.ceil(vp.width), Math.ceil(vp.height));
-    const tctx = tile.getContext("2d");
-    await page
-      .render({
-        canvasContext: tctx as unknown as CanvasRenderingContext2D,
-        viewport: vp,
-        canvas: tile as unknown as HTMLCanvasElement,
-        annotationMode: pdfjs.AnnotationMode.DISABLE,
-      })
-      .promise;
-    sctx.drawImage(
-      tile as unknown as import("@napi-rs/canvas").Canvas,
-      (pxSpreadW - vp.width) / 2,
-      (pxSpreadH - vp.height) / 2,
-    );
-    return Buffer.from(await spread.encode("png"));
-  } finally {
-    try {
-      page.cleanup?.();
-    } catch {
-      /* ignore */
-    }
-  }
+  const base = page.getViewport({ scale: 1 });
+  const fitScale = Math.min(pxSpreadW / base.width, pxSpreadH / base.height);
+  const vp = page.getViewport({ scale: fitScale });
+  const spread = createCanvas(pxSpreadW, pxSpreadH);
+  const sctx = spread.getContext("2d");
+  sctx.fillStyle = "#f5f5f4";
+  sctx.fillRect(0, 0, pxSpreadW, pxSpreadH);
+  const tile = createCanvas(Math.ceil(vp.width), Math.ceil(vp.height));
+  const tctx = tile.getContext("2d");
+  tctx.imageSmoothingEnabled = true;
+  const tileCtxSp = tctx as unknown as CanvasRenderingContext2D;
+  tileCtxSp.imageSmoothingQuality = "high";
+  await page
+    .render({
+      canvasContext: tctx as unknown as CanvasRenderingContext2D,
+      viewport: vp,
+      canvas: tile as unknown as HTMLCanvasElement,
+      annotationMode: pdfjs.AnnotationMode.DISABLE,
+      intent: "print",
+      background: "#f5f5f4",
+    })
+    .promise;
+  sctx.imageSmoothingEnabled = true;
+  const spreadCtx = sctx as unknown as CanvasRenderingContext2D;
+  spreadCtx.imageSmoothingQuality = "high";
+  sctx.drawImage(
+    tile as unknown as import("@napi-rs/canvas").Canvas,
+    (pxSpreadW - vp.width) / 2,
+    (pxSpreadH - vp.height) / 2,
+  );
+  return Buffer.from(await spread.encode("png"));
 }
 
 export async function renderFlipbookPdfToStorageAndPersist(args: {
@@ -167,15 +191,19 @@ export async function renderFlipbookPdfToStorageAndPersist(args: {
       return { ok: false, error: "SUPABASE_SERVICE_ROLE_KEY manquant ou URL Supabase absente." };
     }
 
-    console.info("[flipbook-render] démarrage (pipeline basse mémoire)", args.pdfStoragePath);
+    const layout = pdfLayoutMode();
+    console.info("[flipbook-render] démarrage", args.pdfStoragePath, "layout=", layout);
 
     const pdfjs = await loadPdfJs();
+
+    /** true = polices OS (souvent décale le texte vs polices embarquées → ratures). */
+    const useSystemFonts = process.env.FLIPBOOK_PDF_USE_SYSTEM_FONTS === "true";
 
     let pdf: PdfDoc;
     try {
       const loadingTask = pdfjs.getDocument({
         url: args.publicPdfUrl,
-        useSystemFonts: true,
+        useSystemFonts,
       });
       pdf = await loadingTask.promise;
     } catch {
@@ -186,7 +214,7 @@ export async function renderFlipbookPdfToStorageAndPersist(args: {
       const data = new Uint8Array(await res.arrayBuffer());
       const loadingTask = pdfjs.getDocument({
         data,
-        useSystemFonts: true,
+        useSystemFonts,
       });
       pdf = await loadingTask.promise;
     }
@@ -198,6 +226,7 @@ export async function renderFlipbookPdfToStorageAndPersist(args: {
     const maxPages = Math.min(totalPdfPages, limit);
 
     const page1 = await pdf.getPage(1);
+    /** Même logique que le rendu (rotation PDF incluse) pour que le flipbook garde le bon ratio. */
     const refBase = page1.getViewport({ scale: 1 });
     try {
       page1.cleanup?.();
@@ -218,34 +247,51 @@ export async function renderFlipbookPdfToStorageAndPersist(args: {
 
     for (let p = 1; p <= maxPages; p++) {
       const isEdge = p === 1 || p === maxPages;
-      if (isEdge) {
-        const buf = await renderPageToWebpBuffer(pdfjs, pdf, p, pxSingleColW, pxSpreadW, pxSpreadH);
-        const up = await uploadWebpSlot(admin, args.bucket, slotsDir, slotIndex++, buf);
-        if (!up.ok) return up;
-        pageUrls.push(up.publicUrl);
-        fullSpreadSlot.push(true);
-      } else {
-        const spreadPng = await renderSpreadToPngBuffer(pdfjs, pdf, p, pxSpreadW, pxSpreadH);
-        const mid = Math.floor(pxSpreadW / 2);
-        const rightW = pxSpreadW - mid;
+      const page = await pdf.getPage(p);
+      try {
+        const { w: natW, h: natH } = naturalPageDimensions(page);
+        let useVerticalSplit = false;
+        if (!isEdge) {
+          if (layout === "spread") useVerticalSplit = true;
+          else if (layout === "portrait") useVerticalSplit = false;
+          else useVerticalSplit = isLikelyMergedSpread(natW, natH);
+        }
 
-        const leftBuf = await sharp(spreadPng)
-          .extract({ left: 0, top: 0, width: mid, height: pxSpreadH })
-          .webp({ quality: WEBP_QUALITY, effort: WEBP_EFFORT })
-          .toBuffer();
-        let up = await uploadWebpSlot(admin, args.bucket, slotsDir, slotIndex++, leftBuf);
-        if (!up.ok) return up;
-        pageUrls.push(up.publicUrl);
-        fullSpreadSlot.push(false);
+        if (isEdge || !useVerticalSplit) {
+          const buf = await renderPageToWebpFromPage(pdfjs, page, pxSingleColW, pxSpreadH);
+          const up = await uploadWebpSlot(admin, args.bucket, slotsDir, slotIndex++, buf);
+          if (!up.ok) return up;
+          pageUrls.push(up.publicUrl);
+          fullSpreadSlot.push(isEdge);
+        } else {
+          const spreadPng = await renderSpreadToPngFromPage(pdfjs, page, pxSpreadW, pxSpreadH);
+          const mid = Math.floor(pxSpreadW / 2);
+          const rightW = pxSpreadW - mid;
 
-        const rightBuf = await sharp(spreadPng)
-          .extract({ left: mid, top: 0, width: rightW, height: pxSpreadH })
-          .webp({ quality: WEBP_QUALITY, effort: WEBP_EFFORT })
-          .toBuffer();
-        up = await uploadWebpSlot(admin, args.bucket, slotsDir, slotIndex++, rightBuf);
-        if (!up.ok) return up;
-        pageUrls.push(up.publicUrl);
-        fullSpreadSlot.push(false);
+          const leftBuf = await sharp(spreadPng)
+            .extract({ left: 0, top: 0, width: mid, height: pxSpreadH })
+            .webp({ quality: WEBP_QUALITY, effort: WEBP_EFFORT })
+            .toBuffer();
+          let up = await uploadWebpSlot(admin, args.bucket, slotsDir, slotIndex++, leftBuf);
+          if (!up.ok) return up;
+          pageUrls.push(up.publicUrl);
+          fullSpreadSlot.push(false);
+
+          const rightBuf = await sharp(spreadPng)
+            .extract({ left: mid, top: 0, width: rightW, height: pxSpreadH })
+            .webp({ quality: WEBP_QUALITY, effort: WEBP_EFFORT })
+            .toBuffer();
+          up = await uploadWebpSlot(admin, args.bucket, slotsDir, slotIndex++, rightBuf);
+          if (!up.ok) return up;
+          pageUrls.push(up.publicUrl);
+          fullSpreadSlot.push(false);
+        }
+      } finally {
+        try {
+          page.cleanup?.();
+        } catch {
+          /* ignore */
+        }
       }
     }
 

@@ -132,10 +132,10 @@ export function HomeFlipbook({
                   >
                     <Image
                       src={src}
-                      alt={full ? `Page PDF${edgeLabel}` : `Moitié ${i + 1} (page intérieure)`}
+                      alt={full ? `Page PDF${edgeLabel}` : `Page intérieure ${i + 1}`}
                       width={Math.max(120, Math.round(pageW))}
                       height={Math.max(160, Math.round(pageH))}
-                      className="h-full w-full object-fill select-none"
+                      className="h-full w-full select-none object-contain"
                       draggable={false}
                       sizes="(max-width: 768px) 95vw, 680px"
                       priority={i < 3}
