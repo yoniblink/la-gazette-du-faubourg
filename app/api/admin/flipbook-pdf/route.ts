@@ -1,15 +1,20 @@
 import { NextResponse } from "next/server";
+import { after } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { randomBytes } from "crypto";
 import { auth } from "@/auth";
+import { renderFlipbookPdfToStorageAndPersist } from "@/lib/flipbook-render-server";
 import { prisma } from "@/lib/prisma";
-import { HOME_FLIPBOOK_PDF_URL_KEY } from "@/lib/site-settings";
+import { HOME_FLIPBOOK_MANIFEST_KEY, HOME_FLIPBOOK_PDF_URL_KEY } from "@/lib/site-settings";
 import {
   createSupabaseServiceRoleClient,
   getFlipbookStorageBucket,
   hasSupabaseFlipbookStorageEnv,
 } from "@/lib/supabase-service";
+
+/** Laisse le temps au job `after()` de rasteriser le PDF (ajustez sur Vercel Pro si besoin). */
+export const maxDuration = 120;
 
 const MAX_BYTES = 40 * 1024 * 1024;
 
@@ -168,7 +173,17 @@ export async function POST(req: Request) {
         update: { value: publicUrl },
       });
 
-      return NextResponse.json({ ok: true, url: publicUrl });
+      await prisma.siteSetting.deleteMany({ where: { key: HOME_FLIPBOOK_MANIFEST_KEY } });
+
+      after(async () => {
+        await renderFlipbookPdfToStorageAndPersist({
+          publicPdfUrl: publicUrl,
+          pdfStoragePath: storagePath,
+          bucket,
+        });
+      });
+
+      return NextResponse.json({ ok: true, url: publicUrl, renderingScheduled: true as const });
     }
 
     return NextResponse.json({ error: "Action inconnue" }, { status: 400 });
@@ -226,6 +241,8 @@ export async function POST(req: Request) {
       create: { key: HOME_FLIPBOOK_PDF_URL_KEY, value: url },
       update: { value: url },
     });
+
+    await prisma.siteSetting.deleteMany({ where: { key: HOME_FLIPBOOK_MANIFEST_KEY } });
 
     return NextResponse.json({ ok: true, url });
   }

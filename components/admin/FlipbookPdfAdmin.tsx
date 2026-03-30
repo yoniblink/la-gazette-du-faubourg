@@ -80,12 +80,20 @@ export function FlipbookPdfAdmin({ currentPdfUrl }: { currentPdfUrl: string | nu
           credentials: "same-origin",
           body: JSON.stringify({ action: "commit", path: prep.path }),
         });
-        const commit = (await commitRes.json()) as { ok?: boolean; error?: string };
+        const commit = (await commitRes.json()) as {
+          ok?: boolean;
+          error?: string;
+          renderingScheduled?: boolean;
+        };
         if (!commitRes.ok) {
           toast.error(commit.error ?? "Enregistrement de l’URL impossible");
           return;
         }
-        toast.success("PDF du flipbook mis à jour.");
+        toast.success(
+          commit.renderingScheduled
+            ? "PDF enregistré. Génération des pages en arrière-plan (~1 min)…"
+            : "PDF du flipbook mis à jour.",
+        );
         router.refresh();
       } catch {
         toast.error("Erreur réseau");

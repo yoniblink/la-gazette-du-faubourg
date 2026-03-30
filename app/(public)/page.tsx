@@ -8,10 +8,11 @@ import { NewsletterSection } from "@/components/sections/NewsletterSection";
 import { featuredArticles } from "@/lib/content/featured";
 import { getFeaturedArticlesForHome } from "@/lib/data/articles";
 import { hasDatabaseUrl } from "@/lib/prisma";
-import { getHomeFlipbookPdfUrl } from "@/lib/site-settings";
+import { getHomeFlipbookManifest, getHomeFlipbookPdfUrl } from "@/lib/site-settings";
 
 export default async function Home() {
   const flipbookPdfUrl = hasDatabaseUrl() ? await getHomeFlipbookPdfUrl() : null;
+  const flipbookManifest = hasDatabaseUrl() ? await getHomeFlipbookManifest() : null;
 
   const featuredItems = hasDatabaseUrl()
     ? (await getFeaturedArticlesForHome(8)).map((a) => ({
@@ -42,7 +43,9 @@ export default async function Home() {
       <Featured items={featuredItems} />
       <InstagramStrip />
       <PrintRevue />
-      {flipbookPdfUrl ? <HomeFlipbook pdfUrl={flipbookPdfUrl} /> : null}
+      {flipbookPdfUrl ? (
+        <HomeFlipbook pdfUrl={flipbookPdfUrl} initialManifest={flipbookManifest} />
+      ) : null}
       <NewsletterSection />
     </>
   );
