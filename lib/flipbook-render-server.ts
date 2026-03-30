@@ -1,17 +1,11 @@
 /**
- * Rasterise un PDF en PNG (sans perte) sur Supabase Storage (Node uniquement).
- *
- * Sous Node, pdf.js défaut = `disableFontFace: true` → texte rendu en remplissage de chemins : Skia/napi canvas
- * produit souvent bandes horizontales et texte illisible. Il faut `disableFontFace: false` + chemins vers les
- * ressources du paquet `pdfjs-dist` (cmaps, standard_fonts, wasm) : ce sont des fichiers techniques du moteur,
- * pas un remplacement de la maquette — les polices embarquées dans ton PDF restent prioritaires.
- *
- * Une page portrait ≠ double page : pas de découpe verticale sauf PDF paysage type 2-up.
+ * Flipbook : PDF → PNG dans Storage via l’API iLovePDF (outil pdfjpg), puis upload Supabase slots/.
+ * Plus de rendu local (pdf.js / Chromium).
  */
-import { createCanvas } from "@napi-rs/canvas";
+import ILovePDFApi from "@ilovepdf/ilovepdf-nodejs";
 import path from "path";
-import { pathToFileURL } from "url";
 import sharp from "sharp";
+import unzipper from "unzipper";
 import { revalidatePath } from "next/cache";
 import type { FlipbookManifest } from "@/lib/flipbook-manifest";
 import { serializeFlipbookManifest } from "@/lib/flipbook-manifest";
@@ -20,17 +14,20 @@ import { HOME_FLIPBOOK_MANIFEST_KEY } from "@/lib/site-settings";
 import { createSupabaseServiceRoleClient } from "@/lib/supabase-service";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-/** 0–9 ; plus haut = fichiers plus petits, encode un peu plus lent. */
 const PNG_COMPRESSION_LEVEL = 6;
 const DEFAULT_RENDER_DPR = 1.12;
 const DEFAULT_HALF_SPREAD_CSS_PX = 400;
 const DEFAULT_MAX_PAGES = 12;
-/** Raster interne plus grand puis réduction Sharp : meilleure fidélité sans toucher aux polices du PDF. */
-const DEFAULT_SUPER_SAMPLE = 2;
 
 type LayoutMode = "auto" | "portrait" | "spread";
 
 export type FlipbookRenderResult = { ok: true } | { ok: false; error: string };
+
+export function hasILovePdfCredentials(): boolean {
+  return Boolean(
+    process.env.ILOVEPDF_PUBLIC_KEY?.trim() && process.env.ILOVEPDF_SECRET_KEY?.trim(),
+  );
+}
 
 function maxRenderPages(): number {
   const n = parseInt(process.env.FLIPBOOK_RENDER_MAX_PAGES ?? String(DEFAULT_MAX_PAGES), 10);
@@ -50,35 +47,6 @@ function renderDpr(): number {
   return Number.isFinite(n) ? Math.min(Math.max(n, 0.75), 1.5) : DEFAULT_RENDER_DPR;
 }
 
-function superSample(): number {
-  const n = parseFloat(process.env.FLIPBOOK_RENDER_SUPER_SAMPLE ?? String(DEFAULT_SUPER_SAMPLE));
-  return Number.isFinite(n) ? Math.min(Math.max(n, 1), 3) : DEFAULT_SUPER_SAMPLE;
-}
-
-/** Bases attendues par pdf.js (chaîne finissant par « / », slashes forwards). */
-function pdfJsFactoryBases(): { cMapUrl: string; standardFontDataUrl: string; wasmUrl: string } {
-  const root = path.join(process.cwd(), "node_modules", "pdfjs-dist");
-  const dirUrl = (sub: string) =>
-    `${path.join(root, sub).replace(/\\/g, "/").replace(/\/?$/, "/")}`;
-  return {
-    cMapUrl: dirUrl("cmaps"),
-    standardFontDataUrl: dirUrl("standard_fonts"),
-    wasmUrl: dirUrl("wasm"),
-  };
-}
-
-/** Indispensable en Node pour un texte lisible (sinon tracés vectoriels dégradés). */
-function pdfDocumentOptions() {
-  const useSystemFonts = process.env.FLIPBOOK_PDF_USE_SYSTEM_FONTS === "true";
-  const disableFontFace = process.env.FLIPBOOK_PDF_DISABLE_FONT_FACE === "true";
-  return {
-    ...pdfJsFactoryBases(),
-    cMapPacked: true,
-    disableFontFace,
-    useSystemFonts,
-  };
-}
-
 function pdfLayoutMode(): LayoutMode {
   const v = (process.env.FLIPBOOK_PDF_LAYOUT ?? "auto").trim().toLowerCase();
   if (v === "spread" || v === "double") return "spread";
@@ -86,36 +54,47 @@ function pdfLayoutMode(): LayoutMode {
   return "auto";
 }
 
-/**
- * Dimensions intrinsèques (MediaBox / rotation PDF ignorée).
- * Sinon une page portrait avec Rotate=90 apparaît « paysage » et on découpe au milieu → ratures.
- */
-function naturalPageDimensions(page: PdfPage): { w: number; h: number } {
-  const v = page.getViewport({ scale: 1, rotation: 0 });
-  return { w: v.width, h: v.height };
-}
-
-/** Une page PDF paysage = probablement deux pages catalogue collées (2-up). */
-function isLikelyMergedSpread(pageW: number, pageH: number): boolean {
-  return pageW >= pageH * 1.12;
-}
-
-async function loadPdfJs() {
-  const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
-  const workerPath = path.join(process.cwd(), "node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs");
-  pdfjs.GlobalWorkerOptions.workerSrc = pathToFileURL(workerPath).href;
-  return pdfjs;
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type PdfDoc = any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type PdfPage = any;
-
 function pngOutOpts(): { compressionLevel: number; adaptiveFiltering: boolean } {
   const n = parseInt(process.env.FLIPBOOK_RENDER_PNG_LEVEL ?? String(PNG_COMPRESSION_LEVEL), 10);
   const level = Number.isFinite(n) ? Math.min(Math.max(n, 0), 9) : PNG_COMPRESSION_LEVEL;
   return { compressionLevel: level, adaptiveFiltering: true };
+}
+
+function isLikelyMergedSpread(pageW: number, pageH: number): boolean {
+  return pageW >= pageH * 1.12;
+}
+
+async function extractJpegsFromZip(zipBuffer: Buffer): Promise<Buffer[]> {
+  const directory = await unzipper.Open.buffer(zipBuffer);
+  const items: { path: string; data: Buffer }[] = [];
+  for (const file of directory.files) {
+    if (file.type === "Directory") continue;
+    const p = file.path.toLowerCase();
+    if (!p.endsWith(".jpg") && !p.endsWith(".jpeg")) continue;
+    const buf = await file.buffer();
+    items.push({ path: file.path, data: Buffer.from(buf) });
+  }
+  if (items.length === 0) {
+    throw new Error("Zip iLovePDF : aucun fichier JPEG trouvé.");
+  }
+  items.sort((a, b) => a.path.localeCompare(b.path, undefined, { numeric: true }));
+  return items.map((i) => i.data);
+}
+
+async function ilovePdfPdfToJpegZip(publicPdfUrl: string): Promise<Buffer> {
+  const publicKey = process.env.ILOVEPDF_PUBLIC_KEY?.trim();
+  const secretKey = process.env.ILOVEPDF_SECRET_KEY?.trim();
+  if (!publicKey || !secretKey) {
+    throw new Error("ILOVEPDF_PUBLIC_KEY et ILOVEPDF_SECRET_KEY requis.");
+  }
+
+  const instance = new ILovePDFApi(publicKey, secretKey);
+  const task = instance.newTask("pdfjpg");
+  await task.start();
+  await task.addFile(publicPdfUrl);
+  await task.process({ pdfjpg_mode: "pages" });
+  const data = await task.download();
+  return Buffer.from(data);
 }
 
 async function uploadSlotPng(
@@ -137,75 +116,9 @@ async function uploadSlotPng(
   return { ok: true, publicUrl: pub.publicUrl };
 }
 
-async function renderPageToSlotPngFromPage(
-  pdfjs: typeof import("pdfjs-dist/legacy/build/pdf.mjs"),
-  page: PdfPage,
-  pxSingleColW: number,
-  pxSpreadH: number,
-  ss: number,
-): Promise<Buffer> {
-  const base = page.getViewport({ scale: 1 });
-  const fitScale = Math.min(pxSingleColW / base.width, pxSpreadH / base.height) * ss;
-  const vp0 = page.getViewport({ scale: fitScale });
-  const tw = Math.max(1, Math.round(vp0.width));
-  const th = Math.max(1, Math.round(vp0.height));
-  const vp = page.getViewport({ scale: fitScale * (tw / vp0.width) });
-  const tile = createCanvas(tw, th);
-  const tctx = tile.getContext("2d");
-  tctx.fillStyle = "#f5f5f4";
-  tctx.fillRect(0, 0, tw, th);
-  await page
-    .render({
-      canvasContext: tctx as unknown as CanvasRenderingContext2D,
-      viewport: vp,
-      canvas: tile as unknown as HTMLCanvasElement,
-      annotationMode: pdfjs.AnnotationMode.DISABLE,
-      intent: "display",
-      background: "#f5f5f4",
-    })
-    .promise;
-  const png = Buffer.from(await tile.encode("png"));
-  return sharp(png)
-    .resize(pxSingleColW, pxSpreadH, {
-      fit: "contain",
-      position: "centre",
-      background: "#f5f5f4",
-      kernel: sharp.kernel.lanczos3,
-    })
-    .png(pngOutOpts())
-    .toBuffer();
-}
-
-async function renderSpreadToPngFromPage(
-  pdfjs: typeof import("pdfjs-dist/legacy/build/pdf.mjs"),
-  page: PdfPage,
-  pxSpreadW: number,
-  pxSpreadH: number,
-  ss: number,
-): Promise<Buffer> {
-  const base = page.getViewport({ scale: 1 });
-  const fitScale = Math.min(pxSpreadW / base.width, pxSpreadH / base.height) * ss;
-  const vp0 = page.getViewport({ scale: fitScale });
-  const tw = Math.max(1, Math.round(vp0.width));
-  const th = Math.max(1, Math.round(vp0.height));
-  const vp = page.getViewport({ scale: fitScale * (tw / vp0.width) });
-  const tile = createCanvas(tw, th);
-  const tctx = tile.getContext("2d");
-  tctx.fillStyle = "#f5f5f4";
-  tctx.fillRect(0, 0, tw, th);
-  await page
-    .render({
-      canvasContext: tctx as unknown as CanvasRenderingContext2D,
-      viewport: vp,
-      canvas: tile as unknown as HTMLCanvasElement,
-      annotationMode: pdfjs.AnnotationMode.DISABLE,
-      intent: "display",
-      background: "#f5f5f4",
-    })
-    .promise;
-  const raw = Buffer.from(await tile.encode("png"));
-  return sharp(raw)
-    .resize(pxSpreadW, pxSpreadH, {
+async function jpegToTargetPng(jpeg: Buffer, targetW: number, targetH: number): Promise<Buffer> {
+  return sharp(jpeg)
+    .resize(targetW, targetH, {
       fit: "contain",
       position: "centre",
       background: "#f5f5f4",
@@ -225,49 +138,30 @@ export async function renderFlipbookPdfToStorageAndPersist(args: {
     if (!admin) {
       return { ok: false, error: "SUPABASE_SERVICE_ROLE_KEY manquant ou URL Supabase absente." };
     }
+    if (!hasILovePdfCredentials()) {
+      return {
+        ok: false,
+        error:
+          "Clés iLovePDF manquantes : définissez ILOVEPDF_PUBLIC_KEY et ILOVEPDF_SECRET_KEY (https://developer.ilovepdf.com).",
+      };
+    }
 
     const layout = pdfLayoutMode();
-    const ss = superSample();
-    console.info("[flipbook-render] démarrage", args.pdfStoragePath, "layout=", layout, "superSample=", ss);
+    console.info("[flipbook-render] iLovePDF pdfjpg", args.pdfStoragePath, "layout=", layout);
 
-    const pdfjs = await loadPdfJs();
-    const docBase = pdfDocumentOptions();
-
-    let pdf: PdfDoc;
-    try {
-      const loadingTask = pdfjs.getDocument({
-        url: args.publicPdfUrl,
-        ...docBase,
-      });
-      pdf = await loadingTask.promise;
-    } catch {
-      const res = await fetch(args.publicPdfUrl);
-      if (!res.ok) {
-        return { ok: false, error: `Téléchargement du PDF refusé (HTTP ${res.status}).` };
-      }
-      const data = new Uint8Array(await res.arrayBuffer());
-      const loadingTask = pdfjs.getDocument({
-        data,
-        ...docBase,
-      });
-      pdf = await loadingTask.promise;
-    }
-
+    const zipBuf = await ilovePdfPdfToJpegZip(args.publicPdfUrl);
+    const allJpegs = await extractJpegsFromZip(zipBuf);
+    const totalPdfPages = allJpegs.length;
     const limit = maxRenderPages();
+    const maxPages = Math.min(totalPdfPages, limit);
+    const pages = allJpegs.slice(0, maxPages);
+
     const halfW = cssHalfSpreadPx();
     const dpr = renderDpr();
-    const totalPdfPages = pdf.numPages;
-    const maxPages = Math.min(totalPdfPages, limit);
-
-    const page1 = await pdf.getPage(1);
-    /** Même logique que le rendu (rotation PDF incluse) pour que le flipbook garde le bon ratio. */
-    const refBase = page1.getViewport({ scale: 1 });
-    try {
-      page1.cleanup?.();
-    } catch {
-      /* ignore */
-    }
-    const cssPageH = halfW * (refBase.height / refBase.width);
+    const meta0 = await sharp(pages[0]).metadata();
+    const pw = meta0.width ?? 1;
+    const ph = meta0.height ?? 1;
+    const cssPageH = halfW * (ph / pw);
     const pxSpreadW = Math.round(2 * halfW * dpr);
     const pxSpreadH = Math.round(cssPageH * dpr);
     const pxSingleColW = Math.round(halfW * dpr);
@@ -279,66 +173,55 @@ export async function renderFlipbookPdfToStorageAndPersist(args: {
     const fullSpreadSlot: boolean[] = [];
     let slotIndex = 0;
 
-    for (let p = 1; p <= maxPages; p++) {
+    for (let i = 0; i < pages.length; i++) {
+      const p = i + 1;
       const isEdge = p === 1 || p === maxPages;
-      const page = await pdf.getPage(p);
-      try {
-        const { w: natW, h: natH } = naturalPageDimensions(page);
-        let useVerticalSplit = false;
-        if (!isEdge) {
-          if (layout === "spread") useVerticalSplit = true;
-          else if (layout === "portrait") useVerticalSplit = false;
-          else useVerticalSplit = isLikelyMergedSpread(natW, natH);
-        }
+      const jpegBuf = pages[i]!;
+      const nat = await sharp(jpegBuf).metadata();
+      const natW = nat.width ?? 1;
+      const natH = nat.height ?? 1;
 
-        if (isEdge || !useVerticalSplit) {
-          const buf = await renderPageToSlotPngFromPage(pdfjs, page, pxSingleColW, pxSpreadH, ss);
-          const up = await uploadSlotPng(admin, args.bucket, slotsDir, slotIndex++, buf);
-          if (!up.ok) return up;
-          pageUrls.push(up.publicUrl);
-          fullSpreadSlot.push(isEdge);
-        } else {
-          const spreadPng = await renderSpreadToPngFromPage(pdfjs, page, pxSpreadW, pxSpreadH, ss);
-          const mid = Math.floor(pxSpreadW / 2);
-          const rightW = pxSpreadW - mid;
+      let useVerticalSplit = false;
+      if (!isEdge) {
+        if (layout === "spread") useVerticalSplit = true;
+        else if (layout === "portrait") useVerticalSplit = false;
+        else useVerticalSplit = isLikelyMergedSpread(natW, natH);
+      }
 
-          const leftBuf = await sharp(spreadPng)
-            .extract({ left: 0, top: 0, width: mid, height: pxSpreadH })
-            .png(pngOutOpts())
-            .toBuffer();
-          let up = await uploadSlotPng(admin, args.bucket, slotsDir, slotIndex++, leftBuf);
-          if (!up.ok) return up;
-          pageUrls.push(up.publicUrl);
-          fullSpreadSlot.push(false);
+      if (isEdge || !useVerticalSplit) {
+        const buf = await jpegToTargetPng(jpegBuf, pxSingleColW, pxSpreadH);
+        const up = await uploadSlotPng(admin, args.bucket, slotsDir, slotIndex++, buf);
+        if (!up.ok) return up;
+        pageUrls.push(up.publicUrl);
+        fullSpreadSlot.push(isEdge);
+      } else {
+        const spreadPng = await jpegToTargetPng(jpegBuf, pxSpreadW, pxSpreadH);
+        const mid = Math.floor(pxSpreadW / 2);
+        const rightW = pxSpreadW - mid;
 
-          const rightBuf = await sharp(spreadPng)
-            .extract({ left: mid, top: 0, width: rightW, height: pxSpreadH })
-            .png(pngOutOpts())
-            .toBuffer();
-          up = await uploadSlotPng(admin, args.bucket, slotsDir, slotIndex++, rightBuf);
-          if (!up.ok) return up;
-          pageUrls.push(up.publicUrl);
-          fullSpreadSlot.push(false);
-        }
-      } finally {
-        try {
-          page.cleanup?.();
-        } catch {
-          /* ignore */
-        }
+        const leftBuf = await sharp(spreadPng)
+          .extract({ left: 0, top: 0, width: mid, height: pxSpreadH })
+          .png(pngOutOpts())
+          .toBuffer();
+        let up = await uploadSlotPng(admin, args.bucket, slotsDir, slotIndex++, leftBuf);
+        if (!up.ok) return up;
+        pageUrls.push(up.publicUrl);
+        fullSpreadSlot.push(false);
+
+        const rightBuf = await sharp(spreadPng)
+          .extract({ left: mid, top: 0, width: rightW, height: pxSpreadH })
+          .png(pngOutOpts())
+          .toBuffer();
+        up = await uploadSlotPng(admin, args.bucket, slotsDir, slotIndex++, rightBuf);
+        if (!up.ok) return up;
+        pageUrls.push(up.publicUrl);
+        fullSpreadSlot.push(false);
       }
     }
 
     if (pageUrls.length === 1) {
       pageUrls.push(pageUrls[0]!);
       fullSpreadSlot.push(fullSpreadSlot[0] ?? true);
-    }
-
-    try {
-      const d = pdf.destroy?.();
-      if (d && typeof (d as Promise<void>).then === "function") await d;
-    } catch {
-      /* ignore */
     }
 
     const manifest: FlipbookManifest = {
@@ -360,10 +243,10 @@ export async function renderFlipbookPdfToStorageAndPersist(args: {
     try {
       revalidatePath("/");
     } catch {
-      /* hors requête Next */
+      /* */
     }
 
-    console.info("[flipbook-render] terminé", pageUrls.length, "PNG");
+    console.info("[flipbook-render] terminé", pageUrls.length, "PNG (iLovePDF)");
     return { ok: true };
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);

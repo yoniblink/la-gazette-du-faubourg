@@ -21,7 +21,7 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
-    "@napi-rs/canvas": "^0.1.97",
+    "@ilovepdf/ilovepdf-nodejs": "^0.3.1",
     "@prisma/client": "^6.19.0",
     "@radix-ui/react-alert-dialog": "^1.1.15",
     "@react-three/drei": "^10.7.7",
@@ -40,7 +40,6 @@
     "framer-motion": "^12.38.0",
     "next": "16.2.1",
     "next-auth": "^5.0.0-beta.30",
-    "pdfjs-dist": "^5.6.205",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-dropzone": "^14.3.8",
@@ -48,6 +47,7 @@
     "sharp": "^0.34.5",
     "sonner": "^2.0.3",
     "three": "^0.183.2",
+    "unzipper": "^0.12.3",
     "zod": "^4.3.6"
   },
   "devDependencies": {
@@ -56,6 +56,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/unzipper": "^0.10.11",
     "eslint": "^9",
     "eslint-config-next": "16.2.1",
     "prisma": "^6.19.0",

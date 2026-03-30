@@ -4,7 +4,10 @@ import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { randomBytes } from "crypto";
 import { auth } from "@/auth";
-import { renderFlipbookPdfToStorageAndPersist } from "@/lib/flipbook-render-server";
+import {
+  hasILovePdfCredentials,
+  renderFlipbookPdfToStorageAndPersist,
+} from "@/lib/flipbook-render-server";
 import { prisma } from "@/lib/prisma";
 import { HOME_FLIPBOOK_MANIFEST_KEY, HOME_FLIPBOOK_PDF_URL_KEY } from "@/lib/site-settings";
 import { parseSupabaseStoragePublicUrl } from "@/lib/supabase-storage-public-url";
@@ -14,8 +17,11 @@ import {
   hasSupabaseFlipbookStorageEnv,
 } from "@/lib/supabase-service";
 
-/** Vercel Hobby plafonne à 60 s (aligné ici). Pro : jusqu’à 300 s. */
-export const maxDuration = 60;
+/**
+ * Génération flipbook : Chromium peut dépasser 60 s (cold start + N pages).
+ * Vercel Hobby plafonne quand même à 60 s ; Pro → jusqu’à 300 s selon le projet.
+ */
+export const maxDuration = 300;
 
 const MAX_BYTES = 40 * 1024 * 1024;
 
@@ -156,6 +162,16 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Chemin invalide" }, { status: 400 });
       }
 
+      if (!hasILovePdfCredentials()) {
+        return NextResponse.json(
+          {
+            error:
+              "ILOVEPDF_PUBLIC_KEY et ILOVEPDF_SECRET_KEY requis pour générer le flipbook (developer.ilovepdf.com).",
+          },
+          { status: 503 },
+        );
+      }
+
       const admin = createSupabaseServiceRoleClient();
       const bucket = getFlipbookStorageBucket();
       if (!admin) {
@@ -193,6 +209,15 @@ export async function POST(req: Request) {
       if (!hasSupabaseFlipbookStorageEnv()) {
         return NextResponse.json(
           { error: "SUPABASE_SERVICE_ROLE_KEY requis pour rasteriser le PDF." },
+          { status: 503 },
+        );
+      }
+      if (!hasILovePdfCredentials()) {
+        return NextResponse.json(
+          {
+            error:
+              "ILOVEPDF_PUBLIC_KEY et ILOVEPDF_SECRET_KEY requis (voir .env.example).",
+          },
           { status: 503 },
         );
       }
