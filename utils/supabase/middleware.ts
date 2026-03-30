@@ -1,13 +1,14 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
+import { getSupabaseAnonKey, getSupabaseUrl } from "@/utils/supabase/env";
 
 /**
  * Refreshes Supabase auth cookies when URL + anon key are configured.
  * If env is missing (common on Vercel when only Prisma is used), skip — otherwise Edge crashes with MIDDLEWARE_INVOCATION_FAILED.
  */
 export const updateSession = async (request: NextRequest) => {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY?.trim();
+  const supabaseUrl = getSupabaseUrl();
+  const supabaseKey = getSupabaseAnonKey();
 
   if (!supabaseUrl || !supabaseKey) {
     return NextResponse.next({ request });
