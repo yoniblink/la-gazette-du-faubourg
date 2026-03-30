@@ -10,6 +10,7 @@ import {
   moveInstagramReel,
   updateInstagramReelCaption,
 } from "@/app/admin/(panel)/instagram-reels/actions";
+import { InstagramReelPosterPicker } from "@/components/admin/InstagramReelPosterPicker";
 
 type ReelRow = {
   id: string;
@@ -41,6 +42,10 @@ export function InstagramReelsAdmin({
   const onDropPoster = useCallback((accepted: File[]) => {
     if (accepted[0]) setPosterFile(accepted[0]);
   }, []);
+
+  useEffect(() => {
+    setPosterFile(null);
+  }, [videoFile]);
 
   const videoDrop = useDropzone({
     onDrop: onDropVideo,
@@ -210,7 +215,10 @@ export function InstagramReelsAdmin({
             </div>
           </div>
           <div>
-            <p className="text-xs font-medium uppercase tracking-wider text-stone-500">Aperçu (optionnel)</p>
+            <p className="text-xs font-medium uppercase tracking-wider text-stone-500">Aperçu fichier (optionnel)</p>
+            <p className="mt-1 text-[11px] leading-snug text-stone-400">
+              Sinon, choisissez une frame dans le lecteur sous la vidéo.
+            </p>
             <div
               {...posterDrop.getRootProps()}
               className={`mt-2 flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed px-4 py-8 transition-colors ${
@@ -224,6 +232,16 @@ export function InstagramReelsAdmin({
             </div>
           </div>
         </div>
+
+        {videoFile ? (
+          <InstagramReelPosterPicker
+            videoFile={videoFile}
+            posterFile={posterFile}
+            onPosterCaptured={setPosterFile}
+            onClearPoster={() => setPosterFile(null)}
+            disabled={uploading || !storageConfigured}
+          />
+        ) : null}
 
         <button
           type="button"
