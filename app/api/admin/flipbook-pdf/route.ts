@@ -42,8 +42,27 @@ function isAllowedFlipbookStoragePath(storagePath: string): boolean {
   return /\.pdf$/i.test(parts[parts.length - 1] ?? "");
 }
 
-type PrepareBody = { action?: string; filename?: string; size?: number };
-type CommitBody = { action?: string; path?: string };
+function isOnVercel(): boolean {
+  return Boolean(process.env.VERCEL);
+}
+
+/** Message utile quand le bucket Storage n’existe pas ou le nom ne correspond pas. */
+function explainStorageError(message: string | undefined, bucket: string): string {
+  const m = (message ?? "").toLowerCase();
+  if (
+    m.includes("does not exist") ||
+    m.includes("not found") ||
+    m.includes("resource") && m.includes("exist") ||
+    m.includes("no such bucket") ||
+    m.includes("bucket not found")
+  ) {
+    return (
+      `Bucket Storage « ${bucket} » introuvable ou nom incorrect. ` +
+      `Dans Supabase : Storage → New bucket → nom exact « ${bucket} », puis marquez-le public (pour afficher le PDF).`
+    );
+  }
+  return message ?? "Erreur Storage Supabase.";
+}
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -80,7 +99,7 @@ export async function POST(req: Request) {
       }
 
       if (!hasSupabaseFlipbookStorageEnv()) {
-        if (process.env.VERCEL === "1") {
+        if (isOnVercel()) {
           return NextResponse.json(
             {
               error:
@@ -111,9 +130,7 @@ export async function POST(req: Request) {
         console.error("[flipbook-pdf] createSignedUploadUrl", error?.message);
         return NextResponse.json(
           {
-            error:
-              error?.message ??
-              "Impossible de préparer l’upload Storage (bucket créé et public ?)",
+            error: explainStorageError(error?.message, bucket),
           },
           { status: 500 },
         );
@@ -157,7 +174,18 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Action inconnue" }, { status: 400 });
   }
 
-  if (!hasSupabaseFlipbookStorageEnv() || process.env.VERCEL !== "1") {
+  // Sur Vercel, ne jamais lire un corps multipart : limite ~4,5 Mo → 413 avant même ce code.
+  if (isOnVercel()) {
+    return NextResponse.json(
+      {
+        error:
+          "Requête non prise en charge : rechargez la page Réglages (cache vidé) pour utiliser le téléversement via Supabase Storage, pas l’envoi direct du fichier au serveur.",
+      },
+      { status: 415 },
+    );
+  }
+
+  if (!hasSupabaseFlipbookStorageEnv()) {
     let formData: FormData;
     try {
       formData = await req.formData();
@@ -205,7 +233,7 @@ export async function POST(req: Request) {
   return NextResponse.json(
     {
       error:
-        "Sur Vercel, le PDF ne transite pas par ce serveur. Rechargez la page : le téléversement utilise Supabase Storage.",
+        "Multipart désactivé quand Supabase Storage est configuré en local : utilisez la même procédure JSON + Storage ou retirez SUPABASE_SERVICE_ROLE_KEY pour tester sur disque.",
     },
     { status: 400 },
   );

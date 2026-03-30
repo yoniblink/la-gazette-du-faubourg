@@ -65,7 +65,12 @@ export function FlipbookPdfAdmin({ currentPdfUrl }: { currentPdfUrl: string | nu
           });
 
         if (upErr) {
-          toast.error(upErr.message || "Échec de l’envoi vers le stockage");
+          let msg = upErr.message || "Échec de l’envoi vers le stockage";
+          if (/does not exist|not found|no such bucket/i.test(msg)) {
+            msg =
+              `Bucket « ${prep.bucket} » introuvable sur Supabase (créez-le dans Storage, nom identique, bucket public).`;
+          }
+          toast.error(msg);
           return;
         }
 
