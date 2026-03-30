@@ -13,11 +13,11 @@ import { prisma } from "@/lib/prisma";
 import { HOME_FLIPBOOK_MANIFEST_KEY } from "@/lib/site-settings";
 import { createSupabaseServiceRoleClient } from "@/lib/supabase-service";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { FLIPBOOK_DEFAULT_MAX_PAGES, FLIPBOOK_MAX_PAGES_CAP } from "@/lib/flipbook-config";
 
 const PNG_COMPRESSION_LEVEL = 6;
 const DEFAULT_RENDER_DPR = 1.12;
 const DEFAULT_HALF_SPREAD_CSS_PX = 400;
-const DEFAULT_MAX_PAGES = 12;
 
 type LayoutMode = "auto" | "portrait" | "spread";
 
@@ -30,8 +30,11 @@ export function hasILovePdfCredentials(): boolean {
 }
 
 function maxRenderPages(): number {
-  const n = parseInt(process.env.FLIPBOOK_RENDER_MAX_PAGES ?? String(DEFAULT_MAX_PAGES), 10);
-  return Number.isFinite(n) ? Math.min(Math.max(n, 1), 200) : DEFAULT_MAX_PAGES;
+  const n = parseInt(
+    process.env.FLIPBOOK_RENDER_MAX_PAGES ?? String(FLIPBOOK_DEFAULT_MAX_PAGES),
+    10,
+  );
+  return Number.isFinite(n) ? Math.min(Math.max(n, 1), FLIPBOOK_MAX_PAGES_CAP) : FLIPBOOK_DEFAULT_MAX_PAGES;
 }
 
 function cssHalfSpreadPx(): number {

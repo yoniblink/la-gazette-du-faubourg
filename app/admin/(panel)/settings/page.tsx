@@ -1,10 +1,14 @@
 import Link from "next/link";
 import { FlipbookPdfAdmin } from "@/components/admin/FlipbookPdfAdmin";
+import { FLIPBOOK_DEFAULT_MAX_PAGES } from "@/lib/flipbook-config";
 import { getHomeFlipbookManifest, getHomeFlipbookPdfUrl } from "@/lib/site-settings";
 
 export default async function AdminSettingsPage() {
   const flipbookPdfUrl = await getHomeFlipbookPdfUrl();
   const flipbookManifest = await getHomeFlipbookManifest();
+  const envMax = process.env.FLIPBOOK_RENDER_MAX_PAGES?.trim();
+  const parsed = envMax ? parseInt(envMax, 10) : NaN;
+  const maxPagesInFlipbook = Number.isFinite(parsed) ? parsed : FLIPBOOK_DEFAULT_MAX_PAGES;
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -15,6 +19,7 @@ export default async function AdminSettingsPage() {
       <FlipbookPdfAdmin
         currentPdfUrl={flipbookPdfUrl}
         hasManifest={Boolean(flipbookManifest?.pageUrls?.length)}
+        maxPagesInFlipbook={maxPagesInFlipbook}
       />
       <div className="mt-10 rounded-xl border border-stone-200 bg-white p-8 text-sm text-stone-600">
         <p>
