@@ -5,6 +5,9 @@ import { useDropzone } from "react-dropzone";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import Link from "next/link";
+import { createClient } from "@/utils/supabase/client";
+
+type PrepareOk = { mode: "local" } | { mode: "supabase"; bucket: string; path: string; token: string };
 
 export function FlipbookPdfAdmin({ currentPdfUrl }: { currentPdfUrl: string | null }) {
   const router = useRouter();
@@ -15,17 +18,66 @@ export function FlipbookPdfAdmin({ currentPdfUrl }: { currentPdfUrl: string | nu
       if (accepted.length === 0) return;
       const file = accepted[0];
       setUploading(true);
-      const fd = new FormData();
-      fd.set("file", file);
       try {
-        const res = await fetch("/api/admin/flipbook-pdf", {
+        const prepRes = await fetch("/api/admin/flipbook-pdf", {
           method: "POST",
-          body: fd,
+          headers: { "Content-Type": "application/json" },
           credentials: "same-origin",
+          body: JSON.stringify({
+            action: "prepare",
+            filename: file.name,
+            size: file.size,
+          }),
         });
-        const data = (await res.json()) as { ok?: boolean; error?: string; url?: string };
-        if (!res.ok) {
-          toast.error(data.error ?? "Échec du téléversement");
+        const prep = (await prepRes.json()) as PrepareOk & { error?: string };
+
+        if (!prepRes.ok) {
+          toast.error(
+            typeof prep.error === "string" ? prep.error : "Préparation du téléversement impossible",
+          );
+          return;
+        }
+
+        if (prep.mode === "local") {
+          const fd = new FormData();
+          fd.set("file", file);
+          const res = await fetch("/api/admin/flipbook-pdf", {
+            method: "POST",
+            body: fd,
+            credentials: "same-origin",
+          });
+          const data = (await res.json()) as { ok?: boolean; error?: string; url?: string };
+          if (!res.ok) {
+            toast.error(data.error ?? "Échec du téléversement");
+            return;
+          }
+          toast.success("PDF du flipbook mis à jour.");
+          router.refresh();
+          return;
+        }
+
+        const supabase = createClient();
+        const { error: upErr } = await supabase.storage
+          .from(prep.bucket)
+          .uploadToSignedUrl(prep.path, prep.token, file, {
+            contentType: "application/pdf",
+            upsert: true,
+          });
+
+        if (upErr) {
+          toast.error(upErr.message || "Échec de l’envoi vers le stockage");
+          return;
+        }
+
+        const commitRes = await fetch("/api/admin/flipbook-pdf", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ action: "commit", path: prep.path }),
+        });
+        const commit = (await commitRes.json()) as { ok?: boolean; error?: string };
+        if (!commitRes.ok) {
+          toast.error(commit.error ?? "Enregistrement de l’URL impossible");
           return;
         }
         toast.success("PDF du flipbook mis à jour.");
@@ -53,7 +105,9 @@ export function FlipbookPdfAdmin({ currentPdfUrl }: { currentPdfUrl: string | nu
         Flipbook (page d’accueil)
       </h2>
       <p className="mt-2 text-sm text-stone-500">
-        Téléversez un PDF : il sera affiché comme magazine feuilletable au-dessus de la section newsletter.
+        Téléversez un PDF : il sera affiché comme magazine feuilletable au-dessus de la section
+        newsletter. Sur Vercel, le fichier est envoyé directement vers Supabase Storage (contourne la
+        limite ~4,5 Mo du serveur).
       </p>
 
       {currentPdfUrl ? (

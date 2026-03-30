@@ -1,0 +1,21 @@
+import { createClient } from "@supabase/supabase-js";
+import { getSupabaseUrl } from "@/utils/supabase/env";
+
+/** Client serveur avec droits Storage complets (ne jamais exposer au navigateur). */
+export function createSupabaseServiceRoleClient() {
+  const url = getSupabaseUrl();
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+  if (!url || !key) return null;
+  return createClient(url, key, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+}
+
+export function hasSupabaseFlipbookStorageEnv(): boolean {
+  return Boolean(getSupabaseUrl()?.trim() && process.env.SUPABASE_SERVICE_ROLE_KEY?.trim());
+}
+
+export function getFlipbookStorageBucket(): string {
+  const b = (process.env.FLIPBOOK_STORAGE_BUCKET ?? "flipbook-pdf").trim();
+  return b || "flipbook-pdf";
+}
