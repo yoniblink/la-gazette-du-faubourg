@@ -57,7 +57,7 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
             aria-label="La Gazette du Faubourg — Accueil"
           >
             <Image
-              src="/logo-gazette-navbar.webp"
+              src={site.navbarLogoSrc}
               alt=""
               width={180}
               height={180}

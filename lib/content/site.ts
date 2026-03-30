@@ -1,4 +1,6 @@
 export const site = {
+  /** Logo header (fichier dans /public) — aussi utilisé comme avatar type Story sur les Reels */
+  navbarLogoSrc: "/logo-gazette-navbar.webp",
   name: "La Gazette du Faubourg",
   officialTitle: "La Voix Officielle du Comité du Faubourg Saint-Honoré",
   url: "https://www.lagazettedufaubourg.fr",
@@ -25,6 +27,10 @@ export const site = {
   },
   instagramUrl: "https://www.instagram.com/",
   instagramLabel: "Instagram",
+  /** Bandeau type Story / Reels sur les vidéos de la section Instagram */
+  instagramReels: {
+    displayHandle: "lagazettedufaubourgsainthonore",
+  },
   youtubeUrl: "https://www.youtube.com/",
   twitterUrl: "https://twitter.com/",
   facebookUrl: "https://www.facebook.com/",
