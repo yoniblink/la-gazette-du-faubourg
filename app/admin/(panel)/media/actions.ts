@@ -5,6 +5,8 @@ import path from "path";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/server/admin-auth";
+import { createSupabaseServiceRoleClient, getMediaStorageBucket } from "@/lib/supabase-service";
+import { parseSupabaseStoragePublicUrl } from "@/lib/supabase-storage-public-url";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
@@ -19,6 +21,13 @@ export async function deleteMedia(id: string): Promise<ActionResult> {
         await unlink(diskPath);
       } catch {
         /* file may already be gone */
+      }
+    } else {
+      const parsed = parseSupabaseStoragePublicUrl(row.url);
+      const admin = createSupabaseServiceRoleClient();
+      const bucket = getMediaStorageBucket();
+      if (parsed && admin && parsed.bucket === bucket) {
+        await admin.storage.from(parsed.bucket).remove([parsed.objectPath]);
       }
     }
     await prisma.media.delete({ where: { id } });

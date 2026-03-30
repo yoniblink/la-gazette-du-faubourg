@@ -14,7 +14,11 @@ export type MediaCardItem = {
 export function MediaCard({ item }: { item: MediaCardItem }) {
   function copyUrl() {
     const full =
-      typeof window !== "undefined" ? `${window.location.origin}${item.url}` : item.url;
+      item.url.startsWith("http://") || item.url.startsWith("https://")
+        ? item.url
+        : typeof window !== "undefined"
+          ? `${window.location.origin}${item.url}`
+          : item.url;
     void navigator.clipboard.writeText(full);
     toast.success("URL copiée.");
   }

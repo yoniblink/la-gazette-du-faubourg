@@ -22,6 +22,16 @@ export function getFlipbookStorageBucket(): string {
   return b || "flipbook-pdf";
 }
 
+/** Médias admin (images articles) : bucket public, upload signé côté client (compatible Vercel). */
+export function getMediaStorageBucket(): string {
+  const b = (process.env.MEDIA_STORAGE_BUCKET ?? "site-media").trim();
+  return b || "site-media";
+}
+
+export function hasSupabaseMediaStorageEnv(): boolean {
+  return Boolean(getSupabaseUrl()?.trim() && process.env.SUPABASE_SERVICE_ROLE_KEY?.trim());
+}
+
 /** Même prérequis que le flipbook : URL projet + service role pour Storage. */
 export function hasInstagramReelsStorageEnv(): boolean {
   return Boolean(getSupabaseUrl()?.trim() && process.env.SUPABASE_SERVICE_ROLE_KEY?.trim());
