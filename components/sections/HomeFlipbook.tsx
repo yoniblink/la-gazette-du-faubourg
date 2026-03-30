@@ -70,7 +70,7 @@ export function HomeFlipbook({
       className={
         embedded
           ? "scroll-mt-24 bg-transparent py-12 md:py-16"
-          : "scroll-mt-24 border-y border-black/[0.06] bg-[radial-gradient(ellipse_120%_85%_at_50%_18%,#fcfcfb_0%,#f6f3ee_45%,#ece8e2_100%)] py-20 md:py-28"
+          : "scroll-mt-24 border-y border-black/[0.06] bg-transparent py-20 md:py-28"
       }
     >
       <div
