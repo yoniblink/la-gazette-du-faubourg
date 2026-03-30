@@ -34,12 +34,10 @@ export function FlipbookPdfAdmin({
       });
       const data = (await res.json()) as { ok?: boolean; error?: string };
       if (!res.ok) {
-        toast.error(typeof data.error === "string" ? data.error : "Impossible de lancer la génération");
+        toast.error(typeof data.error === "string" ? data.error : "Impossible de générer les pages");
         return;
       }
-      toast.success(
-        "Génération des pages WebP lancée en arrière-plan (1–3 min). Vérifiez le dossier slots/ dans Supabase, puis l’accueil.",
-      );
+      toast.success("Pages WebP générées. Vérifiez le dossier slots/ dans Supabase et l’accueil.");
       router.refresh();
     } catch {
       toast.error("Erreur réseau");

@@ -14,8 +14,8 @@ import {
   hasSupabaseFlipbookStorageEnv,
 } from "@/lib/supabase-service";
 
-/** Laisse le temps au job `after()` de rasteriser le PDF (ajustez sur Vercel Pro si besoin). */
-export const maxDuration = 120;
+/** Vercel Hobby plafonne à 60 s (aligné ici). Pro : jusqu’à 300 s. */
+export const maxDuration = 60;
 
 const MAX_BYTES = 40 * 1024 * 1024;
 
@@ -177,11 +177,12 @@ export async function POST(req: Request) {
       await prisma.siteSetting.deleteMany({ where: { key: HOME_FLIPBOOK_MANIFEST_KEY } });
 
       after(async () => {
-        await renderFlipbookPdfToStorageAndPersist({
+        const r = await renderFlipbookPdfToStorageAndPersist({
           publicPdfUrl: publicUrl,
           pdfStoragePath: storagePath,
           bucket,
         });
+        if (!r.ok) console.error("[flipbook-pdf] after(commit) render:", r.error);
       });
 
       return NextResponse.json({ ok: true, url: publicUrl, renderingScheduled: true as const });
@@ -218,15 +219,15 @@ export async function POST(req: Request) {
 
       await prisma.siteSetting.deleteMany({ where: { key: HOME_FLIPBOOK_MANIFEST_KEY } });
 
-      after(async () => {
-        await renderFlipbookPdfToStorageAndPersist({
-          publicPdfUrl: publicUrl,
-          pdfStoragePath: parsed.objectPath,
-          bucket: parsed.bucket,
-        });
+      const rendered = await renderFlipbookPdfToStorageAndPersist({
+        publicPdfUrl: publicUrl,
+        pdfStoragePath: parsed.objectPath,
+        bucket: parsed.bucket,
       });
-
-      return NextResponse.json({ ok: true, renderingScheduled: true as const });
+      if (!rendered.ok) {
+        return NextResponse.json({ error: rendered.error }, { status: 500 });
+      }
+      return NextResponse.json({ ok: true as const });
     }
 
     return NextResponse.json({ error: "Action inconnue" }, { status: 400 });
@@ -297,4 +298,16 @@ export async function POST(req: Request) {
     },
     { status: 400 },
   );
+}
+
+/** Évite les GET « fantômes » avec gros corps ; indique le bon flux (POST JSON uniquement). */
+export async function GET() {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+  }
+  return NextResponse.json({
+    message:
+      "POST JSON uniquement : prepare, commit, renderPages. Le PDF ne doit pas transiter sur cette route (sinon 413).",
+  });
 }

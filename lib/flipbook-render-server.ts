@@ -1,6 +1,5 @@
 /**
  * Rasterise un PDF en images WebP sur Supabase Storage (Node uniquement).
- * Appelé après l’upload admin via `after()` pour ne pas bloquer la réponse HTTP.
  */
 import { createCanvas } from "@napi-rs/canvas";
 import path from "path";
@@ -15,8 +14,11 @@ import { createSupabaseServiceRoleClient } from "@/lib/supabase-service";
 
 const WEBP_QUALITY = 82;
 const RASTER_DPR_CAP = 1.25;
-const DEFAULT_MAX_PAGES = 60;
+/** Défaut prudent pour finir sous ~60 s sur Vercel Hobby — surcharger avec FLIPBOOK_RENDER_MAX_PAGES. */
+const DEFAULT_MAX_PAGES = 20;
 const DEFAULT_HALF_SPREAD_CSS_PX = 480;
+
+export type FlipbookRenderResult = { ok: true } | { ok: false; error: string };
 
 function maxRenderPages(): number {
   const n = parseInt(process.env.FLIPBOOK_RENDER_MAX_PAGES ?? String(DEFAULT_MAX_PAGES), 10);
@@ -69,7 +71,6 @@ async function renderPageToWebpBuffer(
   return sharp(png).webp({ quality: WEBP_QUALITY, effort: 4 }).toBuffer();
 }
 
-/** Génère les buffers + métadonnées (même logique couverture / double-page que le client historique). */
 async function buildSlotBuffers(
   pdfjs: typeof import("pdfjs-dist/legacy/build/pdf.mjs"),
   pdf: PdfDoc,
@@ -132,7 +133,6 @@ async function buildSlotBuffers(
   };
 }
 
-/** Pixels PNG intermédiaire (split spread) — évite double passage sharp sur le même canvas */
 async function renderSpreadToPngBuffer(
   pdfjs: typeof import("pdfjs-dist/legacy/build/pdf.mjs"),
   pdf: PdfDoc,
@@ -166,77 +166,83 @@ export async function renderFlipbookPdfToStorageAndPersist(args: {
   publicPdfUrl: string;
   pdfStoragePath: string;
   bucket: string;
-}): Promise<void> {
-  const admin = createSupabaseServiceRoleClient();
-  if (!admin) {
-    console.error("[flipbook-render] pas de client service role");
-    return;
-  }
-
-  const pdfjs = await loadPdfJs();
-  const res = await fetch(args.publicPdfUrl);
-  if (!res.ok) {
-    console.error("[flipbook-render] fetch PDF", res.status);
-    return;
-  }
-  const data = new Uint8Array(await res.arrayBuffer());
-  const loadingTask = pdfjs.getDocument({
-    data,
-    useSystemFonts: true,
-  });
-  const pdf = await loadingTask.promise;
-
-  const limit = maxRenderPages();
-  const halfW = cssHalfSpreadPx();
-  const { buffers, fullSpreadSlot, pageW, pageH, totalPdfPages, renderedPdfPages } =
-    await buildSlotBuffers(pdfjs, pdf, limit, halfW);
-
-  const dir = path.posix.dirname(args.pdfStoragePath);
-  const slotsDir = `${dir}/slots`;
-
-  const pageUrls: string[] = [];
-  for (let i = 0; i < buffers.length; i++) {
-    const objectPath = `${slotsDir}/${String(i).padStart(4, "0")}.webp`;
-    const { error } = await admin.storage.from(args.bucket).upload(objectPath, buffers[i], {
-      contentType: "image/webp",
-      upsert: true,
-    });
-    if (error) {
-      console.error("[flipbook-render] upload", objectPath, error.message);
-      return;
+}): Promise<FlipbookRenderResult> {
+  try {
+    const admin = createSupabaseServiceRoleClient();
+    if (!admin) {
+      return { ok: false, error: "SUPABASE_SERVICE_ROLE_KEY manquant ou URL Supabase absente." };
     }
-    const { data: pub } = admin.storage.from(args.bucket).getPublicUrl(objectPath);
-    pageUrls.push(pub.publicUrl);
+
+    console.info("[flipbook-render] démarrage", args.pdfStoragePath);
+
+    const pdfjs = await loadPdfJs();
+    const res = await fetch(args.publicPdfUrl);
+    if (!res.ok) {
+      return { ok: false, error: `Téléchargement du PDF refusé (HTTP ${res.status}).` };
+    }
+    const data = new Uint8Array(await res.arrayBuffer());
+    const loadingTask = pdfjs.getDocument({
+      data,
+      useSystemFonts: true,
+    });
+    const pdf = await loadingTask.promise;
+
+    const limit = maxRenderPages();
+    const halfW = cssHalfSpreadPx();
+    const { buffers, fullSpreadSlot, pageW, pageH, totalPdfPages, renderedPdfPages } =
+      await buildSlotBuffers(pdfjs, pdf, limit, halfW);
+
+    const dir = path.posix.dirname(args.pdfStoragePath);
+    const slotsDir = `${dir}/slots`;
+
+    const pageUrls: string[] = [];
+    for (let i = 0; i < buffers.length; i++) {
+      const objectPath = `${slotsDir}/${String(i).padStart(4, "0")}.webp`;
+      const { error } = await admin.storage.from(args.bucket).upload(objectPath, buffers[i]!, {
+        contentType: "image/webp",
+        upsert: true,
+      });
+      if (error) {
+        return { ok: false, error: `Upload Storage (${objectPath}) : ${error.message}` };
+      }
+      const { data: pub } = admin.storage.from(args.bucket).getPublicUrl(objectPath);
+      pageUrls.push(pub.publicUrl);
+    }
+
+    try {
+      const d = pdf.destroy?.();
+      if (d && typeof (d as Promise<void>).then === "function") await d;
+    } catch {
+      /* ignore */
+    }
+
+    const manifest: FlipbookManifest = {
+      v: 1,
+      pageUrls,
+      fullSpreadSlot,
+      pageW: Math.round(pageW),
+      pageH: Math.round(pageH),
+      totalPdfPages,
+      renderedPdfPages,
+    };
+
+    await prisma.siteSetting.upsert({
+      where: { key: HOME_FLIPBOOK_MANIFEST_KEY },
+      create: { key: HOME_FLIPBOOK_MANIFEST_KEY, value: serializeFlipbookManifest(manifest) },
+      update: { value: serializeFlipbookManifest(manifest) },
+    });
+
+    try {
+      revalidatePath("/");
+    } catch {
+      /* hors requête Next */
+    }
+
+    console.info("[flipbook-render] terminé", pageUrls.length, "images WebP");
+    return { ok: true };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error("[flipbook-render] échec", e);
+    return { ok: false, error: msg };
   }
-
-  try {
-    const d = pdf.destroy?.();
-    if (d && typeof (d as Promise<void>).then === "function") await d;
-  } catch {
-    /* ignore */
-  }
-
-  const manifest: FlipbookManifest = {
-    v: 1,
-    pageUrls,
-    fullSpreadSlot,
-    pageW: Math.round(pageW),
-    pageH: Math.round(pageH),
-    totalPdfPages,
-    renderedPdfPages,
-  };
-
-  await prisma.siteSetting.upsert({
-    where: { key: HOME_FLIPBOOK_MANIFEST_KEY },
-    create: { key: HOME_FLIPBOOK_MANIFEST_KEY, value: serializeFlipbookManifest(manifest) },
-    update: { value: serializeFlipbookManifest(manifest) },
-  });
-
-  try {
-    revalidatePath("/");
-  } catch {
-    /* en dehors d’une requête Next, ignorer */
-  }
-
-  console.info("[flipbook-render] terminé", pageUrls.length, "slots");
 }
