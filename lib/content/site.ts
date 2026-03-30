@@ -1,6 +1,8 @@
 export const site = {
   /** Logo header (fichier dans /public) — aussi utilisé comme avatar type Story sur les Reels */
   navbarLogoSrc: "/logo-gazette-navbar.webp",
+  /** Logo barre mobile — même ressource que le bloc hero (format plus lisible en petit) */
+  navbarLogoMobileSrc: "/logo-comite-faubourg.png",
   name: "La Gazette du Faubourg",
   officialTitle: "La Voix Officielle du Comité du Faubourg Saint-Honoré",
   url: "https://www.lagazettedufaubourg.fr",
