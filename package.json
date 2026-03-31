@@ -21,12 +21,9 @@
     "github:publish": "bash scripts/publish-to-github.sh",
     "postinstall": "prisma generate"
   },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
-  },
   "dependencies": {
     "@ilovepdf/ilovepdf-nodejs": "^0.3.1",
-    "@prisma/client": "^6.19.0",
+    "@prisma/client": "6.19.2",
     "@radix-ui/react-alert-dialog": "^1.1.15",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
@@ -63,7 +60,7 @@
     "@types/unzipper": "^0.10.11",
     "eslint": "^9",
     "eslint-config-next": "16.2.1",
-    "prisma": "^6.19.0",
+    "prisma": "6.19.2",
     "tailwindcss": "^4",
     "tsx": "^4.19.3",
     "typescript": "^5"
