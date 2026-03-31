@@ -45,6 +45,7 @@ function ArticleEditorTopBar({
   canRedo,
   onUndo,
   onRedo,
+  articlesIndexHref,
 }: {
   userEmail: string;
   titlePreview: string;
@@ -58,6 +59,7 @@ function ArticleEditorTopBar({
   canRedo: boolean;
   onUndo: () => void;
   onRedo: () => void;
+  articlesIndexHref: string;
 }) {
   const { pending } = useFormStatus();
   const display = titlePreview.trim() || "Sans titre";
@@ -69,7 +71,7 @@ function ArticleEditorTopBar({
       <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-3">
         <div className="flex min-w-0 items-center gap-2 justify-self-start sm:gap-3">
           <Link
-            href="/admin/articles"
+            href={articlesIndexHref}
             className="shrink-0 text-[10px] font-medium uppercase tracking-wider text-zinc-500 transition-colors hover:text-zinc-200"
           >
             ← Articles
@@ -183,10 +185,16 @@ export function ArticleForm({
   userEmail,
   article,
   categories,
+  defaultCategoryId,
+  articlesIndexHref = "/admin/articles",
 }: {
   userEmail: string;
   article?: Article;
   categories: Category[];
+  /** When creating an article, preselect this category (id). */
+  defaultCategoryId?: string;
+  /** List view + redirects after save/delete context. */
+  articlesIndexHref?: string;
 }) {
   const router = useRouter();
   const isEdit = Boolean(article);
@@ -220,7 +228,15 @@ export function ArticleForm({
   const [coverFocusX, setCoverFocusX] = useState(initialFocus.x);
   const [coverFocusY, setCoverFocusY] = useState(initialFocus.y);
 
-  const [categoryId, setCategoryId] = useState(article?.categoryId ?? categories[0]?.id ?? "");
+  const [categoryId, setCategoryId] = useState(
+    () =>
+      article?.categoryId ??
+      (defaultCategoryId && categories.some((c) => c.id === defaultCategoryId)
+        ? defaultCategoryId
+        : undefined) ??
+      categories[0]?.id ??
+      "",
+  );
   const [kickerInp, setKickerInp] = useState(article?.kicker ?? "");
   const [excerptInp, setExcerptInp] = useState(article?.excerpt ?? "");
   const [authorInp, setAuthorInp] = useState(article?.authorName ?? "La Gazette");
@@ -280,12 +296,12 @@ export function ArticleForm({
     if (!state) return;
     if (state.ok) {
       toast.success(isEdit ? "Article enregistré." : "Article créé.");
-      router.push("/admin/articles");
+      router.push(articlesIndexHref);
       router.refresh();
     } else {
       toast.error(state.error);
     }
-  }, [state, isEdit, router]);
+  }, [state, isEdit, router, articlesIndexHref]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -338,6 +354,7 @@ export function ArticleForm({
         canRedo={canRedo}
         onUndo={undo}
         onRedo={redo}
+        articlesIndexHref={articlesIndexHref}
       />
 
       <div className="min-w-0">
@@ -614,7 +631,11 @@ export function ArticleForm({
                     </div>
                     {article ? (
                       <div className="border-t border-stone-200 pt-6">
-                        <DeleteArticleButton id={article.id} title={article.title} />
+                        <DeleteArticleButton
+                          id={article.id}
+                          title={article.title}
+                          redirectAfterDelete={articlesIndexHref}
+                        />
                       </div>
                     ) : null}
                   </div>
@@ -623,7 +644,7 @@ export function ArticleForm({
             </div>
             <div className="shrink-0 border-t border-stone-200 px-5 py-4">
               <Link
-                href="/admin/articles"
+                href={articlesIndexHref}
                 className="inline-flex w-full items-center justify-center rounded-lg border border-stone-200 px-4 py-2.5 text-[11px] font-medium uppercase tracking-wider text-stone-600 hover:bg-stone-50"
               >
                 Quitter l’éditeur

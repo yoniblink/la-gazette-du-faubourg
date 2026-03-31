@@ -10,6 +10,11 @@ import { revalidatePath } from "next/cache";
 import type { FlipbookManifest } from "@/lib/flipbook-manifest";
 import { serializeFlipbookManifest } from "@/lib/flipbook-manifest";
 import { prisma } from "@/lib/prisma";
+import { updateFlipbookCatalogManifest } from "@/lib/flipbook-catalog";
+import {
+  clearFlipbookRenderProgress,
+  writeFlipbookRenderProgress,
+} from "@/lib/flipbook-render-progress";
 import { HOME_FLIPBOOK_MANIFEST_KEY } from "@/lib/site-settings";
 import { createSupabaseServiceRoleClient } from "@/lib/supabase-service";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -87,6 +92,37 @@ function isLikelyMergedSpread(pageW: number, pageH: number): boolean {
   return pageW >= pageH * 1.12;
 }
 
+/** Nombre d’envois WebP réels (une page PDF peut produire 2 demi-planches). */
+async function countExpectedUploads(
+  pages: Buffer[],
+  maxPages: number,
+  layout: LayoutMode,
+): Promise<number> {
+  let n = 0;
+  for (let i = 0; i < pages.length; i++) {
+    const p = i + 1;
+    const isEdge = p === 1 || p === maxPages;
+    const jpegBuf = pages[i]!;
+    const nat = await sharp(jpegBuf).metadata();
+    const natW = nat.width ?? 1;
+    const natH = nat.height ?? 1;
+    let useVerticalSplit = false;
+    if (!isEdge) {
+      if (layout === "spread") useVerticalSplit = true;
+      else if (layout === "portrait") useVerticalSplit = false;
+      else useVerticalSplit = isLikelyMergedSpread(natW, natH);
+    }
+    if (isEdge || !useVerticalSplit) n += 1;
+    else n += 2;
+  }
+  return Math.max(1, n);
+}
+
+function webpPhasePercent(doneUploads: number, totalUploads: number): number {
+  if (totalUploads <= 0) return 28;
+  return Math.min(91, 28 + Math.round((doneUploads / totalUploads) * 63));
+}
+
 async function extractJpegsFromZip(zipBuffer: Buffer): Promise<Buffer[]> {
   const directory = await unzipper.Open.buffer(zipBuffer);
   const items: { path: string; data: Buffer }[] = [];
@@ -156,18 +192,29 @@ export async function renderFlipbookPdfToStorageAndPersist(args: {
   pdfStoragePath: string;
   bucket: string;
 }): Promise<FlipbookRenderResult> {
+  await clearFlipbookRenderProgress();
   try {
     const admin = createSupabaseServiceRoleClient();
     if (!admin) {
+      await writeFlipbookRenderProgress({
+        percent: 0,
+        phase: "error",
+        message: "SUPABASE_SERVICE_ROLE_KEY manquant ou URL Supabase absente.",
+      });
       return { ok: false, error: "SUPABASE_SERVICE_ROLE_KEY manquant ou URL Supabase absente." };
     }
     if (!hasILovePdfCredentials()) {
-      return {
-        ok: false,
-        error:
-          "Clés iLovePDF manquantes : définissez ILOVEPDF_PUBLIC_KEY et ILOVEPDF_SECRET_KEY (https://developer.ilovepdf.com).",
-      };
+      const err =
+        "Clés iLovePDF manquantes : définissez ILOVEPDF_PUBLIC_KEY et ILOVEPDF_SECRET_KEY (https://developer.ilovepdf.com).";
+      await writeFlipbookRenderProgress({ percent: 0, phase: "error", message: err });
+      return { ok: false, error: err };
     }
+
+    await writeFlipbookRenderProgress({
+      percent: 2,
+      phase: "init",
+      message: "Préparation : connexion au stockage et paramètres de rendu…",
+    });
 
     const layout = pdfLayoutMode();
     console.info(
@@ -183,12 +230,26 @@ export async function renderFlipbookPdfToStorageAndPersist(args: {
       cssHalfSpreadPx(),
     );
 
+    await writeFlipbookRenderProgress({
+      percent: 10,
+      phase: "ilovepdf",
+      message:
+        "Conversion du PDF en JPEG (iLovePDF — traitement de toutes les pages du document sur leurs serveurs)…",
+    });
+
     const zipBuf = await ilovePdfPdfToJpegZip(args.publicPdfUrl);
     const allJpegs = await extractJpegsFromZip(zipBuf);
     const totalPdfPages = allJpegs.length;
     const limit = maxRenderPages();
     const maxPages = Math.min(totalPdfPages, limit);
     const pages = allJpegs.slice(0, maxPages);
+
+    await writeFlipbookRenderProgress({
+      percent: 26,
+      phase: "ilovepdf",
+      message: `JPEG reçus : ${totalPdfPages} page(s) dans le PDF ; ${maxPages} page(s) seront rendues (plafond serveur). Extraction terminée.`,
+      pdfPagesTotal: maxPages,
+    });
 
     const halfW = cssHalfSpreadPx();
     const dpr = renderDpr();
@@ -202,6 +263,9 @@ export async function renderFlipbookPdfToStorageAndPersist(args: {
 
     const dir = path.posix.dirname(args.pdfStoragePath);
     const slotsDir = `${dir}/slots`;
+
+    const totalUploads = await countExpectedUploads(pages, maxPages, layout);
+    let doneUploads = 0;
 
     const pageUrls: string[] = [];
     const fullSpreadSlot: boolean[] = [];
@@ -223,12 +287,38 @@ export async function renderFlipbookPdfToStorageAndPersist(args: {
       }
 
       if (isEdge || !useVerticalSplit) {
+        await writeFlipbookRenderProgress({
+          percent: webpPhasePercent(doneUploads, totalUploads),
+          phase: "webp",
+          message: `Page PDF ${p}/${maxPages} : conversion JPEG → WebP (une planche), envoi ${doneUploads + 1}/${totalUploads}…`,
+          pdfPageCurrent: p,
+          pdfPagesTotal: maxPages,
+          uploadCurrent: doneUploads + 1,
+          uploadsTotal: totalUploads,
+        });
         const buf = await jpegToTargetWebp(jpegBuf, pxSingleColW, pxSpreadH);
         const up = await uploadSlotWebp(admin, args.bucket, slotsDir, slotIndex++, buf);
-        if (!up.ok) return up;
+        if (!up.ok) {
+          await writeFlipbookRenderProgress({
+            percent: 0,
+            phase: "error",
+            message: `Échec envoi WebP (page ${p}) : ${up.error}`,
+          });
+          return up;
+        }
+        doneUploads++;
         pageUrls.push(up.publicUrl);
         fullSpreadSlot.push(isEdge);
       } else {
+        await writeFlipbookRenderProgress({
+          percent: webpPhasePercent(doneUploads, totalUploads),
+          phase: "webp",
+          message: `Page PDF ${p}/${maxPages} : planche double — moitié gauche, JPEG → WebP (${doneUploads + 1}/${totalUploads})…`,
+          pdfPageCurrent: p,
+          pdfPagesTotal: maxPages,
+          uploadCurrent: doneUploads + 1,
+          uploadsTotal: totalUploads,
+        });
         const spread = sharp(jpegBuf).resize(pxSpreadW, pxSpreadH, {
           fit: "contain",
           position: "centre",
@@ -245,9 +335,27 @@ export async function renderFlipbookPdfToStorageAndPersist(args: {
           .webp(wopts)
           .toBuffer();
         let up = await uploadSlotWebp(admin, args.bucket, slotsDir, slotIndex++, leftBuf);
-        if (!up.ok) return up;
+        if (!up.ok) {
+          await writeFlipbookRenderProgress({
+            percent: 0,
+            phase: "error",
+            message: `Échec envoi WebP (page ${p}, gauche) : ${up.error}`,
+          });
+          return up;
+        }
+        doneUploads++;
         pageUrls.push(up.publicUrl);
         fullSpreadSlot.push(false);
+
+        await writeFlipbookRenderProgress({
+          percent: webpPhasePercent(doneUploads, totalUploads),
+          phase: "webp",
+          message: `Page PDF ${p}/${maxPages} : planche double — moitié droite, JPEG → WebP (${doneUploads + 1}/${totalUploads})…`,
+          pdfPageCurrent: p,
+          pdfPagesTotal: maxPages,
+          uploadCurrent: doneUploads + 1,
+          uploadsTotal: totalUploads,
+        });
 
         const rightBuf = await spread
           .clone()
@@ -255,13 +363,29 @@ export async function renderFlipbookPdfToStorageAndPersist(args: {
           .webp(wopts)
           .toBuffer();
         up = await uploadSlotWebp(admin, args.bucket, slotsDir, slotIndex++, rightBuf);
-        if (!up.ok) return up;
+        if (!up.ok) {
+          await writeFlipbookRenderProgress({
+            percent: 0,
+            phase: "error",
+            message: `Échec envoi WebP (page ${p}, droite) : ${up.error}`,
+          });
+          return up;
+        }
+        doneUploads++;
         pageUrls.push(up.publicUrl);
         fullSpreadSlot.push(false);
       }
     }
 
     if (pageUrls.length === 1) {
+      await writeFlipbookRenderProgress({
+        percent: 92,
+        phase: "webp",
+        message: "Une seule page détectée : duplication de la vue pour l’affichage en reliure (sans nouvel envoi).",
+        pdfPagesTotal: maxPages,
+        uploadCurrent: doneUploads,
+        uploadsTotal: totalUploads,
+      });
       pageUrls.push(pageUrls[0]!);
       fullSpreadSlot.push(fullSpreadSlot[0] ?? true);
     }
@@ -276,11 +400,28 @@ export async function renderFlipbookPdfToStorageAndPersist(args: {
       renderedPdfPages: maxPages,
     };
 
+    await writeFlipbookRenderProgress({
+      percent: 94,
+      phase: "persist",
+      message: "Enregistrement du manifeste (URLs des pages WebP) dans la base de données…",
+      pdfPagesTotal: maxPages,
+    });
+
+    const manifestJson = serializeFlipbookManifest(manifest);
     await prisma.siteSetting.upsert({
       where: { key: HOME_FLIPBOOK_MANIFEST_KEY },
-      create: { key: HOME_FLIPBOOK_MANIFEST_KEY, value: serializeFlipbookManifest(manifest) },
-      update: { value: serializeFlipbookManifest(manifest) },
+      create: { key: HOME_FLIPBOOK_MANIFEST_KEY, value: manifestJson },
+      update: { value: manifestJson },
     });
+
+    await writeFlipbookRenderProgress({
+      percent: 97,
+      phase: "persist",
+      message: "Mise à jour du catalogue admin et revalidation du cache de l’accueil…",
+      pdfPagesTotal: maxPages,
+    });
+
+    await updateFlipbookCatalogManifest(args.pdfStoragePath, manifestJson);
 
     try {
       revalidatePath("/");
@@ -288,11 +429,18 @@ export async function renderFlipbookPdfToStorageAndPersist(args: {
       /* */
     }
 
+    await clearFlipbookRenderProgress();
+
     console.info("[flipbook-render] terminé", pageUrls.length, "WebP (iLovePDF)");
     return { ok: true };
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     console.error("[flipbook-render] échec", e);
+    await writeFlipbookRenderProgress({
+      percent: 0,
+      phase: "error",
+      message: msg.length > 480 ? `${msg.slice(0, 480)}…` : msg,
+    });
     return { ok: false, error: msg };
   }
 }

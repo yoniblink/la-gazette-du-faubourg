@@ -1,9 +1,11 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useState } from "react";
+import { site } from "@/lib/content/site";
 
 const nav = [
   { href: "/admin", label: "Tableau de bord" },
@@ -11,6 +13,7 @@ const nav = [
   { href: "/admin/categories", label: "Rubriques" },
   { href: "/admin/media", label: "Médias" },
   { href: "/admin/instagram-reels", label: "Instagram Reels" },
+  { href: "/admin/flipbook", label: "Flipbook" },
   { href: "/admin/settings", label: "Réglages" },
 ] as const;
 
@@ -68,8 +71,21 @@ export function AdminShell({
     <div className="flex min-h-[100dvh]">
       <aside className="hidden w-56 shrink-0 border-r border-stone-200 bg-white px-4 py-8 md:flex md:flex-col">
         <div className="px-3">
-          <p className="font-[family-name:var(--font-serif)] text-lg font-light text-stone-900">La Gazette</p>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-stone-400">Admin</p>
+          <Link
+            href="/admin"
+            className="relative block h-11 w-full max-w-[11.5rem]"
+            aria-label={`${site.name} — administration`}
+          >
+            <Image
+              src={site.navbarLogoMobileSrc}
+              alt=""
+              fill
+              className="object-contain object-left"
+              sizes="184px"
+              priority
+            />
+          </Link>
+          <p className="mt-2 text-[10px] uppercase tracking-[0.2em] text-stone-400">Admin</p>
         </div>
         <div className="mt-10 flex-1">
           <NavLinks />

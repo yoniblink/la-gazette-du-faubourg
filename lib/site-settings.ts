@@ -4,6 +4,10 @@ import { tryPrisma } from "@/lib/prisma";
 
 export const HOME_FLIPBOOK_PDF_URL_KEY = "home_flipbook_pdf_url";
 export const HOME_FLIPBOOK_MANIFEST_KEY = "home_flipbook_manifest_json";
+/** Liste des PDF flipbook téléversés (JSON), avec manifest par entrée lorsque généré. */
+export const HOME_FLIPBOOK_CATALOG_KEY = "home_flipbook_catalog_json";
+/** Progression détaillée du rendu flipbook (JSON), pour l’admin uniquement. */
+export const HOME_FLIPBOOK_RENDER_PROGRESS_KEY = "home_flipbook_render_progress_json";
 
 export async function getHomeFlipbookPdfUrl(): Promise<string | null> {
   const db = tryPrisma();

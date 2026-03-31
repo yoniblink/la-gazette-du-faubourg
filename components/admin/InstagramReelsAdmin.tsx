@@ -172,8 +172,8 @@ export function InstagramReelsAdmin({
         Instagram — Reels
       </h1>
       <p className="mt-2 text-sm text-stone-500">
-        Ajoutez des vidéos verticales (type Reels) : elles sont stockées sur Supabase Storage et affichées dans la
-        section « Retrouvez-nous sur Instagram » sur l’accueil.
+        Ajoutez des vidéos verticales (type Reels) : elles seront affichées dans la section « Retrouvez-nous sur Instagram »
+        sur l’accueil.
       </p>
 
       {!storageConfigured ? (
@@ -199,12 +199,12 @@ export function InstagramReelsAdmin({
           disabled={uploading || !storageConfigured}
         />
 
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <div>
+        <div className="mt-4 grid gap-4 md:grid-cols-2 md:items-stretch">
+          <div className="flex min-h-0 flex-col md:h-full">
             <p className="text-xs font-medium uppercase tracking-wider text-stone-500">Vidéo *</p>
             <div
               {...videoDrop.getRootProps()}
-              className={`mt-2 flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed px-4 py-8 transition-colors ${
+              className={`mt-2 flex min-h-0 flex-1 cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed px-4 py-8 transition-colors ${
                 videoDrop.isDragActive ? "border-stone-500 bg-stone-50" : "border-stone-200 bg-stone-50/50"
               } ${uploading || !storageConfigured ? "pointer-events-none opacity-50" : ""}`}
             >
@@ -214,18 +214,18 @@ export function InstagramReelsAdmin({
               </p>
             </div>
           </div>
-          <div>
+          <div className="flex min-h-0 flex-col md:h-full">
             <p className="text-xs font-medium uppercase tracking-wider text-stone-500">Aperçu fichier (optionnel)</p>
-            <p className="mt-1 text-[11px] leading-snug text-stone-400">
-              Sinon, choisissez une frame dans le lecteur sous la vidéo.
-            </p>
             <div
               {...posterDrop.getRootProps()}
-              className={`mt-2 flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed px-4 py-8 transition-colors ${
+              className={`mt-2 flex min-h-0 flex-1 cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed px-4 py-8 transition-colors ${
                 posterDrop.isDragActive ? "border-stone-500 bg-stone-50" : "border-stone-200 bg-stone-50/50"
               } ${uploading || !storageConfigured ? "pointer-events-none opacity-50" : ""}`}
             >
               <input {...posterDrop.getInputProps()} />
+              <p className="max-w-[18rem] text-center text-[11px] leading-snug text-stone-400">
+                Sinon, choisissez une frame dans le lecteur sous la vidéo.
+              </p>
               <p className="text-center text-sm text-stone-700">
                 {posterFile ? posterFile.name : "JPG, PNG ou WebP — max 8 Mo"}
               </p>

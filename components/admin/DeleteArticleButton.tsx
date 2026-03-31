@@ -6,7 +6,15 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { deleteArticle } from "@/app/admin/(panel)/articles/actions";
 
-export function DeleteArticleButton({ id, title }: { id: string; title: string }) {
+export function DeleteArticleButton({
+  id,
+  title,
+  redirectAfterDelete = "/admin/articles",
+}: {
+  id: string;
+  title: string;
+  redirectAfterDelete?: string;
+}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
@@ -18,7 +26,7 @@ export function DeleteArticleButton({ id, title }: { id: string; title: string }
     setOpen(false);
     if (res.ok) {
       toast.success("Article supprimé.");
-      router.push("/admin/articles");
+      router.push(redirectAfterDelete);
       router.refresh();
     } else {
       toast.error(res.error);

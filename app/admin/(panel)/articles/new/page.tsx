@@ -3,7 +3,11 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { ArticleForm } from "@/components/admin/ArticleForm";
 
-export default async function NewArticlePage() {
+type Props = { searchParams: Promise<{ rubrique?: string }> };
+
+export default async function NewArticlePage({ searchParams }: Props) {
+  const { rubrique: rubriqueSlug } = await searchParams;
+
   const categories = await prisma.category.findMany({ orderBy: { sortOrder: "asc" } });
   if (categories.length === 0) {
     return (
@@ -19,10 +23,27 @@ export default async function NewArticlePage() {
   const session = await auth();
   const userEmail = session?.user?.email ?? "";
 
+  let defaultCategoryId: string | undefined;
+  let articlesIndexHref = "/admin/articles";
+  const slug = rubriqueSlug?.trim();
+  if (slug) {
+    const match = categories.find((c) => c.slug === slug);
+    if (match) {
+      defaultCategoryId = match.id;
+      articlesIndexHref = `/admin/articles?rubrique=${encodeURIComponent(match.slug)}`;
+    }
+  }
+
   return (
     <div className="min-h-0">
       <h1 className="sr-only">Nouvel article</h1>
-      <ArticleForm key="new" userEmail={userEmail} categories={categories} />
+      <ArticleForm
+        key="new"
+        userEmail={userEmail}
+        categories={categories}
+        defaultCategoryId={defaultCategoryId}
+        articlesIndexHref={articlesIndexHref}
+      />
     </div>
   );
 }

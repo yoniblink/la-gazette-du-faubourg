@@ -1,69 +1,74 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import Link from "next/link";
+import type { FlipbookCatalogEntry } from "@/lib/flipbook-catalog";
+import type { FlipbookRenderProgress } from "@/lib/flipbook-render-progress";
 import { createClient } from "@/utils/supabase/client";
 
 type PrepareOk = { mode: "local" } | { mode: "supabase"; bucket: string; path: string; token: string };
 
-const STEPS_REGENERATE = [
-  "Connexion à iLovePDF…",
-  "Conversion du PDF en images…",
-  "Téléchargement et découpe des pages…",
-  "Envoi des images WebP vers le stockage…",
-];
-
-const STEPS_WAIT_MANIFEST = [
-  "Génération côté serveur en cours…",
-  "Encore un instant…",
-  "Finalisation des images sur Supabase…",
-  "Préparation du manifeste du flipbook…",
-];
-
 export function FlipbookPdfAdmin({
+  catalog,
   currentPdfUrl,
   hasManifest,
-  maxPagesInFlipbook,
 }: {
+  catalog: FlipbookCatalogEntry[];
   currentPdfUrl: string | null;
   hasManifest: boolean;
-  /** Nombre max de pages PDF exportées (info affichée). */
-  maxPagesInFlipbook: number;
 }) {
   const router = useRouter();
   const [uploading, setUploading] = useState(false);
-  const [renderingPages, setRenderingPages] = useState(false);
   const [waitingForManifest, setWaitingForManifest] = useState(false);
-  const [progressStep, setProgressStep] = useState(0);
+  const [renderProgress, setRenderProgress] = useState<FlipbookRenderProgress | null>(null);
+  const [settingActiveUrl, setSettingActiveUrl] = useState<string | null>(null);
+  const [deletingUrl, setDeletingUrl] = useState<string | null>(null);
 
-  const showProgress = renderingPages || waitingForManifest;
-  const stepLabels = waitingForManifest ? STEPS_WAIT_MANIFEST : STEPS_REGENERATE;
+  const showProgress = waitingForManifest;
+
+  const catalogSorted = useMemo(() => {
+    return [...catalog].sort((a, b) => {
+      const aAct = Boolean(currentPdfUrl && a.pdfUrl === currentPdfUrl);
+      const bAct = Boolean(currentPdfUrl && b.pdfUrl === currentPdfUrl);
+      if (aAct !== bAct) return aAct ? -1 : 1;
+      return new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime();
+    });
+  }, [catalog, currentPdfUrl]);
 
   useEffect(() => {
-    if (!showProgress) {
-      setProgressStep(0);
+    if (!waitingForManifest) {
+      setRenderProgress(null);
       return;
     }
-    const id = window.setInterval(() => {
-      setProgressStep((s) => (s + 1) % stepLabels.length);
-    }, 2200);
-    return () => window.clearInterval(id);
-  }, [showProgress, stepLabels.length]);
-
-  useEffect(() => {
-    if (!waitingForManifest) return;
     let cancelled = false;
     const poll = async () => {
       try {
-        const r = await fetch("/api/flipbook/manifest", { cache: "no-store" });
-        const j = (await r.json()) as { manifest?: { pageUrls?: string[] } | null };
+        const [rMan, rProg] = await Promise.all([
+          fetch("/api/flipbook/manifest", { cache: "no-store" }),
+          fetch("/api/admin/flipbook-render-progress", { cache: "no-store" }),
+        ]);
         if (cancelled) return;
-        if (j.manifest?.pageUrls && j.manifest.pageUrls.length > 0) {
+
+        if (rProg.ok) {
+          const jProg = (await rProg.json()) as { progress?: FlipbookRenderProgress | null };
+          const prog = jProg.progress ?? null;
+          setRenderProgress(prog);
+          if (prog?.phase === "error") {
+            setWaitingForManifest(false);
+            setRenderProgress(null);
+            toast.error(prog.message);
+            router.refresh();
+            return;
+          }
+        }
+
+        const jMan = (await rMan.json()) as { manifest?: { pageUrls?: string[] } | null };
+        if (jMan.manifest?.pageUrls && jMan.manifest.pageUrls.length > 0) {
           setWaitingForManifest(false);
+          setRenderProgress(null);
           toast.success("Pages du flipbook prêtes.");
           router.refresh();
         }
@@ -72,12 +77,13 @@ export function FlipbookPdfAdmin({
       }
     };
     void poll();
-    const t = window.setInterval(() => void poll(), 2000);
+    const t = window.setInterval(() => void poll(), 800);
     const timeout = window.setTimeout(() => {
       if (!cancelled) {
         setWaitingForManifest(false);
+        setRenderProgress(null);
         toast.error(
-          "Délai dépassé : la génération est peut‑être encore en cours. Vérifiez l’accueil ou relancez « Générer les pages ».",
+          "Délai dépassé : la génération est peut‑être encore en cours. Vérifiez l’accueil ou téléversez à nouveau le PDF.",
           { duration: 8000 },
         );
       }
@@ -89,31 +95,61 @@ export function FlipbookPdfAdmin({
     };
   }, [waitingForManifest, router]);
 
-  const canRegeneratePages = Boolean(currentPdfUrl?.startsWith("https://"));
-
-  const onRegeneratePages = useCallback(async () => {
-    if (!canRegeneratePages) return;
-    setRenderingPages(true);
-    try {
-      const res = await fetch("/api/admin/flipbook-pdf", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "same-origin",
-        body: JSON.stringify({ action: "renderPages" }),
-      });
-      const data = (await res.json()) as { ok?: boolean; error?: string };
-      if (!res.ok) {
-        toast.error(typeof data.error === "string" ? data.error : "Impossible de générer les pages");
-        return;
+  const handleSetActive = useCallback(
+    async (pdfUrl: string) => {
+      setSettingActiveUrl(pdfUrl);
+      try {
+        const res = await fetch("/api/admin/flipbook-pdf", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ action: "setActive", pdfUrl }),
+        });
+        const data = (await res.json()) as { ok?: boolean; error?: string };
+        if (!res.ok) {
+          toast.error(typeof data.error === "string" ? data.error : "Impossible de mettre à jour l’affichage");
+          return;
+        }
+        toast.success("Ce magazine sera affiché sur l’accueil.");
+        router.refresh();
+      } catch {
+        toast.error("Erreur réseau");
+      } finally {
+        setSettingActiveUrl(null);
       }
-      toast.success("Pages WebP générées. Vérifiez le dossier slots/ dans Supabase et l’accueil.");
-      router.refresh();
-    } catch {
-      toast.error("Erreur réseau");
-    } finally {
-      setRenderingPages(false);
-    }
-  }, [canRegeneratePages, router]);
+    },
+    [router],
+  );
+
+  const handleDelete = useCallback(
+    async (entry: FlipbookCatalogEntry) => {
+      const ok = window.confirm(
+        `Supprimer définitivement ce flipbook ?\n\n${entry.label}\n\nLe PDF et les pages WebP associées seront supprimés du stockage.`,
+      );
+      if (!ok) return;
+      setDeletingUrl(entry.pdfUrl);
+      try {
+        const res = await fetch("/api/admin/flipbook-pdf", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ action: "delete", pdfUrl: entry.pdfUrl }),
+        });
+        const data = (await res.json()) as { ok?: boolean; error?: string };
+        if (!res.ok) {
+          toast.error(typeof data.error === "string" ? data.error : "Suppression impossible");
+          return;
+        }
+        toast.success("Flipbook supprimé.");
+        router.refresh();
+      } catch {
+        toast.error("Erreur réseau");
+      } finally {
+        setDeletingUrl(null);
+      }
+    },
+    [router],
+  );
 
   const onDrop = useCallback(
     async (accepted: File[]) => {
@@ -218,19 +254,81 @@ export function FlipbookPdfAdmin({
   });
 
   return (
-    <div className="mt-10 rounded-xl border border-stone-200 bg-white p-8">
-      <h2 className="font-[family-name:var(--font-serif)] text-xl font-light text-stone-900">
-        Flipbook (page d’accueil)
-      </h2>
+    <div className="mt-8 rounded-xl border border-stone-200 bg-white p-8">
+      <h2 className="font-[family-name:var(--font-serif)] text-xl font-light text-stone-900">Magazine 3D</h2>
       <p className="mt-2 text-sm text-stone-500">
-        Téléversez un PDF : il sera affiché comme magazine feuilletable au-dessus de la section
-        newsletter. Sur Vercel, le fichier est envoyé directement vers Supabase Storage (contourne la
-        limite ~4,5 Mo du serveur). Jusqu’à{" "}
-        <span className="font-medium text-stone-700">{maxPagesInFlipbook}</span> page
-        {maxPagesInFlipbook > 1 ? "s" : ""} sont générées (
-        <code className="rounded bg-stone-100 px-1 font-mono text-[11px]">FLIPBOOK_RENDER_MAX_PAGES</code>
-        ).
+        Téléversez un PDF : il sera affiché comme magazine feuilletable au-dessus de la section newsletter. Plusieurs
+        fichiers peuvent être enregistrés ; choisissez celui affiché sur l’accueil ci-dessous.
       </p>
+
+      {catalogSorted.length > 0 ? (
+        <div className="mt-8 border-t border-stone-100 pt-8">
+          <h3 className="text-xs font-medium uppercase tracking-wider text-stone-500">Magazines enregistrés</h3>
+          <ul className="mt-4 space-y-3">
+            {catalogSorted.map((entry) => {
+              const isActive = entry.pdfUrl === currentPdfUrl;
+              const hasPages = Boolean(entry.manifestJson?.trim());
+              return (
+                <li
+                  key={entry.id}
+                  className="flex flex-col gap-3 rounded-lg border border-stone-200 bg-stone-50/50 p-4 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-stone-900">{entry.label}</p>
+                    <p className="mt-0.5 truncate font-mono text-[10px] text-stone-400" title={entry.pdfUrl}>
+                      {entry.pdfUrl}
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {isActive ? (
+                        <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-emerald-900">
+                          Sur l&apos;accueil
+                        </span>
+                      ) : null}
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ${
+                          hasPages ? "bg-stone-200 text-stone-800" : "bg-amber-100 text-amber-900"
+                        }`}
+                      >
+                        {hasPages ? "Pages générées" : "Pages non générées"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2">
+                    {!isActive ? (
+                      <button
+                        type="button"
+                        disabled={
+                          settingActiveUrl !== null ||
+                          deletingUrl !== null ||
+                          uploading ||
+                          waitingForManifest
+                        }
+                        onClick={() => void handleSetActive(entry.pdfUrl)}
+                        className="rounded-lg bg-stone-900 px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-stone-800 disabled:opacity-50"
+                      >
+                        {settingActiveUrl === entry.pdfUrl ? "…" : "Afficher sur l’accueil"}
+                      </button>
+                    ) : null}
+                    <button
+                      type="button"
+                      disabled={
+                        deletingUrl !== null ||
+                        settingActiveUrl !== null ||
+                        uploading ||
+                        waitingForManifest
+                      }
+                      onClick={() => void handleDelete(entry)}
+                      className="rounded-lg border border-red-300 bg-red-50 px-4 py-2 text-xs font-medium text-red-700 transition-colors hover:bg-red-100 disabled:opacity-50"
+                    >
+                      {deletingUrl === entry.pdfUrl ? "Suppression…" : "Supprimer"}
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ) : null}
 
       <AnimatePresence>
         {showProgress ? (
@@ -241,72 +339,49 @@ export function FlipbookPdfAdmin({
             transition={{ duration: 0.2 }}
             className="mt-5 overflow-hidden rounded-xl border border-stone-300/80 bg-gradient-to-b from-stone-50 to-stone-100/90 px-4 py-4 shadow-sm"
           >
-            <p className="text-xs font-medium uppercase tracking-[0.12em] text-stone-600">
-              Génération du flipbook
-            </p>
-            <div className="relative mt-3 h-2.5 w-full overflow-hidden rounded-full bg-stone-200/90">
-              <motion.div
-                className="absolute top-0 h-full w-[38%] rounded-full bg-stone-800"
-                initial={{ left: "-38%" }}
-                animate={{ left: ["-38%", "100%"] }}
-                transition={{
-                  duration: 1.45,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <p className="text-xs font-medium uppercase tracking-[0.12em] text-stone-600">
+                Génération du flipbook
+              </p>
+              <p className="font-mono text-xs tabular-nums text-stone-700">
+                {renderProgress?.percent ?? 0} %
+              </p>
+            </div>
+            <div className="relative mt-3 h-3 w-full overflow-hidden rounded-full bg-stone-200/90">
+              <div
+                className="h-full rounded-full bg-stone-800 transition-[width] duration-300 ease-out"
+                style={{ width: `${Math.min(100, Math.max(0, renderProgress?.percent ?? 0))}%` }}
               />
             </div>
-            <motion.p
-              key={progressStep}
-              initial={{ opacity: 0.5 }}
-              animate={{ opacity: 1 }}
-              className="mt-3 min-h-[2.5rem] text-sm leading-snug text-stone-800"
-            >
-              {stepLabels[progressStep]}
-            </motion.p>
-            <p className="mt-1 text-[11px] text-stone-500">
-              Ne fermez pas cet onglet pendant l’opération (peut prendre une à plusieurs minutes).
+            <p className="mt-3 min-h-[3rem] text-sm leading-snug text-stone-800">
+              {renderProgress?.message ??
+                "Connexion au serveur… Le rendu démarre (iLovePDF puis conversion WebP page par page)."}
+            </p>
+            {renderProgress?.uploadCurrent != null && renderProgress.uploadsTotal != null ? (
+              <p className="mt-1 text-xs text-stone-600">
+                Fichiers WebP envoyés sur Supabase : {renderProgress.uploadCurrent} /{" "}
+                {renderProgress.uploadsTotal}
+              </p>
+            ) : null}
+            {renderProgress?.pdfPageCurrent != null && renderProgress.pdfPagesTotal != null ? (
+              <p className="mt-0.5 text-xs text-stone-500">
+                Progression pages PDF : {renderProgress.pdfPageCurrent} / {renderProgress.pdfPagesTotal}
+              </p>
+            ) : null}
+            <p className="mt-3 text-[11px] text-stone-500">
+              Ne fermez pas cet onglet pendant l’opération (peut prendre une à plusieurs minutes). La barre reflète
+              l’état réel côté serveur.
             </p>
           </motion.div>
         ) : null}
       </AnimatePresence>
 
-      {currentPdfUrl ? (
-        <div className="mt-4 space-y-3">
-          <p className="text-sm text-stone-700">
-            Fichier actif :{" "}
-            <Link
-              href={currentPdfUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="break-all font-mono text-xs text-stone-900 underline"
-            >
-              {currentPdfUrl}
-            </Link>
-          </p>
-          {!hasManifest && canRegeneratePages ? (
-            <p className="rounded-lg border border-amber-200 bg-amber-50/80 px-3 py-2 text-xs text-amber-950">
-              Aucune image WebP enregistrée pour le flipbook (dossier <code className="font-mono">slots/</code> absent
-              ou génération non terminée). Utilisez le bouton ci-dessous pour relancer la création des pages à partir de
-              ce PDF.
-            </p>
-          ) : null}
-          {canRegeneratePages ? (
-            <button
-              type="button"
-              onClick={() => void onRegeneratePages()}
-              disabled={renderingPages || uploading || waitingForManifest}
-              className="rounded-lg border border-stone-300 bg-stone-50 px-4 py-2 text-xs font-medium uppercase tracking-wider text-stone-800 transition-colors hover:bg-stone-100 disabled:opacity-50"
-            >
-              {renderingPages
-                ? "Génération en cours…"
-                : hasManifest
-                  ? "Régénérer les images WebP"
-                  : "Générer les pages WebP (flipbook)"}
-            </button>
-          ) : null}
-        </div>
-      ) : (
+      {currentPdfUrl && !hasManifest ? (
+        <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50/80 px-3 py-2 text-xs text-amber-950">
+          Aucune image WebP enregistrée pour le flipbook (dossier <code className="font-mono">slots/</code> absent ou
+          génération non terminée). Téléversez à nouveau le PDF pour relancer la création des pages.
+        </p>
+      ) : currentPdfUrl ? null : (
         <p className="mt-4 text-sm text-amber-800">Aucun PDF — la section flipbook est masquée sur le site.</p>
       )}
 

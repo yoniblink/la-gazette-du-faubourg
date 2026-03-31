@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { after } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
+import { revalidatePath } from "next/cache";
+import { writeFile, mkdir, unlink } from "fs/promises";
 import path from "path";
 import { randomBytes } from "crypto";
 import { auth } from "@/auth";
@@ -9,6 +10,13 @@ import {
   renderFlipbookPdfToStorageAndPersist,
 } from "@/lib/flipbook-render-server";
 import { prisma } from "@/lib/prisma";
+import {
+  createCatalogEntryFromSupabase,
+  createCatalogEntryLocal,
+  getFlipbookCatalog,
+  mergeNewUpload,
+  saveFlipbookCatalog,
+} from "@/lib/flipbook-catalog";
 import { HOME_FLIPBOOK_MANIFEST_KEY, HOME_FLIPBOOK_PDF_URL_KEY } from "@/lib/site-settings";
 import { parseSupabaseStoragePublicUrl } from "@/lib/supabase-storage-public-url";
 import {
@@ -56,6 +64,50 @@ function isAllowedFlipbookStoragePath(storagePath: string): boolean {
 
 function isOnVercel(): boolean {
   return Boolean(process.env.VERCEL);
+}
+
+async function listAllStorageObjects(
+  bucket: string,
+  prefix: string,
+): Promise<string[]> {
+  const admin = createSupabaseServiceRoleClient();
+  if (!admin) return [];
+  const names: string[] = [];
+  let offset = 0;
+  const limit = 100;
+  while (true) {
+    const { data, error } = await admin.storage.from(bucket).list(prefix, {
+      limit,
+      offset,
+      sortBy: { column: "name", order: "asc" },
+    });
+    if (error || !data || data.length === 0) break;
+    for (const file of data) {
+      if (!file.name) continue;
+      const full = `${prefix}/${file.name}`.replace(/\/+/g, "/");
+      names.push(full);
+    }
+    if (data.length < limit) break;
+    offset += limit;
+  }
+  return names;
+}
+
+async function deleteSupabaseFlipbookEntry(storagePath: string): Promise<string | null> {
+  if (!isAllowedFlipbookStoragePath(storagePath)) {
+    return "Chemin du PDF non autorisé pour la suppression.";
+  }
+  const admin = createSupabaseServiceRoleClient();
+  if (!admin) return "Configuration Storage incomplète";
+  const bucket = getFlipbookStorageBucket();
+  const dir = path.posix.dirname(storagePath);
+  const slotsPrefix = `${dir}/slots`;
+  const slotFiles = await listAllStorageObjects(bucket, slotsPrefix);
+  const toDelete = [storagePath, ...slotFiles];
+  const unique = Array.from(new Set(toDelete));
+  const { error } = await admin.storage.from(bucket).remove(unique);
+  if (error) return error.message;
+  return null;
 }
 
 /** Message utile quand le bucket Storage n’existe pas ou le nom ne correspond pas. */
@@ -184,6 +236,10 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "URL publique introuvable" }, { status: 500 });
       }
 
+      const catalogEntry = createCatalogEntryFromSupabase(storagePath, publicUrl);
+      const catalogBefore = await getFlipbookCatalog();
+      await saveFlipbookCatalog(mergeNewUpload(catalogBefore, catalogEntry));
+
       await prisma.siteSetting.upsert({
         where: { key: HOME_FLIPBOOK_PDF_URL_KEY },
         create: { key: HOME_FLIPBOOK_PDF_URL_KEY, value: publicUrl },
@@ -202,6 +258,112 @@ export async function POST(req: Request) {
       });
 
       return NextResponse.json({ ok: true, url: publicUrl, renderingScheduled: true as const });
+    }
+
+    if (action === "setActive") {
+      const pdfUrl = typeof json.pdfUrl === "string" ? json.pdfUrl.trim() : "";
+      if (!pdfUrl) {
+        return NextResponse.json({ error: "URL du PDF requise" }, { status: 400 });
+      }
+      const catalog = await getFlipbookCatalog();
+      const entry = catalog.find((e) => e.pdfUrl === pdfUrl);
+      if (!entry) {
+        return NextResponse.json({ error: "Ce PDF ne figure pas dans le catalogue." }, { status: 400 });
+      }
+
+      await prisma.siteSetting.upsert({
+        where: { key: HOME_FLIPBOOK_PDF_URL_KEY },
+        create: { key: HOME_FLIPBOOK_PDF_URL_KEY, value: entry.pdfUrl },
+        update: { value: entry.pdfUrl },
+      });
+
+      if (entry.manifestJson?.trim()) {
+        await prisma.siteSetting.upsert({
+          where: { key: HOME_FLIPBOOK_MANIFEST_KEY },
+          create: { key: HOME_FLIPBOOK_MANIFEST_KEY, value: entry.manifestJson.trim() },
+          update: { value: entry.manifestJson.trim() },
+        });
+      } else {
+        await prisma.siteSetting.deleteMany({ where: { key: HOME_FLIPBOOK_MANIFEST_KEY } });
+      }
+
+      try {
+        revalidatePath("/");
+      } catch {
+        /* */
+      }
+
+      return NextResponse.json({ ok: true as const });
+    }
+
+    if (action === "delete") {
+      const pdfUrl = typeof json.pdfUrl === "string" ? json.pdfUrl.trim() : "";
+      if (!pdfUrl) {
+        return NextResponse.json({ error: "URL du PDF requise" }, { status: 400 });
+      }
+      const catalog = await getFlipbookCatalog();
+      const idx = catalog.findIndex((e) => e.pdfUrl === pdfUrl);
+      if (idx < 0) {
+        return NextResponse.json({ error: "Ce PDF ne figure pas dans le catalogue." }, { status: 400 });
+      }
+      const entry = catalog[idx]!;
+
+      if (entry.storagePath) {
+        const err = await deleteSupabaseFlipbookEntry(entry.storagePath);
+        if (err) {
+          return NextResponse.json(
+            { error: `Suppression Storage impossible: ${err}` },
+            { status: 500 },
+          );
+        }
+      } else if (entry.pdfUrl.startsWith("/uploads/")) {
+        const localPath = path.join(process.cwd(), "public", entry.pdfUrl.replace(/^\/+/, ""));
+        try {
+          await unlink(localPath);
+        } catch {
+          /* ignore absence fichier */
+        }
+      }
+
+      const nextCatalog = catalog.filter((e) => e.pdfUrl !== entry.pdfUrl);
+      await saveFlipbookCatalog(nextCatalog);
+
+      const wasActive = entry.pdfUrl === (await prisma.siteSetting.findUnique({
+        where: { key: HOME_FLIPBOOK_PDF_URL_KEY },
+      }))?.value?.trim();
+
+      if (wasActive) {
+        const next = nextCatalog[0] ?? null;
+        if (next) {
+          await prisma.siteSetting.upsert({
+            where: { key: HOME_FLIPBOOK_PDF_URL_KEY },
+            create: { key: HOME_FLIPBOOK_PDF_URL_KEY, value: next.pdfUrl },
+            update: { value: next.pdfUrl },
+          });
+          if (next.manifestJson?.trim()) {
+            await prisma.siteSetting.upsert({
+              where: { key: HOME_FLIPBOOK_MANIFEST_KEY },
+              create: { key: HOME_FLIPBOOK_MANIFEST_KEY, value: next.manifestJson.trim() },
+              update: { value: next.manifestJson.trim() },
+            });
+          } else {
+            await prisma.siteSetting.deleteMany({ where: { key: HOME_FLIPBOOK_MANIFEST_KEY } });
+          }
+        } else {
+          await prisma.siteSetting.deleteMany({
+            where: { key: HOME_FLIPBOOK_PDF_URL_KEY },
+          });
+          await prisma.siteSetting.deleteMany({ where: { key: HOME_FLIPBOOK_MANIFEST_KEY } });
+        }
+      }
+
+      try {
+        revalidatePath("/");
+      } catch {
+        /* */
+      }
+
+      return NextResponse.json({ ok: true as const });
     }
 
     /** Relance la génération WebP (même PDF que l’URL enregistrée) — utile si le job initial a échoué / timeout. */
@@ -305,6 +467,10 @@ export async function POST(req: Request) {
 
     const url = `/uploads/${filename}`;
 
+    const localEntry = createCatalogEntryLocal(url, filename);
+    const catBefore = await getFlipbookCatalog();
+    await saveFlipbookCatalog(mergeNewUpload(catBefore, localEntry));
+
     await prisma.siteSetting.upsert({
       where: { key: HOME_FLIPBOOK_PDF_URL_KEY },
       create: { key: HOME_FLIPBOOK_PDF_URL_KEY, value: url },
@@ -333,6 +499,6 @@ export async function GET() {
   }
   return NextResponse.json({
     message:
-      "POST JSON uniquement : prepare, commit, renderPages. Le PDF ne doit pas transiter sur cette route (sinon 413).",
+      "POST JSON uniquement : prepare, commit, setActive, delete, renderPages. Le PDF ne doit pas transiter sur cette route (sinon 413).",
   });
 }
