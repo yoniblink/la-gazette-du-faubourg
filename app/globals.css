@@ -246,10 +246,6 @@ body {
 }
 
 /* TipTap HTML rendu (public) */
-.article-tiptap-html {
-  overflow-wrap: break-word;
-}
-
 .article-tiptap-html h2 {
   margin-top: 1.5rem;
   margin-bottom: 0.5rem;

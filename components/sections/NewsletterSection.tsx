@@ -8,7 +8,7 @@ import { site } from "@/lib/content/site";
 export function NewsletterSection() {
   return (
     <section id="newsletter" className="scroll-mt-24 border-y border-black/[0.06] bg-[#fafafa] py-20 md:py-24">
-      <div className="mx-auto max-w-6xl pl-[max(1.5rem,env(safe-area-inset-left,0px))] pr-[max(1.5rem,env(safe-area-inset-right,0px))] md:px-10">
+      <div className="mx-auto max-w-6xl px-6 md:px-10">
         <MotionDiv
           variants={fadeUp}
           initial="hidden"
@@ -29,7 +29,7 @@ export function NewsletterSection() {
             href={site.newsletterUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex min-h-12 w-full items-center justify-center gap-3 border border-[#0a0a0a] bg-[#0a0a0a] px-8 py-3.5 font-[family-name:var(--font-sans)] text-[11px] font-medium uppercase tracking-[0.24em] text-white transition-opacity hover:opacity-90 md:min-h-0 md:w-auto"
+            className="inline-flex items-center gap-3 border border-[#0a0a0a] bg-[#0a0a0a] px-8 py-3.5 font-[family-name:var(--font-sans)] text-[11px] font-medium uppercase tracking-[0.24em] text-white transition-opacity hover:opacity-90"
           >
             S’abonner
             <span aria-hidden>↗</span>

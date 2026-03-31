@@ -68,11 +68,11 @@ export function Hero() {
   return (
     <section
       id="intro"
-      className="scroll-mt-24 border-b border-black/[0.06] bg-[#fafafa] pt-[calc(4.25rem+env(safe-area-inset-top,0px))] md:pt-20"
+      className="scroll-mt-24 border-b border-black/[0.06] bg-[#fafafa] pt-16 md:pt-20"
     >
       <div className="mx-auto grid max-w-[100rem] grid-cols-1 md:grid-cols-2 md:min-h-[min(100svh,56rem)] md:items-stretch">
         {/* min-h-0 : la ligne de grille peut se réduire au repli du texte (sinon min-height:auto bloque) */}
-        <div className="flex min-h-0 flex-col items-center justify-center py-12 pl-[max(1.5rem,env(safe-area-inset-left,0px))] pr-[max(1.5rem,env(safe-area-inset-right,0px))] md:items-stretch md:px-10 md:py-16 lg:px-14 xl:px-16">
+        <div className="flex min-h-0 flex-col items-center justify-center px-6 py-12 md:items-stretch md:px-10 md:py-16 lg:px-14 xl:px-16">
           <div className="w-full max-w-xl self-center md:self-start">
             <motion.div
               initial={{ opacity: 0, y: 8 }}
@@ -101,7 +101,7 @@ export function Hero() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="inline-flex min-h-11 items-center font-[family-name:var(--font-serif)] text-[18px] italic text-[#111111] transition-opacity hover:opacity-65 md:min-h-0"
+                      className="font-[family-name:var(--font-serif)] text-[18px] italic text-[#111111] transition-opacity hover:opacity-65"
                     >
                       {link.label}
                     </Link>

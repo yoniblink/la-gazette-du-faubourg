@@ -10,7 +10,7 @@ export function Footer({ categories }: { categories: FooterCategory[] }) {
   const laRevue = categories.find((c) => c.slug === "la-revue");
   return (
     <footer className="border-t border-black/[0.08] bg-white">
-      <div className="mx-auto grid max-w-6xl gap-14 py-16 pl-[max(1.5rem,env(safe-area-inset-left,0px))] pr-[max(1.5rem,env(safe-area-inset-right,0px))] md:grid-cols-12 md:gap-10 md:px-10 lg:gap-12">
+      <div className="mx-auto grid max-w-6xl gap-14 px-6 py-16 md:grid-cols-12 md:gap-10 md:px-10 lg:gap-12">
         <div className="md:col-span-3">
           <p className="font-[family-name:var(--font-sans)] text-[11px] font-medium uppercase tracking-[0.28em] text-[#6b6b6b]">
             Qui sommes-nous
@@ -21,7 +21,7 @@ export function Footer({ categories }: { categories: FooterCategory[] }) {
           </p>
           <Link
             href="/#intro"
-            className="mt-4 inline-flex min-h-11 items-center font-[family-name:var(--font-sans)] text-[11px] uppercase tracking-[0.2em] text-[#0a0a0a] underline decoration-black/20 underline-offset-4 hover:decoration-black/45 md:min-h-0"
+            className="mt-4 inline-block font-[family-name:var(--font-sans)] text-[11px] uppercase tracking-[0.2em] text-[#0a0a0a] underline decoration-black/20 underline-offset-4 hover:decoration-black/45"
           >
             En savoir plus
           </Link>
@@ -37,7 +37,7 @@ export function Footer({ categories }: { categories: FooterCategory[] }) {
                 <li key={r.slug}>
                   <Link
                     href={`/${r.slug}`}
-                    className="inline-flex min-h-11 items-center font-[family-name:var(--font-sans)] text-sm text-[#0a0a0a] transition-opacity hover:opacity-55 md:min-h-0"
+                    className="font-[family-name:var(--font-sans)] text-sm text-[#0a0a0a] transition-opacity hover:opacity-55"
                   >
                     {r.title}
                   </Link>
@@ -54,7 +54,7 @@ export function Footer({ categories }: { categories: FooterCategory[] }) {
                 <li key={r.slug}>
                   <Link
                     href={`/${r.slug}`}
-                    className="inline-flex min-h-11 items-center font-[family-name:var(--font-sans)] text-sm text-[#0a0a0a] transition-opacity hover:opacity-55 md:min-h-0"
+                    className="font-[family-name:var(--font-sans)] text-sm text-[#0a0a0a] transition-opacity hover:opacity-55"
                   >
                     {r.title}
                   </Link>
@@ -73,7 +73,7 @@ export function Footer({ categories }: { categories: FooterCategory[] }) {
               <li>
                 <Link
                   href={`/${laRevue.slug}`}
-                  className="inline-flex min-h-11 items-center font-[family-name:var(--font-sans)] text-sm text-[#0a0a0a] transition-opacity hover:opacity-55 md:min-h-0"
+                  className="font-[family-name:var(--font-sans)] text-sm text-[#0a0a0a] transition-opacity hover:opacity-55"
                 >
                   {laRevue.title}
                 </Link>
@@ -84,7 +84,7 @@ export function Footer({ categories }: { categories: FooterCategory[] }) {
                 href={site.mediaKitUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex min-h-11 items-center font-[family-name:var(--font-sans)] text-sm text-[#0a0a0a] transition-opacity hover:opacity-55 md:min-h-0"
+                className="font-[family-name:var(--font-sans)] text-sm text-[#0a0a0a] transition-opacity hover:opacity-55"
               >
                 Le Media-kit
               </Link>
@@ -96,13 +96,13 @@ export function Footer({ categories }: { categories: FooterCategory[] }) {
           <p className="font-[family-name:var(--font-sans)] text-[11px] font-medium uppercase tracking-[0.28em] text-[#6b6b6b]">
             Rejoignez-nous
           </p>
-          <ul className="mt-4 flex flex-wrap gap-x-6 gap-y-1 font-[family-name:var(--font-sans)] text-sm text-[#0a0a0a] md:gap-y-3">
+          <ul className="mt-4 flex flex-wrap gap-x-6 gap-y-3 font-[family-name:var(--font-sans)] text-sm text-[#0a0a0a]">
             <li>
               <Link
                 href={site.instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex min-h-11 items-center transition-opacity hover:opacity-55 md:min-h-0"
+                className="transition-opacity hover:opacity-55"
               >
                 Instagram
               </Link>
@@ -112,7 +112,7 @@ export function Footer({ categories }: { categories: FooterCategory[] }) {
                 href={site.youtubeUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex min-h-11 items-center transition-opacity hover:opacity-55 md:min-h-0"
+                className="transition-opacity hover:opacity-55"
               >
                 Youtube
               </Link>
@@ -122,7 +122,7 @@ export function Footer({ categories }: { categories: FooterCategory[] }) {
                 href={site.twitterUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex min-h-11 items-center transition-opacity hover:opacity-55 md:min-h-0"
+                className="transition-opacity hover:opacity-55"
               >
                 X
               </Link>
@@ -132,7 +132,7 @@ export function Footer({ categories }: { categories: FooterCategory[] }) {
                 href={site.facebookUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex min-h-11 items-center transition-opacity hover:opacity-55 md:min-h-0"
+                className="transition-opacity hover:opacity-55"
               >
                 Facebook
               </Link>
@@ -140,7 +140,7 @@ export function Footer({ categories }: { categories: FooterCategory[] }) {
           </ul>
         </div>
       </div>
-      <div className="border-t border-black/[0.06] bg-[#fafafa] py-6 pl-[max(1.5rem,env(safe-area-inset-left,0px))] pr-[max(1.5rem,env(safe-area-inset-right,0px))] pb-[max(1.5rem,env(safe-area-inset-bottom,0px))] md:px-6 md:pb-6">
+      <div className="border-t border-black/[0.06] bg-[#fafafa] px-6 py-6">
         <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center font-[family-name:var(--font-sans)] text-[10px] uppercase tracking-[0.24em] text-[#8a8a8a]">
           <span>
             © {new Date().getFullYear()} {site.name}

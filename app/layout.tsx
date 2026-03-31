@@ -22,7 +22,6 @@ export const viewport: Viewport = {
   themeColor: "#fafafa",
   width: "device-width",
   initialScale: 1,
-  viewportFit: "cover",
 };
 
 export const metadata: Metadata = {
@@ -57,7 +56,7 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
-      className={`${serif.variable} ${sans.variable} h-full scroll-smooth scroll-pt-[calc(5rem+env(safe-area-inset-top,0px))] antialiased md:scroll-pt-28`}
+      className={`${serif.variable} ${sans.variable} h-full scroll-smooth scroll-pt-20 antialiased md:scroll-pt-24`}
     >
       <body className="min-h-full bg-[#fafafa] text-[#0a0a0a]">
         <Providers>{children}</Providers>
