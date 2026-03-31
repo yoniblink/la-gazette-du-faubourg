@@ -1,5 +1,5 @@
 /**
- * Secret JWT partagé par Auth.js (auth.ts) et le middleware Edge.
+ * Secret JWT partagé par Auth.js (auth.ts) et le proxy Next.js (`proxy.ts`).
  * Reste léger (pas de Prisma / bcrypt) pour respecter la limite ~1 Mo des Edge Functions Vercel.
  */
 function vercelDerivedAuthSecret(): string | null {

@@ -61,10 +61,15 @@ export function EditorialCarousel({ items }: Props) {
       role="region"
       aria-roledescription="carrousel"
       aria-label="Articles à la une"
-      className="relative w-full overflow-hidden rounded-sm bg-[#060606] text-white shadow-[0_24px_80px_rgba(0,0,0,0.18)] aspect-[4/5] min-h-[360px] md:aspect-[1200/645] md:min-h-[280px] lg:min-h-[320px]"
+      className="relative w-full overflow-hidden rounded-sm bg-[#060606] text-white shadow-[0_24px_80px_rgba(0,0,0,0.18)]"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
+      {/* Bloc en flux : hauteur non nulle pour les parents des Image fill (évite warning Next) */}
+      <div
+        className="pointer-events-none w-full max-md:[aspect-ratio:4/5] max-md:min-h-[360px] md:[aspect-ratio:1200/645] md:min-h-[280px] lg:min-h-[320px]"
+        aria-hidden
+      />
       {/* Image plein cadre */}
       <AnimatePresence initial={false} mode="wait">
         <motion.div

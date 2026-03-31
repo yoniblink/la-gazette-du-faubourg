@@ -5,10 +5,10 @@ import { authSecret } from "@/lib/auth-secret";
 import { updateSession } from "@/utils/supabase/middleware";
 
 /**
- * Vérification session légère (JWT uniquement) — n’importe pas @/auth pour éviter Prisma/bcrypt
+ * Vérification session légère (JWT uniquement) — n'importe pas @/auth pour éviter Prisma/bcrypt
  * dans le bundle Edge (~1 Mo max sur Vercel Hobby).
  */
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const supabaseResponse = await updateSession(req);
   const { pathname } = req.nextUrl;
 

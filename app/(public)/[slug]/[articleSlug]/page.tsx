@@ -77,7 +77,7 @@ export default async function RubriqueArticlePage({ params }: Props) {
           ) : null}
         </header>
 
-        <div className="relative mt-12 aspect-[16/10] w-full overflow-hidden bg-[#eaeaea] md:aspect-[2/1]">
+        <div className="relative mt-12 aspect-[16/10] min-h-[11rem] w-full overflow-hidden bg-[#eaeaea] md:aspect-[2/1] md:min-h-[14rem]">
           <Image
             src={article.coverImageUrl}
             alt={article.coverImageAlt}
