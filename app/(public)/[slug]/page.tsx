@@ -45,9 +45,9 @@ export default async function RubriquePage({ params }: Props) {
     isLaRevue && hasDatabaseUrl() ? await getHomeFlipbookManifest() : null;
 
   return (
-    <main className="bg-white pb-24 pt-20 md:pb-32 md:pt-28">
-      <article className="mx-auto max-w-6xl px-6 md:px-10">
-        <nav className="font-[family-name:var(--font-sans)] text-[10px] uppercase tracking-[0.24em] text-[#7a7a7a]">
+    <main className="bg-white pb-24 pt-[calc(4.25rem+env(safe-area-inset-top,0px))] md:pb-32 md:pt-28">
+      <article className="mx-auto max-w-6xl pl-[max(1.5rem,env(safe-area-inset-left,0px))] pr-[max(1.5rem,env(safe-area-inset-right,0px))] md:px-10">
+        <nav className="flex flex-wrap items-baseline gap-x-2 gap-y-1 font-[family-name:var(--font-sans)] text-[11px] uppercase tracking-[0.2em] text-[#7a7a7a] md:text-[10px] md:tracking-[0.24em]">
           <Link href="/" className="transition-opacity hover:opacity-60">
             Accueil
           </Link>

@@ -14,7 +14,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="mt-4 w-full border border-[#0a0a0a] bg-[#0a0a0a] px-6 py-3.5 font-[family-name:var(--font-sans)] text-[11px] font-medium uppercase tracking-[0.28em] text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+      className="mt-4 min-h-12 w-full border border-[#0a0a0a] bg-[#0a0a0a] px-6 py-3.5 font-[family-name:var(--font-sans)] text-[11px] font-medium uppercase tracking-[0.28em] text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 md:min-h-0"
     >
       {pending ? "Envoi…" : "Envoyer"}
     </button>
@@ -41,7 +41,7 @@ function MailCard({
       </p>
       <Link
         href={href}
-        className="mt-6 inline-flex items-center gap-2 font-[family-name:var(--font-sans)] text-[11px] font-medium uppercase tracking-[0.2em] text-[#0a0a0a] transition-opacity hover:opacity-60"
+        className="mt-6 inline-flex min-h-11 items-center gap-2 font-[family-name:var(--font-sans)] text-[11px] font-medium uppercase tracking-[0.2em] text-[#0a0a0a] transition-opacity hover:opacity-60 md:min-h-0"
       >
         Écrire
         <span aria-hidden>↗</span>
@@ -54,8 +54,8 @@ export function Contact() {
   const [state, formAction] = useActionState(submitContact, initial);
 
   return (
-    <section className="scroll-mt-24 bg-white py-24 md:py-32">
-      <div className="mx-auto max-w-6xl px-6 md:px-10">
+    <section className="scroll-mt-24 bg-white pb-24 pt-[calc(5rem+env(safe-area-inset-top,0px))] md:py-32">
+      <div className="mx-auto max-w-6xl pl-[max(1.5rem,env(safe-area-inset-left,0px))] pr-[max(1.5rem,env(safe-area-inset-right,0px))] md:px-10">
         <MotionDiv
           variants={fadeUp}
           initial="hidden"
@@ -108,7 +108,7 @@ export function Contact() {
                   type="text"
                   required
                   autoComplete="name"
-                  className="mt-2 w-full border border-black/[0.12] bg-white px-4 py-3 font-[family-name:var(--font-sans)] text-sm text-[#0a0a0a] outline-none transition-[border-color,box-shadow] focus:border-[#0a0a0a]/35 focus:ring-2 focus:ring-[#0a0a0a]/10"
+                  className="mt-2 w-full border border-black/[0.12] bg-white px-4 py-3 font-[family-name:var(--font-sans)] text-base text-[#0a0a0a] outline-none transition-[border-color,box-shadow] focus:border-[#0a0a0a]/35 focus:ring-2 focus:ring-[#0a0a0a]/10 md:text-sm"
                 />
               </div>
               <div>
@@ -124,7 +124,7 @@ export function Contact() {
                   type="email"
                   required
                   autoComplete="email"
-                  className="mt-2 w-full border border-black/[0.12] bg-white px-4 py-3 font-[family-name:var(--font-sans)] text-sm text-[#0a0a0a] outline-none transition-[border-color,box-shadow] focus:border-[#0a0a0a]/35 focus:ring-2 focus:ring-[#0a0a0a]/10"
+                  className="mt-2 w-full border border-black/[0.12] bg-white px-4 py-3 font-[family-name:var(--font-sans)] text-base text-[#0a0a0a] outline-none transition-[border-color,box-shadow] focus:border-[#0a0a0a]/35 focus:ring-2 focus:ring-[#0a0a0a]/10 md:text-sm"
                 />
               </div>
               <div>
@@ -139,7 +139,7 @@ export function Contact() {
                   name="message"
                   required
                   rows={4}
-                  className="mt-2 w-full resize-y border border-black/[0.12] bg-white px-4 py-3 font-[family-name:var(--font-sans)] text-sm text-[#0a0a0a] outline-none transition-[border-color,box-shadow] focus:border-[#0a0a0a]/35 focus:ring-2 focus:ring-[#0a0a0a]/10"
+                  className="mt-2 w-full resize-y border border-black/[0.12] bg-white px-4 py-3 font-[family-name:var(--font-sans)] text-base text-[#0a0a0a] outline-none transition-[border-color,box-shadow] focus:border-[#0a0a0a]/35 focus:ring-2 focus:ring-[#0a0a0a]/10 md:text-sm"
               />
               </div>
               <SubmitButton />

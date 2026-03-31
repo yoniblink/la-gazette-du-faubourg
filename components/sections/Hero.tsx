@@ -68,23 +68,23 @@ export function Hero() {
   return (
     <section
       id="intro"
-      className="scroll-mt-24 border-b border-black/[0.06] bg-[#fafafa] pt-16 md:pt-20"
+      className="scroll-mt-24 border-b border-black/[0.06] bg-[#fafafa] pt-[calc(4.25rem+env(safe-area-inset-top,0px))] md:pt-20"
     >
       <div className="mx-auto grid max-w-[100rem] grid-cols-1 md:grid-cols-2 md:min-h-[min(100svh,56rem)] md:items-stretch">
         {/* min-h-0 : la ligne de grille peut se réduire au repli du texte (sinon min-height:auto bloque) */}
-        <div className="flex min-h-0 flex-col justify-center px-6 py-12 md:px-10 md:py-16 lg:px-14 xl:px-16">
-          <div className="w-full max-w-xl self-start">
+        <div className="flex min-h-0 flex-col items-center justify-center py-12 pl-[max(1.5rem,env(safe-area-inset-left,0px))] pr-[max(1.5rem,env(safe-area-inset-right,0px))] md:items-stretch md:px-10 md:py-16 lg:px-14 xl:px-16">
+          <div className="w-full max-w-xl self-center md:self-start">
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.65, ease: easeLux }}
-              className="relative h-16 w-full sm:h-[4.75rem] md:h-[5.75rem] lg:h-28 xl:h-32"
+              className="relative mx-auto h-16 w-full max-w-[min(100%,20rem)] sm:h-[4.75rem] sm:max-w-none md:mx-0 md:h-[5.75rem] md:max-w-none lg:h-28 xl:h-32"
             >
               <Image
                 src="/logo-comite-faubourg.png"
                 alt="Comité du Faubourg Saint-Honoré"
                 fill
-                className="object-contain object-left"
+                className="object-contain object-center md:object-left"
                 sizes="(max-width: 640px) 360px, (max-width: 768px) 420px, (max-width: 1024px) 520px, (max-width: 1280px) 620px, 720px"
                 priority
               />
@@ -96,12 +96,12 @@ export function Hero() {
               aria-label="Navigation sous le logo"
               className="mt-4 py-2.5"
             >
-              <ul className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+              <ul className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 md:justify-start">
                 {heroInlineNavLinks.map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="font-[family-name:var(--font-serif)] text-[18px] italic text-[#111111] transition-opacity hover:opacity-65"
+                      className="inline-flex min-h-11 items-center font-[family-name:var(--font-serif)] text-[18px] italic text-[#111111] transition-opacity hover:opacity-65 md:min-h-0"
                     >
                       {link.label}
                     </Link>
@@ -111,7 +111,7 @@ export function Hero() {
             </motion.nav>
           </div>
 
-          <div className="mt-8 max-w-xl font-[family-name:var(--font-sans)] text-[15px] leading-[1.82] text-[#3a3a3a] lg:max-w-[28rem] lg:text-[16px]">
+          <div className="mt-8 w-full max-w-xl font-[family-name:var(--font-sans)] text-[15px] leading-[1.82] text-[#3a3a3a] lg:max-w-[28rem] lg:text-[16px]">
             <p>{p1}</p>
 
             <button

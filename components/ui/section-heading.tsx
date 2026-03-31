@@ -9,7 +9,9 @@ type Props = {
 
 export function SectionHeading({ eyebrow, title, className = "" }: Props) {
   return (
-    <header className={`mx-auto max-w-6xl px-6 md:px-10 ${className}`}>
+    <header
+      className={`mx-auto max-w-6xl pl-[max(1.5rem,env(safe-area-inset-left,0px))] pr-[max(1.5rem,env(safe-area-inset-right,0px))] md:px-10 ${className}`}
+    >
       {eyebrow ? (
         <MotionDiv
           variants={fadeUp}

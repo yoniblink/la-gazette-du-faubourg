@@ -81,11 +81,11 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
 
   const headerNode = (
     <header
-      className={`fixed inset-x-0 top-0 z-50 border-b border-black/[0.06] bg-[#fafafa]/92 backdrop-blur-md shadow-[0_8px_28px_rgba(10,10,10,0.05)] transition-[opacity,transform] duration-500 ease-in-out ${
+      className={`fixed inset-x-0 top-0 z-50 border-b border-black/[0.06] bg-[#fafafa]/92 pt-[env(safe-area-inset-top,0px)] backdrop-blur-md shadow-[0_8px_28px_rgba(10,10,10,0.05)] transition-[opacity,transform] duration-500 ease-in-out ${
         isVisible ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-5 opacity-0"
       }`}
     >
-      <div className="relative mx-auto flex h-14 w-full max-w-[100rem] items-center justify-between gap-x-4 px-4 md:grid md:h-16 md:grid-cols-[auto_1fr] md:justify-normal md:gap-x-6 md:px-8 lg:gap-x-8 lg:px-10 xl:px-12">
+      <div className="relative mx-auto flex h-14 w-full max-w-[100rem] items-center justify-between gap-x-4 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] md:grid md:h-16 md:grid-cols-[auto_1fr] md:justify-normal md:gap-x-6 md:px-8 lg:px-10 xl:px-12">
         <button
           type="button"
           className="relative z-10 flex h-10 w-10 shrink-0 flex-col items-center justify-center rounded-sm border border-[#0a0a0a]/10 bg-transparent text-[#0a0a0a] transition-[border-color,background-color] hover:border-[#0a0a0a]/22 hover:bg-[#0a0a0a]/[0.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0a0a0a]/25 md:hidden"
@@ -215,7 +215,7 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
               role="dialog"
               aria-modal="true"
               aria-label="Navigation du site"
-              className="fixed inset-y-0 left-0 z-[61] flex w-[min(100%,20.5rem)] flex-col border-r border-[#0a0a0a]/[0.08] bg-[#fafafa]/[0.97] shadow-[16px_0_48px_rgba(10,10,10,0.07)] backdrop-blur-xl md:hidden"
+              className="fixed inset-y-0 left-0 z-[61] flex w-[min(100%,20.5rem)] flex-col border-r border-[#0a0a0a]/[0.08] bg-[#fafafa]/[0.97] pb-[env(safe-area-inset-bottom,0px)] pl-[env(safe-area-inset-left,0px)] pt-[env(safe-area-inset-top,0px)] shadow-[16px_0_48px_rgba(10,10,10,0.07)] backdrop-blur-xl md:hidden"
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}

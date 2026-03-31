@@ -19,6 +19,21 @@ body {
   font-family: var(--font-sans), system-ui, sans-serif;
 }
 
+/* Mobile : pas de défilement horizontal « page », élastique horizontal réduit (iOS) */
+@media (max-width: 767px) {
+  html {
+    overflow-x: clip;
+    overscroll-behavior-x: none;
+  }
+
+  body {
+    overflow-x: clip;
+    overscroll-behavior-x: none;
+    max-width: 100%;
+    touch-action: pan-y;
+  }
+}
+
 ::selection {
   background: rgba(10, 10, 10, 0.08);
   color: var(--foreground);
@@ -231,6 +246,10 @@ body {
 }
 
 /* TipTap HTML rendu (public) */
+.article-tiptap-html {
+  overflow-wrap: break-word;
+}
+
 .article-tiptap-html h2 {
   margin-top: 1.5rem;
   margin-bottom: 0.5rem;

@@ -77,7 +77,7 @@ export function HomeFlipbook({
         className={
           embedded
             ? "mx-auto w-full max-w-none px-0"
-            : "mx-auto max-w-6xl px-6 md:px-10"
+            : "mx-auto max-w-6xl pl-[max(1.5rem,env(safe-area-inset-left,0px))] pr-[max(1.5rem,env(safe-area-inset-right,0px))] md:px-10"
         }
       >
         {!embedded ? (
@@ -142,7 +142,7 @@ export function HomeFlipbook({
               href={pdfUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 border border-[#0a0a0a]/25 px-5 py-2.5 text-[11px] font-medium uppercase tracking-[0.2em] text-[#0a0a0a] transition-colors hover:border-[#0a0a0a] hover:bg-[#0a0a0a] hover:text-white"
+              className="inline-flex min-h-11 items-center justify-center gap-2 border border-[#0a0a0a]/25 px-6 py-3 text-[11px] font-medium uppercase tracking-[0.2em] text-[#0a0a0a] transition-colors hover:border-[#0a0a0a] hover:bg-[#0a0a0a] hover:text-white md:min-h-0 md:px-5 md:py-2.5"
             >
               Télécharger le PDF
               <span aria-hidden>↓</span>

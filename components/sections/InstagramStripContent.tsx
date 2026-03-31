@@ -34,7 +34,7 @@ export function InstagramStripContent({ reels }: { reels: InstagramReelPublic[] 
         initial="hidden"
         whileInView="show"
         viewport={{ once: true, margin: "-12% 0px" }}
-        className="mx-auto max-w-6xl px-6 md:px-10"
+        className="mx-auto max-w-6xl pl-[max(1.5rem,env(safe-area-inset-left,0px))] pr-[max(1.5rem,env(safe-area-inset-right,0px))] md:px-10"
       >
         <div className="flex flex-col items-start gap-8 md:flex-row md:items-center md:justify-between">
           <div>
@@ -49,7 +49,7 @@ export function InstagramStripContent({ reels }: { reels: InstagramReelPublic[] 
             href={site.instagramUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="group flex shrink-0 items-center gap-4 border border-black/[0.1] bg-white px-8 py-5 transition-[border-color,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-black/[0.22] hover:shadow-[0_20px_50px_-24px_rgba(10,10,10,0.18)]"
+            className="group flex min-h-[3.5rem] w-full shrink-0 items-center justify-center gap-4 border border-black/[0.1] bg-white px-8 py-5 transition-[border-color,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-black/[0.22] hover:shadow-[0_20px_50px_-24px_rgba(10,10,10,0.18)] md:min-h-0 md:w-auto md:justify-start"
           >
             <InstagramGlyph className="h-7 w-7 text-[#0a0a0a] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]" />
             <div className="text-left">

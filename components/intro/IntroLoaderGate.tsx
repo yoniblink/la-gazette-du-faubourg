@@ -122,7 +122,7 @@ export function IntroLoaderGate({ children }: { children: ReactNode }) {
     <>
       {isHomeRoute ? (
         <motion.div
-          className="relative min-h-0 w-full"
+          className="relative min-h-0 min-w-0 w-full overflow-x-clip"
           initial={false}
           animate={
             contentLocked
