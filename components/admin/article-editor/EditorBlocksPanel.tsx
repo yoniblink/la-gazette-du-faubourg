@@ -145,13 +145,13 @@ function SortableLayerRow({
       style={style}
       className={`group flex items-stretch gap-0 rounded-xl border transition-colors ${
         selected
-          ? "border-rose-500/45 bg-zinc-800/90 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.12)]"
-          : "border-zinc-800/90 bg-zinc-900/50 hover:border-zinc-700 hover:bg-zinc-900/80"
-      } ${isDragging ? "z-10 scale-[1.01] opacity-95 shadow-lg shadow-black/40" : ""}`}
+          ? "border-rose-300 bg-rose-50 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.1)]"
+          : "border-stone-200 bg-white hover:border-stone-300 hover:bg-stone-50"
+      } ${isDragging ? "z-10 scale-[1.01] opacity-95 shadow-lg shadow-black/10" : ""}`}
     >
       <button
         type="button"
-        className="flex w-9 shrink-0 cursor-grab touch-none items-center justify-center rounded-l-xl border-r border-zinc-800 bg-zinc-950/50 text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-zinc-300 active:cursor-grabbing"
+        className="flex w-9 shrink-0 cursor-grab touch-none items-center justify-center rounded-l-xl border-r border-stone-200 bg-stone-50 text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-900 active:cursor-grabbing"
         aria-label="Déplacer"
         {...attributes}
         {...listeners}
@@ -170,10 +170,10 @@ function SortableLayerRow({
         onClick={onSelect}
         className="min-w-0 flex-1 px-2.5 py-2.5 text-left"
       >
-        <span className="inline-flex items-center rounded-md bg-zinc-950/80 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-zinc-400">
+        <span className="inline-flex items-center rounded-md bg-stone-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-stone-500">
           {BLOCK_TYPE_FR[block.type]}
         </span>
-        <span className="mt-1 block truncate text-[12px] leading-snug text-zinc-200">{blockSummary(block)}</span>
+        <span className="mt-1 block truncate text-[12px] leading-snug text-stone-800">{blockSummary(block)}</span>
       </button>
       <button
         type="button"
@@ -181,7 +181,7 @@ function SortableLayerRow({
           e.stopPropagation();
           onRemove();
         }}
-        className="flex w-9 shrink-0 items-center justify-center rounded-r-xl border-l border-zinc-800 bg-transparent text-zinc-600 transition-colors hover:bg-rose-500/15 hover:text-rose-400"
+        className="flex w-9 shrink-0 items-center justify-center rounded-r-xl border-l border-stone-200 bg-transparent text-stone-500 transition-colors hover:bg-rose-50 hover:text-rose-600"
         aria-label="Supprimer le bloc"
       >
         <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
@@ -246,16 +246,16 @@ export function EditorBlocksPanel({
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <header className="shrink-0 border-b border-zinc-800/90 bg-zinc-950 px-3 py-3">
+      <header className="shrink-0 border-b border-stone-200 bg-white px-3 py-3">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-300">Blocs</h2>
-            <p className="mt-0.5 text-[11px] leading-snug text-zinc-500">Insérer des widgets et ordonner le contenu.</p>
+            <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-800">Blocs</h2>
+            <p className="mt-0.5 text-[11px] leading-snug text-stone-500">Insérer des widgets et ordonner le contenu.</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="shrink-0 rounded-lg p-2 text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-zinc-200"
+            className="shrink-0 rounded-lg p-2 text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-900"
             title="Fermer le panneau"
             aria-label="Fermer le panneau"
           >
@@ -267,7 +267,7 @@ export function EditorBlocksPanel({
 
         <div className="relative mt-3">
           <svg
-            className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-500"
+            className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-400"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -281,12 +281,12 @@ export function EditorBlocksPanel({
             value={widgetQuery}
             onChange={(e) => onWidgetQueryChange(e.target.value)}
             placeholder="Filtrer les blocs…"
-            className="w-full rounded-lg border border-zinc-800 bg-zinc-900 py-2 pl-8 pr-3 text-xs text-zinc-100 placeholder:text-zinc-600 focus:border-rose-500/40 focus:outline-none focus:ring-1 focus:ring-rose-500/25"
+            className="w-full rounded-lg border border-stone-200 bg-white py-2 pl-8 pr-3 text-xs text-stone-900 placeholder:text-stone-400 focus:border-stone-400 focus:outline-none focus:ring-1 focus:ring-stone-200"
           />
         </div>
 
         <div
-          className="mt-3 flex rounded-lg border border-zinc-800 bg-zinc-900 p-0.5"
+          className="mt-3 flex rounded-lg border border-stone-200 bg-stone-50 p-0.5"
           role="tablist"
           aria-label="Mode du panneau"
         >
@@ -299,8 +299,8 @@ export function EditorBlocksPanel({
               onClick={() => onPaletteTabChange(t.id)}
               className={`flex-1 rounded-md px-2 py-2 text-center text-[10px] font-semibold uppercase tracking-wider transition-colors ${
                 paletteTab === t.id
-                  ? "bg-zinc-800 text-zinc-100 shadow-sm"
-                  : "text-zinc-500 hover:text-zinc-300"
+                  ? "bg-white text-stone-900 shadow-sm"
+                  : "text-stone-500 hover:text-stone-900"
               }`}
             >
               {t.label}
@@ -312,33 +312,33 @@ export function EditorBlocksPanel({
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         {paletteTab === "widgets" ? (
           <div className="px-3 py-4">
-            <p className="mb-2.5 text-[10px] font-medium uppercase tracking-[0.12em] text-zinc-600">À ajouter au document</p>
+            <p className="mb-2.5 text-[10px] font-medium uppercase tracking-[0.12em] text-stone-500">À ajouter au document</p>
             <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {filteredLibrary.map(({ type, label, description, Icon }) => (
                 <li key={type}>
                   <button
                     type="button"
                     onClick={() => onAddBlock(type)}
-                    className="flex w-full items-center gap-3 rounded-xl border border-zinc-800/90 bg-zinc-900/40 px-3 py-3 text-left transition-colors hover:border-rose-500/35 hover:bg-zinc-800/60"
+                    className="flex w-full items-center gap-3 rounded-xl border border-stone-200 bg-white px-3 py-3 text-left transition-colors hover:border-stone-300 hover:bg-stone-50"
                   >
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-950 text-zinc-400">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-stone-100 text-stone-500">
                       <Icon />
                     </span>
                     <span className="min-w-0">
-                      <span className="block text-[13px] font-medium text-zinc-100">{label}</span>
-                      <span className="mt-0.5 block text-[11px] text-zinc-500">{description}</span>
+                      <span className="block text-[13px] font-medium text-stone-900">{label}</span>
+                      <span className="mt-0.5 block text-[11px] text-stone-500">{description}</span>
                     </span>
                   </button>
                 </li>
               ))}
             </ul>
             {filteredLibrary.length === 0 ? (
-              <p className="py-8 text-center text-xs text-zinc-500">Aucun bloc ne correspond au filtre.</p>
+              <p className="py-8 text-center text-xs text-stone-500">Aucun bloc ne correspond au filtre.</p>
             ) : null}
           </div>
         ) : (
           <div className="px-3 py-4">
-            <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.12em] text-zinc-600">
+            <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.12em] text-stone-500">
               Ordre dans l’article · {blocks.length} bloc{blocks.length !== 1 ? "s" : ""}
             </p>
             <DndContext id="gazette-article-editor-blocks" sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
@@ -361,12 +361,12 @@ export function EditorBlocksPanel({
         )}
       </div>
 
-      <footer className="shrink-0 border-t border-zinc-800/90 bg-zinc-950">
-        <div className="border-b border-zinc-800/80 px-3 py-2">
-          <h3 className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500">Propriétés</h3>
+      <footer className="shrink-0 border-t border-stone-200 bg-white">
+        <div className="border-b border-stone-200 px-3 py-2">
+          <h3 className="text-[10px] font-semibold uppercase tracking-[0.14em] text-stone-500">Propriétés</h3>
         </div>
         <div className="max-h-[min(40vh,320px)] overflow-y-auto overscroll-contain px-3 py-3">
-          <BlockInspector theme="dark" embedded block={selectedBlock} onChange={onUpdateBlock} />
+          <BlockInspector theme="light" embedded block={selectedBlock} onChange={onUpdateBlock} />
         </div>
       </footer>
     </div>

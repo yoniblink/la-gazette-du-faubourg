@@ -65,28 +65,28 @@ function ArticleEditorTopBar({
   const display = titlePreview.trim() || "Sans titre";
   return (
     <div
-      className="sticky top-0 z-50 border-b border-zinc-800 bg-zinc-950 px-2 py-2 shadow-sm sm:px-4"
+      className="sticky top-0 z-50 border-b border-stone-200 bg-white px-2 py-2 shadow-sm sm:px-4"
       style={{ minHeight: EDITOR_BAR_TOP }}
     >
       <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-3">
         <div className="flex min-w-0 items-center gap-2 justify-self-start sm:gap-3">
           <Link
             href={articlesIndexHref}
-            className="shrink-0 text-[10px] font-medium uppercase tracking-wider text-zinc-500 transition-colors hover:text-zinc-200"
+            className="shrink-0 text-[10px] font-medium uppercase tracking-wider text-stone-500 transition-colors hover:text-stone-900"
           >
             ← Articles
           </Link>
-          <div className="min-w-0 border-l border-zinc-800 pl-2 sm:pl-3">
-            <p className="truncate font-[family-name:var(--font-sans)] text-[9px] font-medium uppercase tracking-[0.14em] text-zinc-500">
+          <div className="min-w-0 border-l border-stone-200 pl-2 sm:pl-3">
+            <p className="truncate font-[family-name:var(--font-sans)] text-[9px] font-medium uppercase tracking-[0.14em] text-stone-500">
               {isEdit ? "Article" : "Nouvel article"}
             </p>
             <div className="mt-0.5 flex min-w-0 items-baseline gap-2">
-              <p className="truncate font-[family-name:var(--font-serif)] text-sm font-light tracking-tight text-zinc-100 sm:text-[15px]">
+              <p className="truncate font-[family-name:var(--font-serif)] text-sm font-light tracking-tight text-stone-900 sm:text-[15px]">
                 {display}
               </p>
               <span
                 className={`shrink-0 rounded px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider ${
-                  publishOn ? "bg-emerald-500/20 text-emerald-300" : "bg-amber-500/15 text-amber-200"
+                  publishOn ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-900"
                 }`}
               >
                 {publishOn ? "Publié" : "Brouillon"}
@@ -96,14 +96,14 @@ function ArticleEditorTopBar({
         </div>
 
         <div className="justify-self-center flex items-center gap-1 sm:gap-2">
-          <div className="flex items-center rounded-lg border border-zinc-800 bg-zinc-900/80 p-0.5">
+          <div className="flex items-center rounded-lg border border-stone-200 bg-stone-50 p-0.5">
             <button
               type="button"
               onClick={onUndo}
               disabled={!canUndo}
               title="Annuler — ⌘Z / Ctrl+Z"
               aria-label="Annuler la dernière modification du contenu"
-              className="rounded-md px-2 py-2 text-zinc-400 transition-colors enabled:hover:bg-zinc-800 enabled:hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-35"
+              className="rounded-md px-2 py-2 text-stone-500 transition-colors enabled:hover:bg-stone-200 enabled:hover:text-stone-900 disabled:cursor-not-allowed disabled:opacity-35"
             >
               <svg className="h-4 w-4 sm:h-[18px] sm:w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 15L4 9l5-6 M4 9h10.5a5.5 5.5 0 010 11H12" />
@@ -115,7 +115,7 @@ function ArticleEditorTopBar({
               disabled={!canRedo}
               title="Rétablir — ⇧⌘Z / Ctrl+Y"
               aria-label="Rétablir une modification annulée"
-              className="rounded-md px-2 py-2 text-zinc-400 transition-colors enabled:hover:bg-zinc-800 enabled:hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-35"
+              className="rounded-md px-2 py-2 text-stone-500 transition-colors enabled:hover:bg-stone-200 enabled:hover:text-stone-900 disabled:cursor-not-allowed disabled:opacity-35"
             >
               <svg className="h-4 w-4 sm:h-[18px] sm:w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 15l5-6-5-6 M20 9H9.5a5.5 5.5 0 000 11H12" />
@@ -126,20 +126,20 @@ function ArticleEditorTopBar({
       </div>
 
         <div className="flex min-w-0 shrink-0 items-center justify-end gap-1.5 sm:gap-2">
-          <span className="hidden max-w-[8.5rem] truncate text-[10px] text-zinc-500 lg:inline" title={userEmail}>
+          <span className="hidden max-w-[8.5rem] truncate text-[10px] text-stone-500 lg:inline" title={userEmail}>
             {userEmail}
           </span>
           <button
             type="button"
             onClick={() => signOut({ callbackUrl: "/admin/login" })}
-            className="hidden shrink-0 rounded-lg px-2 py-1.5 text-[10px] text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-zinc-200 sm:inline"
+            className="hidden shrink-0 rounded-lg px-2 py-1.5 text-[10px] text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-900 sm:inline"
           >
             Déconnexion
           </button>
           <button
             type="button"
             onClick={() => signOut({ callbackUrl: "/admin/login" })}
-            className="sm:hidden shrink-0 rounded-lg px-2 py-1.5 text-[10px] text-zinc-500 hover:bg-zinc-800 hover:text-zinc-200"
+            className="sm:hidden shrink-0 rounded-lg px-2 py-1.5 text-[10px] text-stone-500 hover:bg-stone-100 hover:text-stone-900"
             title="Déconnexion"
             aria-label="Déconnexion"
           >
@@ -155,8 +155,8 @@ function ArticleEditorTopBar({
             title="Réglages de l’article"
             className={`rounded-lg border p-2.5 transition-colors ${
               settingsOpen
-                ? "border-violet-400/50 bg-violet-500/15 text-violet-200"
-                : "border-zinc-700 text-zinc-400 hover:border-zinc-600 hover:bg-zinc-800 hover:text-zinc-100"
+                ? "border-violet-300 bg-violet-50 text-violet-700"
+                : "border-stone-300 text-stone-500 hover:border-stone-400 hover:bg-stone-100 hover:text-stone-900"
             }`}
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
@@ -171,7 +171,7 @@ function ArticleEditorTopBar({
           <button
             type="submit"
             disabled={pending}
-            className="rounded-lg bg-violet-600 px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-white shadow-sm transition-colors hover:bg-violet-500 disabled:opacity-50"
+            className="rounded-lg bg-stone-900 px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-white shadow-sm transition-colors hover:bg-stone-800 disabled:opacity-50"
           >
             {pending ? "…" : isEdit ? "Enregistrer" : "Créer"}
           </button>
