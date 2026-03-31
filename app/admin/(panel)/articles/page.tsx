@@ -18,6 +18,8 @@ export default async function AdminArticlesPage() {
         </div>
         <Link
           href="/admin/articles/new"
+          target="_blank"
+          rel="noopener noreferrer"
           className="rounded-lg bg-stone-900 px-4 py-2.5 text-[11px] font-medium uppercase tracking-wider text-white hover:opacity-90"
         >
           Nouvel article
@@ -64,6 +66,8 @@ export default async function AdminArticlesPage() {
                   <td className="px-4 py-3 text-right">
                     <Link
                       href={`/admin/articles/${a.id}/edit`}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="text-xs text-stone-700 underline-offset-2 hover:underline"
                     >
                       Modifier

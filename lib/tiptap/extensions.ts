@@ -1,7 +1,7 @@
 import StarterKit from "@tiptap/starter-kit";
-import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
+import { ArticleImage } from "@/lib/tiptap/article-image";
 
 export function getTiptapExtensions(placeholder?: string) {
   return [
@@ -10,8 +10,8 @@ export function getTiptapExtensions(placeholder?: string) {
       openOnClick: false,
       HTMLAttributes: { rel: "noopener noreferrer", class: "underline decoration-stone-400 underline-offset-2" },
     }),
-    Image.configure({
-      HTMLAttributes: { class: "my-6 max-h-[480px] w-full rounded-lg object-contain" },
+    ArticleImage.configure({
+      HTMLAttributes: { class: "max-h-[480px] w-full object-contain" },
     }),
     ...(placeholder
       ? [

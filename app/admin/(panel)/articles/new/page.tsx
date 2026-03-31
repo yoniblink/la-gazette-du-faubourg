@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { ArticleForm } from "@/components/admin/ArticleForm";
 
@@ -15,17 +16,13 @@ export default async function NewArticlePage() {
     );
   }
 
+  const session = await auth();
+  const userEmail = session?.user?.email ?? "";
+
   return (
-    <div className="mx-auto max-w-4xl">
-      <Link href="/admin/articles" className="text-xs text-stone-500 hover:text-stone-800">
-        ← Articles
-      </Link>
-      <h1 className="mt-6 font-[family-name:var(--font-serif)] text-3xl font-light text-stone-900">
-        Nouvel article
-      </h1>
-      <div className="mt-10 rounded-xl border border-stone-200 bg-white p-8">
-        <ArticleForm key="new" categories={categories} />
-      </div>
+    <div className="min-h-0">
+      <h1 className="sr-only">Nouvel article</h1>
+      <ArticleForm key="new" userEmail={userEmail} categories={categories} />
     </div>
   );
 }

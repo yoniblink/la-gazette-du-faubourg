@@ -42,6 +42,8 @@ export default async function AdminDashboardPage() {
                 <div className="min-w-0">
                   <Link
                     href={`/admin/articles/${a.id}/edit`}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="font-medium text-stone-900 hover:underline"
                   >
                     {a.title}

@@ -14,6 +14,12 @@ const nav = [
   { href: "/admin/settings", label: "Réglages" },
 ] as const;
 
+function isArticleEditorPath(pathname: string | null): boolean {
+  if (!pathname) return false;
+  if (pathname === "/admin/articles/new") return true;
+  return /^\/admin\/articles\/[^/]+\/edit$/.test(pathname);
+}
+
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   return (
@@ -47,6 +53,16 @@ export function AdminShell({
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const editorFullscreen = isArticleEditorPath(pathname);
+
+  if (editorFullscreen) {
+    return (
+      <div className="flex min-h-[100dvh] flex-col bg-[#fafafa]">
+        <main className="min-h-0 flex-1 overflow-auto">{children}</main>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-[100dvh]">

@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { site } from "@/lib/content/site";
 
