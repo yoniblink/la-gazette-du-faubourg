@@ -45,9 +45,9 @@ export const metadata: Metadata = {
     siteName: site.name,
     images: [
       {
-        url: "/hero-brand-header.png",
-        width: 1024,
-        height: 358,
+        url: site.navbarLogoSrc,
+        width: 180,
+        height: 180,
         alt: site.name,
       },
     ],
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: site.name,
     description: site.officialTitle,
-    images: ["/hero-brand-header.png"],
+    images: [site.navbarLogoSrc],
   },
   alternates: {
     canonical: "/",
