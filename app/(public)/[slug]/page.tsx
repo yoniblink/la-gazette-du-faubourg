@@ -114,7 +114,7 @@ export default async function RubriquePage({ params }: Props) {
                       </h3>
                       {a.excerpt ? (
                         <p
-                          className="mb-0 mt-5 max-w-xl min-h-[10.2rem] overflow-hidden text-justify text-[18px] font-normal leading-[1.6] text-pretty text-[#0a0a0a] max-[767px]:leading-[1.55] max-[1024px]:text-[17px] max-[1024px]:leading-[1.58] lg:min-h-[10.8rem] line-clamp-6"
+                          className="mb-0 mt-5 max-w-xl min-h-[8.5rem] overflow-hidden text-justify text-[18px] font-normal leading-[1.6] text-pretty text-[#0a0a0a] max-[767px]:leading-[1.55] max-[1024px]:text-[17px] max-[1024px]:leading-[1.58] lg:min-h-[9rem] line-clamp-5"
                           style={{ fontFamily: "Garamond, serif", letterSpacing: "-0.2px" }}
                         >
                           {a.excerpt}

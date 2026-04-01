@@ -141,7 +141,7 @@ export function EditorialCarousel({ items }: Props) {
               {editorialCarouselTitleLines(active.title)}
             </h3>
             <p
-              className="mb-0 mt-4 text-justify text-[18px] font-normal leading-[1.6] text-black text-pretty max-[767px]:leading-[1.55] max-[1024px]:text-[17px] max-[1024px]:leading-[1.58] md:mt-5"
+              className="mb-0 mt-4 line-clamp-4 overflow-hidden text-justify text-[18px] font-normal leading-[1.6] text-black text-pretty max-[767px]:leading-[1.55] max-[1024px]:text-[17px] max-[1024px]:leading-[1.58] md:mt-5"
               style={{ fontFamily: "Garamond, serif", letterSpacing: "-0.2px" }}
             >
               {active.excerpt}
