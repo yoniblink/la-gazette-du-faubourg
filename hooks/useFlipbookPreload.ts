@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
 
 /** Nombre de pages après la page courante à réchauffer dans le cache navigateur. */
-const DEFAULT_LOOKAHEAD = 4;
+const DEFAULT_LOOKAHEAD = 2;
 /** Pages en arrière (retour rapide). */
-const DEFAULT_LOOKBEHIND = 2;
+const DEFAULT_LOOKBEHIND = 1;
 
 /**
  * Précharge les URLs via `Image()` pour peupler le cache HTTP du navigateur,

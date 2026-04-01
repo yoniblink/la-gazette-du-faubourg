@@ -8,7 +8,8 @@ import { site } from "@/lib/content/site";
 const serif = Roboto_Slab({
   variable: "--font-serif",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  /** 300/500 : titres & éditorial ; 400 : graisse par défaut (blockquote, etc.). Pas de 600/700 utilisés. */
+  weight: ["300", "400", "500"],
   display: "swap",
 });
 

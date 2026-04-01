@@ -10,7 +10,8 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
-    qualities: [75, 100],
+    /** 70 : variante un peu plus légère pour les gros visuels (cached egress). */
+    qualities: [70, 75, 100],
     remotePatterns: [
       {
         protocol: "http",
