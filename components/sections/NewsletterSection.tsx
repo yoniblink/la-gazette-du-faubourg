@@ -24,7 +24,7 @@ export function NewsletterSection() {
               Abonnez-vous à la Newsletter
             </h2>
             <p
-              className="mb-0 mt-4 text-justify text-[18px] font-normal leading-[1.6] text-pretty text-[#5a5a5a] max-[767px]:leading-[1.55] max-[1024px]:text-[17px] max-[1024px]:leading-[1.58]"
+              className="mb-0 mt-3 text-justify text-[18px] font-normal leading-[1.6] text-pretty text-black/70 max-[767px]:leading-[1.55] max-[1024px]:text-[17px] max-[1024px]:leading-[1.58]"
               style={{ fontFamily: "Garamond, serif", letterSpacing: "-0.2px" }}
             >
               Recevez les temps forts du Faubourg et les nouvelles parutions.

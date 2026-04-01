@@ -59,8 +59,9 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
       return;
     }
 
-    const hero = document.getElementById("intro");
-    if (!hero) {
+    /** Logo + liens du hero : le header fixe n’apparaît qu’une fois ce bloc quitté au scroll. */
+    const anchor = document.getElementById("intro-primary-nav");
+    if (!anchor) {
       setIsVisible(true);
       return;
     }
@@ -69,12 +70,10 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
       ([entry]) => {
         setIsVisible(!entry.isIntersecting);
       },
-      {
-        threshold: 0.08,
-      },
+      { threshold: 0 },
     );
 
-    observer.observe(hero);
+    observer.observe(anchor);
     return () => observer.disconnect();
   }, [pathname]);
 

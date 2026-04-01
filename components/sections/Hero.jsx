@@ -92,6 +92,7 @@ export function Hero() {
         >
             {/* Logo + menu : rangée 1 colonne 1 en desktop ; premier bloc en mobile. */}
             <div
+              id="intro-primary-nav"
               className="flex min-w-0 flex-col items-stretch text-left lg:col-start-1 lg:row-start-1 lg:items-center lg:text-center"
             >
               <Link href="/" className="inline-block max-[767px]:w-full lg:mx-auto">
