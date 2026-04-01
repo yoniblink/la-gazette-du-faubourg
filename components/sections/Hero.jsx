@@ -52,7 +52,7 @@ const CHAPO_TITLE_WIDTH_ROUND = 10;
  *   du bloc texte, comme sur la maquette. Le texte reste visuellement sous le menu (`mt-1` entre les deux lignes gauches).
  * - `max-w-[1400px]` : largeur utile magazine (pas full-bleed).
  * - Chapô : le bloc justifié prend la même largeur que le titre (H1), mesurée au layout (ResizeObserver).
- * - Bloc vertical (desktop) : lg:pt-24 / xl:pt-28, gap-y-20 entre menu et chapô — sans bande vide en tête (header home masqué).
+ * - Bloc vertical (desktop) : lg:pt-16 / xl:pt-20, gap-y-0 entre menu et chapô — sans bande vide en tête (header home masqué).
  * - Illustration : colonne droite, largeur max bornée.
  * - Ne pas écrire en commentaire des pseudo-classes Tailwind arbitraires suivies de utilitaires margin : le scan Tailwind v4 peut générer du CSS invalide.
  */
@@ -88,12 +88,12 @@ export function Hero() {
     <section id="intro" className="scroll-mt-24 bg-white text-black">
       <div className="mx-auto w-full max-w-[1400px]">
         <div
-          className="flex w-full flex-col max-[767px]:px-[10px] max-[1024px]:pb-[50px] max-[1024px]:pt-0 px-4 md:px-10 lg:grid lg:grid-cols-[minmax(0,9fr)_minmax(0,11fr)] lg:grid-rows-[auto_auto] lg:items-center lg:gap-x-10 lg:gap-y-20 xl:gap-x-14 lg:pb-16 lg:pt-24 xl:pt-28"
+          className="flex w-full flex-col max-[767px]:px-[10px] max-[1024px]:pb-[50px] max-[1024px]:pt-0 px-4 md:px-10 lg:grid lg:grid-cols-[minmax(0,9fr)_minmax(0,11fr)] lg:grid-rows-[auto_auto] lg:items-center lg:gap-x-10 lg:gap-y-0 xl:gap-x-14 lg:pb-16 lg:pt-16 xl:pt-20"
         >
             {/* Logo + menu : rangée 1 colonne 1 en desktop ; premier bloc en mobile. */}
             <div
               id="intro-primary-nav"
-              className="flex min-w-0 flex-col items-stretch text-left lg:col-start-1 lg:row-start-1 lg:items-center lg:text-center"
+              className="flex min-w-0 flex-col items-stretch text-left max-[767px]:-mt-6 max-[1024px]:-mt-10 lg:col-start-1 lg:row-start-1 lg:items-center lg:text-center lg:-mt-16 xl:-mt-20"
             >
               <Link href="/" className="inline-block max-[767px]:w-full lg:mx-auto">
                 <Image
@@ -107,8 +107,8 @@ export function Hero() {
                 />
               </Link>
 
-              <nav aria-label="Navigation Hero" className="w-full lg:flex lg:justify-center">
-                <ul className="flex max-md:flex-wrap max-md:gap-y-2 max-md:justify-center md:flex-nowrap md:justify-center md:gap-x-1 md:pb-1 lg:gap-x-1.5 xl:gap-x-2">
+              <nav aria-label="Navigation Hero" className="-mt-3 w-full md:-mt-4 lg:-mt-5 lg:flex lg:justify-center">
+                <ul className="flex max-md:flex-wrap max-md:gap-y-2 max-md:justify-center md:flex-nowrap md:justify-center md:gap-x-1 md:pb-0 lg:gap-x-1.5 xl:gap-x-2">
                   {heroInlineNavLinks.map((link) => (
                     <li key={link.href} className="shrink-0">
                       <Link href={link.href} className={heroNavLinkClass}>
@@ -130,8 +130,8 @@ export function Hero() {
                   alt="Illustration aquarelle — La Gazette du Faubourg"
                   width={1096}
                   height={1200}
-                  className="ml-auto mr-auto inline-block h-[420px] w-auto max-w-full object-contain object-center max-[1024px]:h-[480px] lg:mr-0 lg:h-[min(72vh,760px)] lg:w-auto lg:max-w-[min(100%,640px)] lg:translate-x-2 lg:object-right xl:max-w-[min(100%,700px)] xl:translate-x-3"
-                  sizes="(max-width: 767px) 100vw, (max-width: 1024px) 90vw, 50vw"
+                  className="ml-auto mr-auto inline-block h-[600px] w-auto max-w-full object-contain object-center max-[1024px]:h-[760px] lg:mr-0 lg:h-[min(92vh,1200px)] lg:w-auto lg:max-w-[min(100%,980px)] lg:translate-x-8 lg:translate-y-4 lg:object-right xl:max-w-[min(100%,1100px)] xl:translate-x-12 xl:translate-y-5"
+                  sizes="(max-width: 767px) 100vw, (max-width: 1024px) 92vw, 58vw"
                   priority
                 />
               </div>
@@ -139,9 +139,9 @@ export function Hero() {
 
             {/* Chapô + CTA : rangée 2 colonne 1 en desktop ; dernier bloc en mobile après l’image. */}
             <div
-              className="flex min-h-0 min-w-0 flex-col justify-center max-[767px]:pb-[50px] max-[767px]:pt-5 max-[1024px]:pb-[50px] max-[1024px]:pt-16 lg:col-start-1 lg:row-start-2 lg:items-center lg:pt-0"
+              className="flex min-h-0 min-w-0 flex-col justify-center max-[767px]:pb-[50px] max-[767px]:pt-0 max-[1024px]:pb-[50px] max-[1024px]:pt-0 lg:col-start-1 lg:row-start-2 lg:items-center lg:-mt-28 lg:pt-0 xl:-mt-32"
             >
-              <div className="mx-auto mt-1 w-full max-w-full max-[767px]:mb-[10px]">
+              <div className="mx-auto w-full max-w-full max-[767px]:mb-[10px]">
                 <h1
                   ref={chapoTitleRef}
                   className="mx-auto mb-8 w-max max-w-full text-center text-[34px] font-normal italic leading-tight tracking-tight text-black lg:mb-10 lg:text-[48px] lg:leading-[1.12]"
