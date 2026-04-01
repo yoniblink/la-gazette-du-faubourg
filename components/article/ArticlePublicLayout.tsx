@@ -137,7 +137,7 @@ export function ArticlePublicLayout({
     : "pb-24 pt-20 md:pb-32 md:pt-28";
 
   return (
-    <main className={`bg-[#fafafa] ${mainPad}`}>
+    <main className={`flex flex-1 flex-col bg-[#fafafa] ${mainPad}`}>
       <article className="mx-auto max-w-3xl px-6 md:px-10">
         <nav className="font-[family-name:var(--font-sans)] text-[10px] uppercase tracking-[0.24em] text-[#7a7a7a]">
           <Link href="/" className="transition-opacity hover:opacity-60">

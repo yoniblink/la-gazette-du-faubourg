@@ -74,7 +74,7 @@ export function HomeFlipbook({
       <div
         className={
           embedded
-            ? "mx-auto w-full max-w-none px-0"
+            ? "mx-auto w-full min-w-0 max-w-6xl px-6 md:px-10"
             : "mx-auto max-w-6xl px-6 md:px-10"
         }
       >

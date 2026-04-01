@@ -51,34 +51,31 @@ export default async function RubriquePage({ params }: Props) {
     isLaRevue && hasDatabaseUrl() ? await getHomeFlipbookManifest() : null;
 
   return (
-    <main className="bg-white pt-14 pb-24 md:pt-16 md:pb-32">
+    <main className="flex flex-1 flex-col bg-white pt-14 pb-24 md:pt-16 md:pb-32">
       <header className="w-full bg-black px-4 py-14 md:px-6 md:py-20">
         <h1
-          className="text-center font-['Griffiths'] text-[clamp(1.65rem,3.8vw,2.65rem)] font-normal italic leading-tight tracking-normal text-white"
-          style={{
-            fontFamily: '"Griffiths", "Garamond Italic", Garamond, Georgia, serif',
-          }}
+          className="mx-auto w-max max-w-full text-center text-[34px] font-normal italic leading-tight tracking-tight text-white lg:text-[48px] lg:leading-[1.12]"
+          style={{ fontFamily: "Griffiths, serif" }}
         >
           {rubriqueTitle}
         </h1>
       </header>
-      <article className="mx-auto max-w-6xl px-6 pb-0 pt-12 md:px-10 md:pt-16">
-        {isLaRevue && flipbookPdfUrl ? (
-          <HomeFlipbook
-            pdfUrl={flipbookPdfUrl}
-            initialManifest={flipbookManifest}
-            embedded
-          />
-        ) : null}
-
-        <section className="mt-16 md:mt-24">
-          <ul className="divide-y divide-black/[0.06]">
-            {articles.length === 0 ? (
-              <li className="py-12 font-[family-name:var(--font-sans)] text-sm text-[#5a5a5a]">
-                Aucun article publié dans cette rubrique pour le moment.
-              </li>
-            ) : (
-              articles.map((a) => (
+      {isLaRevue && flipbookPdfUrl ? (
+        <HomeFlipbook
+          pdfUrl={flipbookPdfUrl}
+          initialManifest={flipbookManifest}
+          embedded
+        />
+      ) : null}
+      {articles.length > 0 ? (
+        <article
+          className={`mx-auto min-w-0 max-w-6xl px-6 pb-0 md:px-10 ${
+            isLaRevue && flipbookPdfUrl ? "pt-0" : "pt-12 md:pt-16"
+          }`}
+        >
+          <section className="mt-16 md:mt-24">
+            <ul className="divide-y divide-black/[0.06]">
+              {articles.map((a) => (
                 <li key={a.id} className="py-12 md:py-16 first:pt-0">
                   <Link
                     href={`/${a.category.slug === ACTUALITE_DB_SLUG ? ACTUALITES_PUBLIC_SLUG : a.category.slug}/${a.slug}`}
@@ -123,11 +120,11 @@ export default async function RubriquePage({ params }: Props) {
                     </div>
                   </Link>
                 </li>
-              ))
-            )}
-          </ul>
-        </section>
-      </article>
+              ))}
+            </ul>
+          </section>
+        </article>
+      ) : null}
     </main>
   );
 }

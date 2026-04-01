@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 export default async function MediaKitPage() {
   const mediaKitUrl = (await getMediaKitPdfUrl()) ?? site.mediaKitUrl;
   return (
-    <main className="bg-[#f8f8f8] pb-24 pt-20 md:pb-28 md:pt-28">
+    <main className="flex flex-1 flex-col bg-[#f8f8f8] pb-24 pt-20 md:pb-28 md:pt-28">
       <section className="mx-auto grid max-w-6xl grid-cols-1 gap-12 px-6 md:grid-cols-12 md:items-center md:gap-16 md:px-10">
         <div className="md:col-span-5">
           <div className="relative mx-auto aspect-[4/5] w-full max-w-[470px]">

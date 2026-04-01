@@ -30,8 +30,6 @@ export function NewsletterSection() {
           </div>
           <Link
             href={site.newsletterUrl}
-            target="_blank"
-            rel="noopener noreferrer"
             className="inline-flex items-center gap-3 border border-[#0a0a0a] bg-[#0a0a0a] px-8 py-3.5 font-[family-name:var(--font-sans)] text-[11px] font-medium uppercase tracking-[0.24em] text-white transition-opacity hover:opacity-90"
           >
             S’abonner

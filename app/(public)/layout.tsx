@@ -14,10 +14,10 @@ export default async function PublicLayout({
   const nav = categories.map((c) => ({ slug: c.slug, title: c.title }));
 
   return (
-    <div className="min-h-0 min-w-0 w-full max-w-full overflow-x-clip">
+    <div className="flex min-h-[100dvh] min-w-0 w-full max-w-full flex-col overflow-x-clip">
       <IntroLoaderGate>
         <Header categories={nav} />
-        {children}
+        <div className="flex min-h-0 flex-1 flex-col bg-[#fafafa]">{children}</div>
         <Footer categories={nav} />
       </IntroLoaderGate>
     </div>

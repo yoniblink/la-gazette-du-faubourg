@@ -54,7 +54,7 @@ export function Contact() {
   const [state, formAction] = useActionState(submitContact, initial);
 
   return (
-    <section className="scroll-mt-24 bg-white py-24 md:py-32">
+    <section className="flex flex-1 flex-col scroll-mt-24 bg-white py-24 md:py-32">
       <div className="mx-auto max-w-6xl px-6 md:px-10">
         <MotionDiv
           variants={fadeUp}
