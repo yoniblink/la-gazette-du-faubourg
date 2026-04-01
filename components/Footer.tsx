@@ -155,8 +155,28 @@ export function Footer({ categories }: { categories: FooterCategory[] }) {
         </div>
       </div>
       <div className="border-t border-white/10 bg-[#202126] px-6 py-6">
-        <p className="text-center font-[family-name:var(--font-sans)] text-[10px] uppercase tracking-[0.24em] text-white/55">
-          © {new Date().getFullYear()} {site.name}
+        <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center font-[family-name:var(--font-sans)] text-[10px] uppercase tracking-[0.24em] text-white/55">
+          <span>
+            © {new Date().getFullYear()} {site.name}
+          </span>
+          <span className="text-white/25" aria-hidden>
+            |
+          </span>
+          <span className="tracking-[0.22em]">
+            Propulsé par{" "}
+            {site.studioCredit.url ? (
+              <Link
+                href={site.studioCredit.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white/85 transition-opacity hover:opacity-60"
+              >
+                {site.studioCredit.label}
+              </Link>
+            ) : (
+              <span className="font-medium text-white/85">{site.studioCredit.label}</span>
+            )}
+          </span>
         </p>
       </div>
     </footer>

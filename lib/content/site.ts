@@ -38,10 +38,15 @@ export const site = {
   facebookUrl: "https://www.facebook.com/",
   /** URL du media-kit (à ajuster selon la page réelle) */
   mediaKitUrl: "https://www.lagazettedufaubourg.fr",
-  /** Page d’inscription newsletter (interne) */
-  newsletterUrl: "/newsletter",
+  /** Formulaire newsletter sur le site officiel */
+  newsletterUrl: "https://www.lagazettedufaubourg.fr",
   /** E-mails de contact — remplacer par les adresses réelles */
   emailRedaction: "redaction@lagazettedufaubourg.fr",
   emailAnnonceurs: "annonces@lagazettedufaubourg.fr",
   emailPartenariats: "partenariats@lagazettedufaubourg.fr",
+  /** Bas de page — laisser url vide pour afficher le nom sans lien cliquable */
+  studioCredit: {
+    label: "NODE42",
+    url: "https://www.node42.fr",
+  },
 } as const;

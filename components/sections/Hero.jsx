@@ -100,7 +100,6 @@ export function Hero() {
                   alt="La Gazette du Faubourg"
                   width={1200}
                   height={337}
-                  quality={75}
                   className="h-auto w-[min(100%,460px)] max-w-full max-[767px]:w-full xl:w-[480px]"
                   sizes="(max-width: 767px) 100vw, (max-width: 1024px) 90vw, 480px"
                   priority
@@ -130,7 +129,6 @@ export function Hero() {
                   alt="Illustration aquarelle — La Gazette du Faubourg"
                   width={1096}
                   height={1200}
-                  quality={70}
                   className="ml-auto mr-auto inline-block h-[420px] w-auto max-w-full object-contain object-center max-[1024px]:h-[480px] lg:mr-0 lg:h-[min(72vh,760px)] lg:w-auto lg:max-w-[min(100%,640px)] lg:translate-x-2 lg:object-right xl:max-w-[min(100%,700px)] xl:translate-x-3"
                   sizes="(max-width: 767px) 100vw, (max-width: 1024px) 90vw, 50vw"
                   priority

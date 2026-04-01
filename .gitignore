@@ -52,6 +52,3 @@ next-env.d.ts
 # SQLite dev database
 /prisma/dev.db
 /prisma/dev.db-journal
-
-# exports SQL locaux (Supabase / migrations manuelles)
-/backups/

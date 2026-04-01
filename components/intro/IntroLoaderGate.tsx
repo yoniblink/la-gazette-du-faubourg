@@ -131,6 +131,9 @@ export function IntroLoaderGate({ children }: { children: ReactNode }) {
                 ? contentMotion.exiting
                 : contentMotion.revealed
           }
+          style={{
+            pointerEvents: contentLocked ? "none" : "auto",
+          }}
           aria-hidden={contentLocked}
         >
           {children}
@@ -226,7 +229,6 @@ function MagazineIntroOverlay({
             alt={site.name}
             fill
             priority
-            quality={75}
             sizes="520px"
             className="object-contain object-center opacity-20"
           />
@@ -256,7 +258,6 @@ function MagazineIntroOverlay({
               alt=""
               fill
               priority
-              quality={75}
               sizes="520px"
               className="object-contain object-center"
             />

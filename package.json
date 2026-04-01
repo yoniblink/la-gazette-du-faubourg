@@ -14,7 +14,6 @@
     "db:admin": "tsx prisma/seed-admin.ts",
     "db:setup": "prisma migrate deploy && prisma db seed",
     "db:studio": "prisma studio",
-    "db:dump-supabase": "node scripts/dump-supabase-db.mjs",
     "import:wp-mode": "tsx scripts/import-wp-category-articles.ts",
     "import:wp-art-culture": "WORDPRESS_IMPORT_CATEGORY_ID=17 GAZETTE_IMPORT_CATEGORY_SLUG=art-culture tsx scripts/import-wp-category-articles.ts",
     "import:wp-gastronomie": "WORDPRESS_IMPORT_CATEGORY_ID=18 GAZETTE_IMPORT_CATEGORY_SLUG=gastronomie tsx scripts/import-wp-category-articles.ts",

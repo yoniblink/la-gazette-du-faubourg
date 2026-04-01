@@ -5,15 +5,8 @@ import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useCallback, useEffect, useState } from "react";
 import type { FeaturedItem } from "@/lib/content/featured-item";
-import { garamondNavItalic } from "@/lib/fonts/garamond-nav";
 
 const EDITORIAL_EASE = [0.43, 0.13, 0.23, 0.96] as const;
-
-/** Même typo que les liens rubrique du hero (`Hero.jsx` → `heroNavLinkClass`), couleur lisible sur fond noir. */
-const editorialRubriqueLabelClass = [
-  garamondNavItalic.className,
-  "inline-block max-w-[min(100%,22rem)] text-[17px] font-medium italic leading-none text-white/92 antialiased [font-synthesis:none] drop-shadow-[0_1px_8px_rgba(0,0,0,0.45)] md:text-[17px] lg:text-[18px] xl:text-[19px]",
-].join(" ");
 const AUTOPLAY_MS = 4000;
 const TRANSITION_S = 0.32;
 
@@ -122,7 +115,9 @@ export function EditorialCarousel({ items }: Props) {
 
       {/* Méta coins (style Framer GPS / EXIF → rubrique / mise en avant) */}
       <div className="pointer-events-none absolute left-5 top-5 z-[3] md:left-8 md:top-8">
-        <p className={editorialRubriqueLabelClass}>{active.rubrique}</p>
+        <p className="font-mono text-[10px] font-normal uppercase tracking-[0.12em] text-white/65 md:text-[11px]">
+          {active.rubrique}
+        </p>
       </div>
       {/* Contenu central */}
       <div className="absolute left-1/2 top-1/2 z-[2] w-[88%] max-w-[640px] -translate-x-1/2 -translate-y-1/2 md:w-[75%] md:max-w-[720px] lg:w-[90%]">
@@ -133,19 +128,13 @@ export function EditorialCarousel({ items }: Props) {
             animate={{ opacity: 1, y: 0 }}
             exit={reduceMotion ? {} : { opacity: 0, y: -16 }}
             transition={{ duration: tEnter, ease: EDITORIAL_EASE }}
-            className="pointer-events-none mx-auto w-full max-w-xl hyphens-auto [overflow-wrap:break-word]"
+            className="pointer-events-none mx-auto w-full max-w-xl hyphens-auto [overflow-wrap:break-word] [&_h3]:hyphens-manual"
             lang="fr"
           >
-            <h3
-              className="mx-auto w-max max-w-full text-center text-[34px] font-normal italic leading-tight tracking-tight text-white [text-shadow:0_2px_28px_rgba(0,0,0,0.45)] lg:text-[48px] lg:leading-[1.12]"
-              style={{ fontFamily: "Griffiths, serif" }}
-            >
+            <h3 className="w-full text-left text-balance font-[family-name:var(--font-serif)] text-[1.35rem] font-light uppercase leading-[1.12] tracking-[0.06em] text-white [text-shadow:0_2px_28px_rgba(0,0,0,0.45)] sm:text-2xl md:text-3xl lg:text-[2.5rem]">
               {active.title}
             </h3>
-            <p
-              className="mt-5 w-full text-justify text-[18px] font-normal leading-[1.6] text-pretty text-white/95 [text-shadow:0_1px_18px_rgba(0,0,0,0.35)] max-[767px]:leading-[1.55] max-[1024px]:text-[17px] max-[1024px]:leading-[1.58]"
-              style={{ fontFamily: "Garamond, serif", letterSpacing: "-0.2px" }}
-            >
+            <p className="mt-5 w-full text-justify text-pretty font-[family-name:var(--font-sans)] text-[13px] leading-relaxed text-white/88 md:text-[15px]">
               {active.excerpt}
             </p>
           </motion.div>
