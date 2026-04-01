@@ -37,16 +37,26 @@ export const metadata: Metadata = {
     apple: site.navbarLogoSrc,
   },
   openGraph: {
-    title: `${site.name}`,
+    title: site.name,
     description: site.officialTitle,
+    url: site.url,
     locale: "fr_FR",
     type: "website",
     siteName: site.name,
+    images: [
+      {
+        url: "/hero-brand-header.png",
+        width: 1024,
+        height: 358,
+        alt: site.name,
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: site.name,
     description: site.officialTitle,
+    images: ["/hero-brand-header.png"],
   },
   alternates: {
     canonical: "/",
