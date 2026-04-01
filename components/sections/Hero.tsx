@@ -24,7 +24,7 @@ const ACCORDION_CLOSE_MS = 1300;
 const accordionEase = "cubic-bezier(0.22, 1, 0.36, 1)";
 
 const heroInlineNavLinks = [
-  { href: "/", label: "Actualités" },
+  { href: "/actualites", label: "Actualités" },
   { href: "/horlogerie-joaillerie", label: "Horlogerie / Joaillerie" },
   { href: "/mode", label: "Mode" },
   { href: "/art-culture", label: "Art & Culture" },
