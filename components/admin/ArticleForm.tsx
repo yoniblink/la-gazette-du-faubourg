@@ -243,6 +243,18 @@ export function ArticleForm({
   const [coverAltInp, setCoverAltInp] = useState(article?.coverImageAlt ?? "");
   const [sourceUrlInp, setSourceUrlInp] = useState(article?.sourceUrl ?? "");
 
+  const [layoutInp, setLayoutInp] = useState<"lead" | "standard">(
+    article?.layout === "lead" ? "lead" : "standard",
+  );
+  const [featuredSortOrderInp, setFeaturedSortOrderInp] = useState(
+    article?.featuredSortOrder ?? 0,
+  );
+  const [featuredOnHomeInp, setFeaturedOnHomeInp] = useState(
+    article?.featuredOnHome ?? false,
+  );
+  const [seoTitleInp, setSeoTitleInp] = useState(article?.seoTitle ?? "");
+  const [seoDescriptionInp, setSeoDescriptionInp] = useState(article?.seoDescription ?? "");
+
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [editorViewport, setEditorViewport] = useState<EditorViewportMode>("desktop");
 
@@ -331,7 +343,25 @@ export function ArticleForm({
       id="article-editor-form"
       onSubmit={(e) => {
         e.preventDefault();
-        const fd = new FormData(e.currentTarget);
+        // Le panneau « Réglages » est démonté quand il est fermé : ne pas s’appuyer sur les inputs du DOM.
+        const fd = new FormData();
+        if (article?.id) fd.set("id", article.id);
+        fd.set("title", titleInp);
+        if (slugInp.trim()) fd.set("slug", slugInp);
+        if (kickerInp.trim()) fd.set("kicker", kickerInp);
+        fd.set("excerpt", excerptInp);
+        fd.set("coverImageUrl", coverImageUrl);
+        fd.set("coverImageAlt", coverAltInp);
+        fd.set("coverObjectPosition", `${coverFocusX}% ${coverFocusY}%`);
+        fd.set("categoryId", categoryId);
+        fd.set("authorName", authorInp);
+        if (seoTitleInp.trim()) fd.set("seoTitle", seoTitleInp);
+        if (seoDescriptionInp.trim()) fd.set("seoDescription", seoDescriptionInp);
+        if (sourceUrlInp.trim()) fd.set("sourceUrl", sourceUrlInp);
+        fd.set("layout", layoutInp);
+        fd.set("featuredSortOrder", String(featuredSortOrderInp));
+        if (publishOn) fd.set("publish", "on");
+        if (featuredOnHomeInp) fd.set("featuredOnHome", "on");
         fd.set("content", JSON.stringify(contentTipTap ?? emptyTipTapDoc));
         startTransition(() => {
           formAction(fd);
@@ -339,7 +369,6 @@ export function ArticleForm({
       }}
       className="relative pb-8"
     >
-      {article ? <input type="hidden" name="id" value={article.id} /> : null}
 
       <ArticleEditorTopBar
         userEmail={userEmail}
@@ -415,7 +444,6 @@ export function ArticleForm({
                         Titre
                       </label>
                       <input
-                        name="title"
                         required
                         value={titleInp}
                         onChange={(e) => {
@@ -431,7 +459,6 @@ export function ArticleForm({
                         Slug
                       </label>
                       <input
-                        name="slug"
                         value={slugInp}
                         onChange={(e) => {
                           setSlugManual(true);
@@ -448,7 +475,6 @@ export function ArticleForm({
                         Rubrique
                       </label>
                       <select
-                        name="categoryId"
                         required
                         value={categoryId}
                         onChange={(e) => setCategoryId(e.target.value)}
@@ -466,7 +492,6 @@ export function ArticleForm({
                         Kicker
                       </label>
                       <input
-                        name="kicker"
                         value={kickerInp}
                         onChange={(e) => setKickerInp(e.target.value)}
                         className="mt-2 w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm"
@@ -477,7 +502,6 @@ export function ArticleForm({
                         Auteur
                       </label>
                       <input
-                        name="authorName"
                         value={authorInp}
                         onChange={(e) => setAuthorInp(e.target.value)}
                         className="mt-2 w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm"
@@ -488,7 +512,6 @@ export function ArticleForm({
                         Chapô
                       </label>
                       <textarea
-                        name="excerpt"
                         required
                         rows={4}
                         value={excerptInp}
@@ -511,7 +534,6 @@ export function ArticleForm({
                   <div className="mt-4">
                     <label className="text-[11px] font-medium uppercase tracking-wider text-stone-500">URL</label>
                     <input
-                      name="coverImageUrl"
                       required
                       value={coverImageUrl}
                       onChange={(e) => setCoverImageUrl(e.target.value)}
@@ -521,14 +543,12 @@ export function ArticleForm({
                   <div className="mt-4">
                     <label className="text-[11px] font-medium uppercase tracking-wider text-stone-500">Alt</label>
                     <input
-                      name="coverImageAlt"
                       required
                       value={coverAltInp}
                       onChange={(e) => setCoverAltInp(e.target.value)}
                       className="mt-2 w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm"
                     />
                   </div>
-                  <input type="hidden" name="coverObjectPosition" value={`${coverFocusX}% ${coverFocusY}%`} />
                   <p className="mt-4 text-[11px] font-medium uppercase tracking-wider text-stone-500">Cadrage (4∶3)</p>
                   <p className="mt-1 text-xs text-stone-600">Cliquez-glissez sur l’aperçu pour le point focal.</p>
                   <CoverCropPreview
@@ -548,8 +568,8 @@ export function ArticleForm({
                         Balise titre (SEO)
                       </label>
                       <input
-                        name="seoTitle"
-                        defaultValue={article?.seoTitle ?? ""}
+                        value={seoTitleInp}
+                        onChange={(e) => setSeoTitleInp(e.target.value)}
                         className="mt-2 w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm"
                       />
                     </div>
@@ -558,9 +578,9 @@ export function ArticleForm({
                         Meta description
                       </label>
                       <textarea
-                        name="seoDescription"
                         rows={2}
-                        defaultValue={article?.seoDescription ?? ""}
+                        value={seoDescriptionInp}
+                        onChange={(e) => setSeoDescriptionInp(e.target.value)}
                         className="mt-2 w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm"
                       />
                     </div>
@@ -569,7 +589,6 @@ export function ArticleForm({
                         URL source
                       </label>
                       <input
-                        name="sourceUrl"
                         value={sourceUrlInp}
                         onChange={(e) => setSourceUrlInp(e.target.value)}
                         className="mt-2 w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm"
@@ -583,14 +602,17 @@ export function ArticleForm({
                         <label className="flex items-center gap-2">
                           <input
                             type="radio"
-                            name="layout"
-                            value="standard"
-                            defaultChecked={article?.layout !== "lead"}
+                            checked={layoutInp === "standard"}
+                            onChange={() => setLayoutInp("standard")}
                           />
                           Standard
                         </label>
                         <label className="flex items-center gap-2">
-                          <input type="radio" name="layout" value="lead" defaultChecked={article?.layout === "lead"} />
+                          <input
+                            type="radio"
+                            checked={layoutInp === "lead"}
+                            onChange={() => setLayoutInp("lead")}
+                          />
                           Pleine largeur
                         </label>
                       </div>
@@ -600,9 +622,9 @@ export function ArticleForm({
                         Ordre à l’accueil
                       </label>
                       <input
-                        name="featuredSortOrder"
                         type="number"
-                        defaultValue={article?.featuredSortOrder ?? 0}
+                        value={featuredSortOrderInp}
+                        onChange={(e) => setFeaturedSortOrderInp(Number(e.target.value) || 0)}
                         className="mt-2 w-32 rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm"
                       />
                     </div>
@@ -610,7 +632,6 @@ export function ArticleForm({
                       <label className="flex items-center gap-2 text-sm text-stone-700">
                         <input
                           type="checkbox"
-                          name="publish"
                           value="on"
                           checked={publishOn}
                           onChange={(e) => setPublishOn(e.target.checked)}
@@ -621,9 +642,9 @@ export function ArticleForm({
                       <label className="flex items-center gap-2 text-sm text-stone-700">
                         <input
                           type="checkbox"
-                          name="featuredOnHome"
                           value="on"
-                          defaultChecked={article?.featuredOnHome ?? false}
+                          checked={featuredOnHomeInp}
+                          onChange={(e) => setFeaturedOnHomeInp(e.target.checked)}
                           className="rounded border-stone-300"
                         />
                         Afficher à l’accueil

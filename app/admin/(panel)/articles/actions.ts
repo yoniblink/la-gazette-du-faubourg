@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
+import { z, type ZodError } from "zod";
 import { ArticleLayout, ArticleStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/slugify";
@@ -28,6 +28,26 @@ const articleFormSchema = z.object({
   featuredOnHome: z.boolean(),
   featuredSortOrder: z.coerce.number().int(),
 });
+
+const ARTICLE_FORM_FIELD_LABELS: Record<string, string> = {
+  title: "Titre",
+  excerpt: "Chapô",
+  coverImageUrl: "Image de couverture",
+  coverImageAlt: "Texte alternatif (couverture)",
+  categoryId: "Rubrique",
+  authorName: "Auteur",
+};
+
+function formatArticleZodError(err: ZodError): string {
+  const first = err.issues[0];
+  if (!first) return "Données invalides";
+  const key = first.path[0];
+  const label = typeof key === "string" ? ARTICLE_FORM_FIELD_LABELS[key] : undefined;
+  if (label && first.code === "too_small") {
+    return `${label} : champ obligatoire (au moins un caractère).`;
+  }
+  return first.message;
+}
 
 function optStr(v: FormDataEntryValue | null): string | undefined {
   if (v == null) return undefined;
@@ -80,7 +100,7 @@ export async function createArticle(_prev: ArticleActionResult | null, formData:
 
     const parsed = articleFormSchema.safeParse(raw);
     if (!parsed.success) {
-      return { ok: false, error: parsed.error.issues[0]?.message ?? "Données invalides" };
+      return { ok: false, error: formatArticleZodError(parsed.error) };
     }
 
     const category = await prisma.category.findUnique({ where: { id: parsed.data.categoryId } });
@@ -175,7 +195,7 @@ export async function updateArticle(_prev: ArticleActionResult | null, formData:
 
     const parsed = articleFormSchema.safeParse(raw);
     if (!parsed.success) {
-      return { ok: false, error: parsed.error.issues[0]?.message ?? "Données invalides" };
+      return { ok: false, error: formatArticleZodError(parsed.error) };
     }
 
     const category = await prisma.category.findUnique({ where: { id: parsed.data.categoryId } });
