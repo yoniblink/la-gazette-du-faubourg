@@ -131,9 +131,6 @@ export function IntroLoaderGate({ children }: { children: ReactNode }) {
                 ? contentMotion.exiting
                 : contentMotion.revealed
           }
-          style={{
-            pointerEvents: contentLocked ? "none" : "auto",
-          }}
           aria-hidden={contentLocked}
         >
           {children}

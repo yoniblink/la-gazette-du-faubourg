@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { MotionDiv } from "@/components/motion-prefers";
 import { fadeUp } from "@/lib/motion";
-import { site } from "@/lib/content/site";
 
 export function NewsletterSection() {
   return (
@@ -29,13 +28,12 @@ export function NewsletterSection() {
             </p>
           </div>
           <Link
-            href={site.newsletterUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-3 border border-[#0a0a0a] bg-[#0a0a0a] px-8 py-3.5 font-[family-name:var(--font-sans)] text-[11px] font-medium uppercase tracking-[0.24em] text-white transition-opacity hover:opacity-90"
+            href="/newsletter"
+            className="relative z-30 inline-flex items-center gap-3 border border-[#0a0a0a] bg-[#0a0a0a] px-8 py-3.5 font-[family-name:var(--font-sans)] text-[11px] font-medium uppercase tracking-[0.24em] text-white transition-opacity hover:opacity-90 [pointer-events:auto]"
+            prefetch
           >
             S’abonner
-            <span aria-hidden>↗</span>
+            <span aria-hidden>→</span>
           </Link>
         </MotionDiv>
       </div>
