@@ -12,7 +12,7 @@ export const rubriqueArticlesBySlug: Partial<Record<RubriqueSlug, RubriqueSiteAr
       kicker: "Audemars Piguet",
       title: "Une nouvelle génération de Quantième Perpétuel",
       excerpt:
-        "Pour son 150e anniversaire, Audemars Piguet dévoile le Calibre 7138 : quantième perpétuel automatique « tout-à-la-couronne », ergonomie et confort d’usage repensés.",
+        "Pour son 150e anniversaire, Audemars Piguet dévoile le Calibre 7138 : quantième perpétuel automatique « tout-à-la-couronne », ergonomie et confort d’usage repensés. Jusqu’ici, le réglage des indications impliquait souvent plusieurs organes de commande ; désormais, une seule couronne suffit pour ajuster date, jour et mois avec une lisibilité préservée. Une réponse aux collectionneurs qui attendent complication de haut vol et simplicité au quotidien.",
       imageSrc:
         "https://www.lagazettedufaubourg.fr/wp-content/uploads/2026/01/CODE_26494BC-OO-D350KB-01_Life-Style_01-scaled.png",
       imageAlt: "Montre Audemars Piguet — quantième perpétuel",
@@ -33,7 +33,7 @@ export const rubriqueArticlesBySlug: Partial<Record<RubriqueSlug, RubriqueSiteAr
       kicker: "Breguet",
       title: "Reine de Naples 9935 & 8925",
       excerpt:
-        "Pour les 250 ans de Breguet, la Reine de Naples s’enrichit : nouveaux mouvements, affichages inédits et finitions exclusives pour les références 9935 et 8925.",
+        "Pour les 250 ans de Breguet, la Reine de Naples s’enrichit : nouveaux mouvements, affichages inédits et finitions exclusives pour les références 9935 et 8925. Les silhouettes ovales et l’or signature dialoguent avec des innovations techniques qui prolongent l’héritage napolitain sans renier la personnalité de la collection. Une double proposition entre audace contemporaine et exigence de manufacture, bracelet tout en or ou cadran repensé selon les versions.",
       imageSrc:
         "https://www.lagazettedufaubourg.fr/wp-content/uploads/2026/01/image_1_1769093723550.png",
       imageAlt: "Breguet Reine de Naples",
@@ -54,7 +54,7 @@ export const rubriqueArticlesBySlug: Partial<Record<RubriqueSlug, RubriqueSiteAr
       kicker: "Exposition",
       title: "Dynasty ! Pouvoir, héritage et magnificence",
       excerpt:
-        "À l’Hôtel de la Marine, la Collection Al Thani présente des joyaux historiques : pouvoir des cours, transmission et éclat des pierres.",
+        "À l’Hôtel de la Marine, la Collection Al Thani présente des joyaux historiques : pouvoir des cours, transmission et éclat des pierres. L’exposition déploie diadèmes, colliers et broches d’apparat où sciences du serti et symbolique du pouvoir se croisent. Pour La Gazette, Dynasty interroge ce lien entre héritage dynastique et art de la joaillerie, entre fastes publics et secrets de famille, sans jamais effacer la précision du geste artisanal.",
       imageSrc: "https://www.lagazettedufaubourg.fr/wp-content/uploads/2026/01/DYNASTY-1.png",
       imageAlt: "Collier et joyaux d’exception — exposition Dynasty",
       layout: "standard",
@@ -74,7 +74,7 @@ export const rubriqueArticlesBySlug: Partial<Record<RubriqueSlug, RubriqueSiteAr
       kicker: "Vacheron Constantin",
       title: "Grand Lady Kalla",
       excerpt:
-        "Trois nouvelles interprétations de la Grand Lady Kalla : pierres de couleur, platine et or, dans la continuité de la Kallista depuis 1979.",
+        "Trois nouvelles interprétations de la Grand Lady Kalla : pierres de couleur, platine et or, dans la continuité de la Kallista depuis 1979. Vacheron Constantin prolonge une lignée où le boîtier-joaillier dialogue avec le mouvement : émeraudes sur platine, rubis et saphirs sur or blanc. Chaque pièce affirme le savoir-faire lapidaire et sertisseur de la manufacture dans une montre-architecture où lumière et matière se répondent.",
       imageSrc:
         "https://www.lagazettedufaubourg.fr/wp-content/uploads/2026/01/VAC_GrandLadyKalla_1208J_StillLife_Rubis_4x5_Crop_73974128.jpg-scaled.jpeg",
       imageAlt: "Vacheron Constantin Grand Lady Kalla",

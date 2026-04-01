@@ -212,7 +212,7 @@ async function main() {
       slug: chottinSlug,
       title: "Christophe Chottin à la tête de Maison Blossom",
       excerpt:
-        "Au cœur du Faubourg, une table qui affirme une cuisine française sincère et une vision claire de l’hospitalité.",
+        "Au cœur du Faubourg Saint-Honoré, Christophe Chottin prend la direction des cuisines de Maison Blossom au Sofitel Paris Le Faubourg : une table qui affirme une cuisine française sincère, enracinée dans les terroirs et portée par une hospitalité exigeante. Une adresse à suivre pour qui cherche le juste équilibre entre précision du geste, produits d’exception et chaleur de l’accueil.",
       coverImageUrl:
         "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=2000&auto=format&fit=crop",
       coverImageAlt: "Salle de restaurant raffinée",
@@ -227,6 +227,10 @@ async function main() {
       featuredSortOrder: 0,
     },
     update: {
+      excerpt:
+        "Au cœur du Faubourg Saint-Honoré, Christophe Chottin prend la direction des cuisines de Maison Blossom au Sofitel Paris Le Faubourg : une table qui affirme une cuisine française sincère, enracinée dans les terroirs et portée par une hospitalité exigeante. Une adresse à suivre pour qui cherche le juste équilibre entre précision du geste, produits d’exception et chaleur de l’accueil.",
+      seoDescription:
+        "Au cœur du Faubourg Saint-Honoré, Christophe Chottin prend la direction des cuisines de Maison Blossom au Sofitel Paris Le Faubourg : une table qui affirme une cuisine française sincère, enracinée dans les terroirs et portée par une hospitalité exigeante. Une adresse à suivre pour qui cherche le juste équilibre entre précision du geste, produits d’exception et chaleur de l’accueil.",
       featuredOnHome: true,
       featuredSortOrder: 0,
       layout: ArticleLayout.lead,

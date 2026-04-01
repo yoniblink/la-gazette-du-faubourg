@@ -10,6 +10,29 @@ import { tryPrisma } from "@/lib/prisma";
 /** Rubrique « fil » : tous les articles publiés (pas seulement ceux catégorisés « Actualité »). */
 export const ACTUALITE_HUB_SLUG = "actualite";
 
+/**
+ * Ordre des tuiles sur la page WordPress /actualités/ (Elementor).
+ * Les autres articles du fil suivent ensuite (tri date pour la DB).
+ */
+const ACTUALITES_HUB_MANUAL_ORDER = [
+  "une-nouvelle-generationde-quantieme-perpetuel",
+  "reine-de-naples9935-8925",
+  "dynasty-pouvoir-heritage-et-magnificence",
+  "grand-lady-kalla",
+  "christophe-chottin-a-la-tete-de-maison-blossom",
+  "hotel-de-crillon-a-rosewood-hotel",
+  "3-questions-a-john-nollet-directeur-artistique-maison-carila",
+  "traits-pour-tres",
+] as const;
+
+const ACTUALITES_HUB_RANK = new Map<string, number>(
+  ACTUALITES_HUB_MANUAL_ORDER.map((slug, i) => [slug, i]),
+);
+
+function actualiteHubSortKey(slug: string): number {
+  return ACTUALITES_HUB_RANK.get(slug) ?? ACTUALITES_HUB_MANUAL_ORDER.length;
+}
+
 /** Rubrique listing row (DB or static). */
 export type RubriqueArticleListItem = {
   id: string;
@@ -78,6 +101,16 @@ export const getPublishedArticlesByCategorySlug = cache(
         ],
         include: { category: { select: { title: true, slug: true } } },
       });
+      if (isActualiteHub) {
+        rows.sort((a, b) => {
+          const ra = actualiteHubSortKey(a.slug);
+          const rb = actualiteHubSortKey(b.slug);
+          if (ra !== rb) return ra - rb;
+          const da = a.publishedAt?.getTime() ?? a.createdAt.getTime();
+          const db = b.publishedAt?.getTime() ?? b.createdAt.getTime();
+          return db - da;
+        });
+      }
       return rows.map((r) => ({
         id: r.id,
         slug: r.slug,
@@ -90,7 +123,12 @@ export const getPublishedArticlesByCategorySlug = cache(
       }));
     }
     if (categorySlug === ACTUALITE_HUB_SLUG) {
-      return staticAllPublishedForActualiteHub();
+      return staticAllPublishedForActualiteHub().sort((a, b) => {
+        const ra = actualiteHubSortKey(a.slug);
+        const rb = actualiteHubSortKey(b.slug);
+        if (ra !== rb) return ra - rb;
+        return 0;
+      });
     }
     return staticArticlesForCategory(categorySlug);
   },

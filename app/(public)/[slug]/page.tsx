@@ -106,11 +106,17 @@ export default async function RubriquePage({ params }: Props) {
                       </div>
                     </div>
                     <div className="flex min-w-0 flex-col justify-center md:col-span-6 lg:col-span-5">
-                      <h3 className="font-[family-name:var(--font-serif)] text-[clamp(1.6rem,3.4vw,2.75rem)] font-light italic leading-[1.15] tracking-[-0.02em] text-[#0a0a0a]">
+                      <h3
+                        className="w-max max-w-full text-left text-[34px] font-normal italic leading-tight tracking-tight text-[#0a0a0a] lg:text-[48px] lg:leading-[1.12]"
+                        style={{ fontFamily: "Griffiths, serif" }}
+                      >
                         {a.title}
                       </h3>
                       {a.excerpt ? (
-                        <p className="mt-5 max-w-xl font-[family-name:var(--font-serif)] text-[15px] font-light leading-[1.85] text-[#3a3a3a] md:text-[1.0625rem] md:leading-[1.8]">
+                        <p
+                          className="mb-0 mt-5 max-w-xl min-h-[10.2rem] overflow-hidden text-justify text-[18px] font-normal leading-[1.6] text-pretty text-[#0a0a0a] max-[767px]:leading-[1.55] max-[1024px]:text-[17px] max-[1024px]:leading-[1.58] lg:min-h-[10.8rem] line-clamp-6"
+                          style={{ fontFamily: "Garamond, serif", letterSpacing: "-0.2px" }}
+                        >
                           {a.excerpt}
                         </p>
                       ) : null}
