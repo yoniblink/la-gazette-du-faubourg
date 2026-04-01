@@ -167,10 +167,10 @@ export function ArticlePublicLayout({
             <EditableTitle
               value={title}
               onChange={inlineEdit.onTitleChange}
-              className="mt-3 font-[family-name:var(--font-serif)] text-[clamp(1.85rem,4vw,2.65rem)] font-light leading-[1.12] tracking-tight text-[#0a0a0a]"
+              className="mt-3 font-['Griffiths'] text-[clamp(1.85rem,4vw,2.65rem)] font-normal leading-[1.12] tracking-normal text-[#0a0a0a]"
             />
           ) : (
-            <h1 className="mt-3 font-[family-name:var(--font-serif)] text-[clamp(1.85rem,4vw,2.65rem)] font-light leading-[1.12] tracking-tight text-[#0a0a0a]">
+            <h1 className="mt-3 font-['Griffiths'] text-[clamp(1.85rem,4vw,2.65rem)] font-normal leading-[1.12] tracking-normal text-[#0a0a0a]">
               {title}
             </h1>
           )}

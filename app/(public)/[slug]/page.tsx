@@ -66,7 +66,7 @@ export default async function RubriquePage({ params }: Props) {
             <p className="font-[family-name:var(--font-sans)] text-[10px] font-medium uppercase tracking-[0.28em] text-[#6b6b6b]">
               Rubrique
             </p>
-            <h1 className="mt-3 font-[family-name:var(--font-serif)] text-[clamp(2rem,4vw,3rem)] font-light leading-tight text-[#0a0a0a]">
+            <h1 className="mt-3 font-['Griffiths'] text-[clamp(2rem,4vw,3rem)] font-normal leading-tight text-[#0a0a0a]">
               {rubriqueTitle}
             </h1>
             <p className="mt-4 font-[family-name:var(--font-sans)] text-sm uppercase tracking-[0.18em] text-[#6b6b6b]">
