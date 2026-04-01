@@ -42,7 +42,7 @@ export function HomeVideo() {
   return (
     <section aria-label={v.title} className="scroll-mt-24">
       <div className="w-full">
-        <div className="relative w-full overflow-hidden shadow-[0_32px_100px_-32px_rgba(0,0,0,0.85)] ring-1 ring-white/[0.12]">
+        <div className="relative w-full overflow-hidden">
           <div className="relative aspect-[24/7] w-full md:aspect-[26/7]">
             {useYoutube ? (
               <iframe

@@ -186,46 +186,8 @@ function StoryReelOverlay({
   );
 }
 
-function StoryNavArrows({
-  onPrev,
-  onNext,
-}: {
-  onPrev: () => void;
-  onNext: () => void;
-}) {
-  const btnClass =
-    "pointer-events-auto absolute top-1/2 z-30 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-white/[0.08] bg-black/15 text-white/75 shadow-none backdrop-blur-[2px] transition-[opacity,background-color,color] duration-300 hover:border-white/15 hover:bg-black/28 hover:text-white hover:opacity-100 sm:h-8 sm:w-8 opacity-55";
-  return (
-    <>
-      <button
-        type="button"
-        aria-label="Vidéo précédente"
-        className={`${btnClass} left-1 sm:left-1.5`}
-        onClick={(e) => {
-          e.stopPropagation();
-          onPrev();
-        }}
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden className="sm:h-[18px] sm:w-[18px]">
-          <path d="M14 6L8 12L14 18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </button>
-      <button
-        type="button"
-        aria-label="Vidéo suivante"
-        className={`${btnClass} right-1 sm:right-1.5`}
-        onClick={(e) => {
-          e.stopPropagation();
-          onNext();
-        }}
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden className="sm:h-[18px] sm:w-[18px]">
-          <path d="M10 6L16 12L10 18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </button>
-    </>
-  );
-}
+const reelNavExternalBtnClass =
+  "relative z-30 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-black/12 bg-white/95 text-[#0a0a0a]/45 shadow-[0_2px_12px_rgba(0,0,0,0.06)] backdrop-blur-[2px] transition-all duration-200 hover:border-black/20 hover:bg-white hover:text-[#0a0a0a]/85 hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0a0a0a]/20 md:h-10 md:w-10";
 
 function relativeIndex(i: number, active: number, n: number): number {
   let d = i - active;
@@ -242,28 +204,15 @@ type MobileReelCardProps = {
 };
 
 function MobileReelCard({ reel, reelIndex, totalCount }: MobileReelCardProps) {
-  const wrapRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState(true);
   const [progress01, setProgress01] = useState(0);
   const [playing, setPlaying] = useState(false);
 
   useEffect(() => {
-    const wrap = wrapRef.current;
     const v = videoRef.current;
-    if (!wrap || !v) return;
-    const io = new IntersectionObserver(
-      ([e]) => {
-        if (e.isIntersecting && e.intersectionRatio >= 0.45) {
-          void v.play().catch(() => {});
-        } else {
-          v.pause();
-        }
-      },
-      { threshold: [0, 0.45, 0.6] },
-    );
-    io.observe(wrap);
-    return () => io.disconnect();
+    if (!v) return;
+    void v.play().catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -303,10 +252,7 @@ function MobileReelCard({ reel, reelIndex, totalCount }: MobileReelCardProps) {
   };
 
   return (
-    <div
-      ref={wrapRef}
-      className="relative aspect-[9/16] w-[min(78vw,300px)] shrink-0 snap-center overflow-hidden rounded-2xl bg-black shadow-[0_24px_60px_-20px_rgba(0,0,0,0.35)] ring-1 ring-black/[0.08]"
-    >
+    <div className="relative aspect-[9/16] w-[min(78vw,300px)] shrink-0 snap-center overflow-hidden rounded-2xl bg-black">
       <StoryReelOverlay
         compact
         showChrome
@@ -325,6 +271,7 @@ function MobileReelCard({ reel, reelIndex, totalCount }: MobileReelCardProps) {
         muted={muted}
         loop
         playsInline
+        autoPlay
         preload="metadata"
         className="h-full w-full object-cover"
       />
@@ -365,9 +312,7 @@ export function InstagramReelsStack({ reels }: { reels: InstagramReelPublic[] })
     reels.forEach((_, i) => {
       const v = videoRefs.current[i];
       if (!v) return;
-      const pos = relativeIndex(i, index, n);
-      if (pos === 0) void v.play().catch(() => {});
-      else v.pause();
+      void v.play().catch(() => {});
     });
   }, [index, n, reels]);
 
@@ -401,11 +346,15 @@ export function InstagramReelsStack({ reels }: { reels: InstagramReelPublic[] })
   }, []);
 
   const togglePlay = useCallback(() => {
-    const v = videoRefs.current[index];
-    if (!v) return;
-    if (v.paused) void v.play();
-    else v.pause();
-  }, [index]);
+    const center = videoRefs.current[index];
+    const shouldPlay = center?.paused ?? true;
+    reels.forEach((_, i) => {
+      const v = videoRefs.current[i];
+      if (!v) return;
+      if (shouldPlay) void v.play().catch(() => {});
+      else v.pause();
+    });
+  }, [index, reels]);
 
   if (n === 0) return null;
 
@@ -413,11 +362,46 @@ export function InstagramReelsStack({ reels }: { reels: InstagramReelPublic[] })
     <div className="mt-12 w-full">
       <div className="hidden md:block">
         <div
-          className="relative mx-auto h-[min(72vh,560px)] max-w-5xl"
+          className={`mx-auto flex w-full items-center ${n > 1 ? "gap-3 md:gap-4 lg:gap-5" : "justify-center"}`}
           role="region"
           aria-roledescription="carrousel"
           aria-label="Vidéos Instagram"
         >
+          {n > 1 ? (
+            <motion.button
+              type="button"
+              aria-label="Vidéo précédente"
+              whileHover={reduceMotion ? {} : { scale: 1.02 }}
+              whileTap={reduceMotion ? {} : { scale: 0.98 }}
+              className={reelNavExternalBtnClass}
+              onClick={(e) => {
+                e.preventDefault();
+                go(-1);
+              }}
+            >
+              <span className="absolute inset-0 rounded-full border border-black/[0.05]" aria-hidden />
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden
+                className="relative md:h-[18px] md:w-[18px]"
+              >
+                <path
+                  d="M14 6L8 12L14 18"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </motion.button>
+          ) : null}
+
+          <div
+            className={`relative h-[min(72vh,560px)] ${n > 1 ? "min-w-0 max-w-5xl flex-1" : "mx-auto w-full max-w-5xl"}`}
+          >
           {reels.map((reel, i) => {
             const pos = relativeIndex(i, index, n);
             if (Math.abs(pos) > 1) return null;
@@ -437,13 +421,13 @@ export function InstagramReelsStack({ reels }: { reels: InstagramReelPublic[] })
                     setIndex(i);
                   }
                 }}
-                className={`absolute left-1/2 top-1/2 w-[min(300px,28vw)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl bg-black text-left shadow-[0_32px_80px_-28px_rgba(0,0,0,0.45)] ring-1 ring-white/10 outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${!isCenter ? "cursor-pointer" : ""}`}
+                className={`absolute left-1/2 top-1/2 w-[min(300px,28vw)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl bg-black text-left outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${!isCenter ? "cursor-pointer" : ""}`}
                 initial={false}
                 animate={
                   reduceMotion
-                    ? { x: pos * 200, scale: isCenter ? 1 : 0.88, opacity: isCenter ? 1 : 0.75, zIndex: 20 - Math.abs(pos) }
+                    ? { x: pos * 270, scale: isCenter ? 1 : 0.88, opacity: isCenter ? 1 : 0.75, zIndex: 20 - Math.abs(pos) }
                     : {
-                        x: pos * 220,
+                        x: pos * 300,
                         scale: isCenter ? 1 : 0.86,
                         opacity: isCenter ? 1 : 0.78,
                         zIndex: 20 - Math.abs(pos),
@@ -471,6 +455,7 @@ export function InstagramReelsStack({ reels }: { reels: InstagramReelPublic[] })
                     muted={storyMuted}
                     loop
                     playsInline
+                    autoPlay
                     preload="metadata"
                     className="h-full w-full object-cover"
                   />
@@ -479,17 +464,49 @@ export function InstagramReelsStack({ reels }: { reels: InstagramReelPublic[] })
                       {reel.caption}
                     </p>
                   ) : null}
-                  {isCenter && n > 1 ? <StoryNavArrows onPrev={() => go(-1)} onNext={() => go(1)} /> : null}
                 </div>
               </motion.div>
             );
           })}
+          </div>
+
+          {n > 1 ? (
+            <motion.button
+              type="button"
+              aria-label="Vidéo suivante"
+              whileHover={reduceMotion ? {} : { scale: 1.02 }}
+              whileTap={reduceMotion ? {} : { scale: 0.98 }}
+              className={reelNavExternalBtnClass}
+              onClick={(e) => {
+                e.preventDefault();
+                go(1);
+              }}
+            >
+              <span className="absolute inset-0 rounded-full border border-black/[0.05]" aria-hidden />
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden
+                className="relative md:h-[18px] md:w-[18px]"
+              >
+                <path
+                  d="M10 6L16 12L10 18"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </motion.button>
+          ) : null}
         </div>
       </div>
 
       <div className="md:hidden">
         <div
-          className="-mx-6 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth scroll-pb-4 px-6 pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="-mx-6 flex snap-x snap-mandatory gap-8 overflow-x-auto scroll-smooth scroll-pb-4 px-6 pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           role="region"
           aria-label="Vidéos Instagram"
         >

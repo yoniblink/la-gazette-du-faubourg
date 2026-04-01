@@ -27,11 +27,11 @@ export const site = {
     youtubeId: null,
     posterSrc: null,
   },
-  instagramUrl: "https://www.instagram.com/",
+  instagramUrl: "https://www.instagram.com/lagazettedufaubourg/",
   instagramLabel: "Instagram",
   /** Bandeau type Story / Reels sur les vidéos de la section Instagram */
   instagramReels: {
-    displayHandle: "lagazettedufaubourgsainthonore",
+    displayHandle: "lagazettedufaubourg",
   },
   youtubeUrl: "https://www.youtube.com/",
   twitterUrl: "https://twitter.com/",

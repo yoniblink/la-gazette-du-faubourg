@@ -7,6 +7,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useCallback, useEffect, useId, useState } from "react";
 import { createPortal } from "react-dom";
 import { site } from "@/lib/content/site";
+import { garamondNavItalic } from "@/lib/fonts/garamond-nav";
 
 export type HeaderCategory = { slug: string; title: string };
 
@@ -77,11 +78,11 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
     return () => observer.disconnect();
   }, [pathname]);
 
-  /**
-   * Comme la nav du Hero : léger fade au survol + ligne qui se dessine sous le libellé.
-   */
-  const linkDesktopClass =
-    "relative inline-block shrink-0 whitespace-nowrap pb-1 text-center font-[family-name:var(--font-serif)] text-[15px] italic leading-none text-[#111111] opacity-100 transition-opacity duration-300 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:origin-center after:scale-x-0 after:bg-[#111111]/40 after:transition-transform after:duration-300 after:ease-out hover:opacity-65 hover:after:scale-x-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0a0a0a]/20 focus-visible:after:scale-x-100 sm:text-[16px] md:text-[17px] lg:text-[18px]";
+  /** Cormorant Garamond italic (next/font) — les .ttf locaux du repo sont souvent absents, Safari ne fait pas tomber sur une typo correcte. */
+  const linkDesktopClass = [
+    garamondNavItalic.className,
+    "relative inline-block shrink-0 whitespace-nowrap py-1 text-center text-[17px] font-medium leading-none text-[#111111] [font-synthesis:none] opacity-100 antialiased transition-opacity duration-300 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:origin-center after:scale-x-0 after:bg-[#111111]/40 after:transition-transform after:duration-300 after:ease-out hover:opacity-65 hover:after:scale-x-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0a0a0a]/20 focus-visible:after:scale-x-100 sm:text-[18px] md:text-[18px] lg:text-[19px] xl:text-[20px]",
+  ].join(" ");
 
   const headerNode = (
     <header
@@ -89,7 +90,7 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
         isVisible ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-5 opacity-0"
       }`}
     >
-      <div className="relative mx-auto flex h-14 w-full max-w-[100rem] items-center justify-between gap-x-4 px-4 md:h-16 md:justify-center md:gap-x-7 md:px-8 lg:gap-x-9 lg:px-10 xl:px-12">
+      <div className="relative mx-auto flex h-14 w-full max-w-[100rem] items-center justify-between gap-x-4 px-4 md:grid md:h-16 md:grid-cols-[auto_minmax(0,1fr)] md:items-center md:gap-x-3 md:px-6 lg:gap-x-5 lg:px-8 xl:gap-x-6 xl:px-10">
         <button
           type="button"
           className="relative z-10 flex h-10 w-10 shrink-0 flex-col items-center justify-center rounded-sm border border-[#0a0a0a]/10 bg-transparent text-[#0a0a0a] transition-[border-color,background-color] hover:border-[#0a0a0a]/22 hover:bg-[#0a0a0a]/[0.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0a0a0a]/25 md:hidden"
@@ -129,10 +130,10 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
           </span>
         </button>
 
-        <div className="absolute left-1/2 top-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 md:static md:z-auto md:-ml-5 md:translate-x-0 md:translate-y-0">
+        <div className="absolute left-1/2 top-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 md:static md:z-auto md:flex md:h-16 md:translate-x-0 md:translate-y-0 md:items-center">
           <Link
             href="/"
-            className="relative flex h-9 w-[min(10rem,42vw)] max-w-[168px] items-center justify-center rounded-sm outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#0a0a0a]/25 sm:h-10 md:h-11 md:w-[190px] md:max-w-none"
+            className="relative flex h-9 w-[min(10rem,42vw)] max-w-[168px] shrink-0 items-center justify-center rounded-sm outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#0a0a0a]/25 sm:h-10 md:h-11 md:w-[190px] md:max-w-none"
             aria-label="La Gazette du Faubourg — Accueil"
             onClick={() => setMenuOpen(false)}
           >
@@ -160,7 +161,7 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
 
         <nav
           aria-label="Navigation principale"
-          className="hidden min-w-0 flex-nowrap items-center justify-center gap-x-2.5 overflow-x-auto overflow-y-hidden py-1 [-ms-overflow-style:auto] [scrollbar-width:thin] md:flex md:flex-none sm:gap-x-3.5 md:gap-x-4 lg:gap-x-5 [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-black/15 [&::-webkit-scrollbar-track]:bg-transparent"
+          className="hidden min-h-0 min-w-0 flex-nowrap items-center justify-center gap-x-2 sm:gap-x-2.5 md:flex md:h-16 lg:gap-x-3 xl:gap-x-3.5"
         >
           <Link
             href="/"
@@ -223,7 +224,9 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
               transition={{ duration: menuDuration, ease: MENU_EASE }}
             >
               <div className="flex items-center justify-between gap-4 border-b border-black/[0.06] px-5 py-4">
-                <p className="font-[family-name:var(--font-serif)] text-[15px] font-light italic leading-none tracking-[0.02em] text-[#0a0a0a]">
+                <p
+                  className={`${garamondNavItalic.className} text-[15px] font-medium leading-none tracking-[0.02em] text-[#0a0a0a] antialiased [font-synthesis:none]`}
+                >
                   Menu
                 </p>
                 <button
@@ -283,7 +286,9 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
                 </Link>
               </nav>
               <div className="shrink-0 border-t border-black/[0.06] px-5 py-4">
-                <p className="font-[family-name:var(--font-serif)] text-[11px] font-light italic leading-snug text-[#8a8a8a]">
+                <p
+                  className={`${garamondNavItalic.className} text-[11px] font-normal leading-snug text-[#8a8a8a] antialiased [font-synthesis:none]`}
+                >
                   {site.officialTitle}
                 </p>
               </div>

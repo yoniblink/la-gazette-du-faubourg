@@ -12,6 +12,7 @@ export function Featured({ items }: { items: FeaturedItem[] }) {
   return (
     <section id="actualite" className="scroll-mt-24 bg-white py-24 md:py-32">
       <SectionHeading
+        className="text-center"
         title="L’actualité du Faubourg ..."
         titleClassName="text-[40px] font-normal leading-none tracking-normal"
         titleStyle={{ fontFamily: '"Griffiths", "Garamond Italic", Garamond, Georgia, serif' }}

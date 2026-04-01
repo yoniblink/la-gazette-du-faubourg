@@ -3,15 +3,19 @@
 import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { FeaturedItem } from "@/lib/content/featured-item";
+import { garamondNavItalic } from "@/lib/fonts/garamond-nav";
 
 const EDITORIAL_EASE = [0.43, 0.13, 0.23, 0.96] as const;
+
+/** Même typo que les liens rubrique du hero (`Hero.jsx` → `heroNavLinkClass`), couleur lisible sur fond noir. */
+const editorialRubriqueLabelClass = [
+  garamondNavItalic.className,
+  "inline-block max-w-[min(100%,22rem)] text-[17px] font-medium italic leading-none text-white/92 antialiased [font-synthesis:none] drop-shadow-[0_1px_8px_rgba(0,0,0,0.45)] md:text-[17px] lg:text-[18px] xl:text-[19px]",
+].join(" ");
 const AUTOPLAY_MS = 4000;
 const TRANSITION_S = 0.32;
-/** Aligné sur `md:w-[72px]` + `md:gap-2` (8px) pour le scroll auto des vignettes */
-const THUMB_W_MD = 72;
-const THUMB_GAP_MD = 8;
 
 type Props = { items: FeaturedItem[] };
 
@@ -19,7 +23,6 @@ export function EditorialCarousel({ items }: Props) {
   const reduceMotion = useReducedMotion();
   const [activeIndex, setActiveIndex] = useState(0);
   const [paused, setPaused] = useState(false);
-  const thumbRef = useRef<HTMLDivElement>(null);
 
   const n = items.length;
   const active = items[activeIndex]!;
@@ -44,27 +47,47 @@ export function EditorialCarousel({ items }: Props) {
     return () => clearInterval(id);
   }, [reduceMotion, paused, n]);
 
-  useEffect(() => {
-    const el = thumbRef.current;
-    if (!el) return;
-    const scroll = Math.max(0, (activeIndex - 1) * (THUMB_W_MD + THUMB_GAP_MD));
-    el.scrollTo({ left: scroll, behavior: "smooth" });
-  }, [activeIndex]);
-
   const tEnter = reduceMotion ? 0.1 : TRANSITION_S;
   const linkProps = external
     ? { target: "_blank" as const, rel: "noopener noreferrer" as const }
     : {};
+
+  const navBtnClass =
+    "relative z-30 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-black/12 bg-white/95 text-[#0a0a0a]/45 shadow-[0_2px_12px_rgba(0,0,0,0.06)] backdrop-blur-[2px] transition-all duration-200 hover:border-black/20 hover:bg-white hover:text-[#0a0a0a]/85 hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0a0a0a]/20 md:h-10 md:w-10";
 
   return (
     <div
       role="region"
       aria-roledescription="carrousel"
       aria-label="Articles à la une"
-      className="relative w-full overflow-hidden rounded-sm bg-[#060606] text-white shadow-[0_24px_80px_rgba(0,0,0,0.18)]"
+      className="relative flex w-full items-center gap-1.5 sm:gap-2 md:gap-4 lg:gap-5"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
+      <motion.button
+        type="button"
+        aria-label="Article précédent"
+        whileHover={reduceMotion ? {} : { scale: 1.02 }}
+        whileTap={reduceMotion ? {} : { scale: 0.98 }}
+        onClick={(e) => {
+          e.preventDefault();
+          prev();
+        }}
+        className={navBtnClass}
+      >
+        <span className="absolute inset-0 rounded-full border border-black/[0.05]" aria-hidden />
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none" className="relative" aria-hidden>
+          <path
+            d="M12 4L6 10L12 16"
+            stroke="currentColor"
+            strokeWidth="1.35"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </motion.button>
+
+      <div className="relative min-w-0 flex-1 overflow-hidden rounded-sm bg-[#060606] text-white shadow-[0_24px_80px_rgba(0,0,0,0.18)]">
       {/* Bloc en flux : hauteur non nulle pour les parents des Image fill (évite warning Next) */}
       <div
         className="pointer-events-none w-full max-md:[aspect-ratio:4/5] max-md:min-h-[360px] md:[aspect-ratio:1200/645] md:min-h-[280px] lg:min-h-[320px]"
@@ -99,16 +122,8 @@ export function EditorialCarousel({ items }: Props) {
 
       {/* Méta coins (style Framer GPS / EXIF → rubrique / mise en avant) */}
       <div className="pointer-events-none absolute left-5 top-5 z-[3] md:left-8 md:top-8">
-        <p className="font-mono text-[10px] font-normal uppercase tracking-[0.12em] text-white/65 md:text-[11px]">
-          {active.rubrique}
-        </p>
+        <p className={editorialRubriqueLabelClass}>{active.rubrique}</p>
       </div>
-      <div className="pointer-events-none absolute right-5 top-5 z-[3] text-right md:right-8 md:top-8">
-        <p className="font-mono text-[10px] font-normal uppercase tracking-[0.12em] text-white/65 md:text-[11px]">
-          {active.layout === "lead" ? "À la une" : "Reportage"}
-        </p>
-      </div>
-
       {/* Contenu central */}
       <div className="absolute left-1/2 top-1/2 z-[2] w-[88%] max-w-[640px] -translate-x-1/2 -translate-y-1/2 md:w-[75%] md:max-w-[720px] lg:w-[90%]">
         <AnimatePresence mode="wait" initial={false}>
@@ -118,12 +133,19 @@ export function EditorialCarousel({ items }: Props) {
             animate={{ opacity: 1, y: 0 }}
             exit={reduceMotion ? {} : { opacity: 0, y: -16 }}
             transition={{ duration: tEnter, ease: EDITORIAL_EASE }}
-            className="pointer-events-none text-center"
+            className="pointer-events-none mx-auto w-full max-w-xl hyphens-auto [overflow-wrap:break-word]"
+            lang="fr"
           >
-            <h3 className="font-[family-name:var(--font-serif)] text-[1.35rem] font-light uppercase leading-[1.12] tracking-[0.06em] text-white [text-shadow:0_2px_28px_rgba(0,0,0,0.45)] sm:text-2xl md:text-3xl lg:text-[2.5rem]">
+            <h3
+              className="mx-auto w-max max-w-full text-center text-[34px] font-normal italic leading-tight tracking-tight text-white [text-shadow:0_2px_28px_rgba(0,0,0,0.45)] lg:text-[48px] lg:leading-[1.12]"
+              style={{ fontFamily: "Griffiths, serif" }}
+            >
               {active.title}
             </h3>
-            <p className="mx-auto mt-5 max-w-xl font-[family-name:var(--font-sans)] text-[13px] leading-relaxed text-white/88 md:text-[15px]">
+            <p
+              className="mt-5 w-full text-justify text-[18px] font-normal leading-[1.6] text-pretty text-white/95 [text-shadow:0_1px_18px_rgba(0,0,0,0.35)] max-[767px]:leading-[1.55] max-[1024px]:text-[17px] max-[1024px]:leading-[1.58]"
+              style={{ fontFamily: "Garamond, serif", letterSpacing: "-0.2px" }}
+            >
               {active.excerpt}
             </p>
           </motion.div>
@@ -137,31 +159,8 @@ export function EditorialCarousel({ items }: Props) {
         className="absolute inset-0 z-[4] outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/40"
         aria-label={`Lire : ${active.title}`}
       />
+      </div>
 
-      {/* Navigation — milieu vertical, bords gauche / droite */}
-      <motion.button
-        type="button"
-        aria-label="Article précédent"
-        whileHover={reduceMotion ? {} : { scale: 1.02 }}
-        whileTap={reduceMotion ? {} : { scale: 0.98 }}
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          prev();
-        }}
-        className="absolute left-3 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/[0.12] bg-black/5 text-white/55 opacity-80 backdrop-blur-[1px] transition-all duration-200 hover:border-white/22 hover:bg-black/15 hover:text-white/90 hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-1 focus-visible:ring-white/30 md:left-5 md:h-10 md:w-10 lg:left-7"
-      >
-        <span className="absolute inset-0 rounded-full border border-white/[0.06]" aria-hidden />
-        <svg width="15" height="15" viewBox="0 0 20 20" fill="none" className="relative" aria-hidden>
-          <path
-            d="M12 4L6 10L12 16"
-            stroke="currentColor"
-            strokeWidth="1.35"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </motion.button>
       <motion.button
         type="button"
         aria-label="Article suivant"
@@ -169,12 +168,11 @@ export function EditorialCarousel({ items }: Props) {
         whileTap={reduceMotion ? {} : { scale: 0.98 }}
         onClick={(e) => {
           e.preventDefault();
-          e.stopPropagation();
           next();
         }}
-        className="absolute right-3 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/[0.12] bg-black/5 text-white/55 opacity-80 backdrop-blur-[1px] transition-all duration-200 hover:border-white/22 hover:bg-black/15 hover:text-white/90 hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-1 focus-visible:ring-white/30 md:right-5 md:h-10 md:w-10 lg:right-7"
+        className={navBtnClass}
       >
-        <span className="absolute inset-0 rounded-full border border-white/[0.06]" aria-hidden />
+        <span className="absolute inset-0 rounded-full border border-black/[0.05]" aria-hidden />
         <svg width="15" height="15" viewBox="0 0 20 20" fill="none" className="relative" aria-hidden>
           <path
             d="M8 4L14 10L8 16"
@@ -185,71 +183,6 @@ export function EditorialCarousel({ items }: Props) {
           />
         </svg>
       </motion.button>
-
-      {/* Vignettes — desktop, centrées en bas */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-4 z-20 hidden md:flex md:justify-center md:pb-0">
-        <div
-          ref={thumbRef}
-          className="pointer-events-auto flex max-w-[min(100%,calc(100%-1.5rem))] gap-2 overflow-x-auto scroll-smooth px-3 md:max-w-[min(100%,420px)] md:gap-2 [&::-webkit-scrollbar]:hidden"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-        >
-          {items.map((item, i) => {
-            const isActive = i === activeIndex;
-            return (
-              <motion.button
-                key={item.id}
-                type="button"
-                aria-label={`Afficher ${item.title}`}
-                aria-current={isActive ? "true" : undefined}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  goTo(i);
-                }}
-                whileHover={reduceMotion ? {} : { y: -2 }}
-                className={`relative h-[40px] w-[64px] flex-shrink-0 overflow-hidden rounded-md border transition-colors md:h-[44px] md:w-[72px] md:rounded-lg ${
-                  isActive
-                    ? "border-white/70 ring-1 ring-white/35"
-                    : "border-white/10 opacity-90 hover:border-white/35"
-                }`}
-              >
-                <Image
-                  src={item.imageSrc}
-                  alt=""
-                  fill
-                  sizes="72px"
-                  className="object-cover"
-                  style={{ objectPosition: item.imageObjectPosition ?? "50% 50%" }}
-                />
-              </motion.button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Indicateur mobile (points) */}
-      <div
-        className="absolute bottom-5 right-5 z-20 flex gap-2 md:hidden"
-        role="tablist"
-        aria-label="Choisir un article"
-      >
-        {items.map((item, i) => (
-          <button
-            key={item.id}
-            type="button"
-            role="tab"
-            aria-selected={i === activeIndex}
-            aria-label={`${i + 1} sur ${n}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              goTo(i);
-            }}
-            className={`h-1.5 rounded-full transition-all ${
-              i === activeIndex ? "w-6 bg-white" : "w-1.5 bg-white/40"
-            }`}
-          />
-        ))}
-      </div>
     </div>
   );
 }

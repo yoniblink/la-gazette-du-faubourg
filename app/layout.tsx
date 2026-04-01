@@ -1,20 +1,14 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, DM_Sans } from "next/font/google";
+import { Roboto_Slab } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { site } from "@/lib/content/site";
 
-const serif = Cormorant_Garamond({
+/** Roboto Slab : pas embarqué dans le HTML Elementor, chargement Google comme avant. */
+const serif = Roboto_Slab({
   variable: "--font-serif",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
-  display: "swap",
-});
-
-const sans = DM_Sans({
-  variable: "--font-sans",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
+  weight: ["300", "400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -71,7 +65,7 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
-      className={`${serif.variable} ${sans.variable} h-full scroll-smooth scroll-pt-20 antialiased md:scroll-pt-24`}
+      className={`${serif.variable} h-full scroll-smooth scroll-pt-20 antialiased md:scroll-pt-24`}
     >
       <body className="min-h-full bg-[#fafafa] text-[#0a0a0a]">
         <Providers>{children}</Providers>

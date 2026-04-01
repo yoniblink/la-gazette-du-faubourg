@@ -14,11 +14,100 @@
   font-display: swap;
 }
 
+/* Famille dédiée comme dans l’export Elementor (glyphes italiques, pas d’italique CSS). */
 @font-face {
   font-family: "Garamond Italic";
   src: url("/fonts/GaramondItalic.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+/* Roboto — extrait du HTML Elementor (100–400 statiques + 500 woff2 + 600–900 variables v2). */
+@font-face {
+  font-family: "Roboto";
+  font-style: normal;
+  font-weight: 100;
+  src: url("/fonts/roboto-w100-stnor.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Roboto";
+  font-style: normal;
+  font-weight: 200;
+  src: url("/fonts/roboto-w200-stnor.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Roboto";
+  font-style: normal;
+  font-weight: 300;
+  src: url("/fonts/roboto-w300-stnor.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Roboto";
+  font-style: normal;
+  font-weight: 400;
+  src: url("/fonts/roboto-w400-stnor.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Roboto";
+  font-style: italic;
+  font-weight: 100;
+  src: url("/fonts/roboto-w100-stita.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Roboto";
+  font-style: italic;
+  font-weight: 200;
+  src: url("/fonts/roboto-w200-stita.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Roboto";
+  font-style: italic;
+  font-weight: 300;
+  src: url("/fonts/roboto-w300-stita.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Roboto";
   font-style: italic;
   font-weight: 400;
+  src: url("/fonts/roboto-w400-stita.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Roboto";
+  font-style: normal;
+  font-weight: 500;
+  src: url("/fonts/roboto-w500-latin.woff2") format("woff2");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Roboto";
+  font-style: normal;
+  font-weight: 600 900;
+  src: url("/fonts/roboto-variable-1.woff2") format("woff2");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Roboto";
+  font-style: italic;
+  font-weight: 600 900;
+  src: url("/fonts/roboto-variable-0.woff2") format("woff2");
+  font-display: swap;
+}
+
+/* Urbanist (900) — présent dans l’export Elementor, utile si une section reprend ce style. */
+@font-face {
+  font-family: "Urbanist";
+  font-style: normal;
+  font-weight: 900;
+  src: url("/fonts/urbanist-w900.woff2") format("woff2");
   font-display: swap;
 }
 
@@ -34,6 +123,9 @@
   --muted: #6b6b6b;
   --hairline: rgba(10, 10, 10, 0.08);
   --gold-soft: rgba(201, 169, 98, 0.45);
+  /* Roboto servi en local (@font-face ci-dessus), aligné sur l’export Elementor. */
+  --font-sans: "Roboto", ui-sans-serif, system-ui, sans-serif;
+  --font-urbanist: "Urbanist", ui-sans-serif, system-ui, sans-serif;
 }
 
 @theme inline {
@@ -46,6 +138,16 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
 }
+
+/* Titres : pile secondaire (Roboto Slab via --font-serif sur <html>). */
+.font-ui-serif {
+  font-family: var(--font-serif), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
+/*
+ * Garamond / Griffiths / Roboto / Urbanist : fichiers extraits de l’export Elementor (public/fonts).
+ * Le menu (Header / Hero) peut encore utiliser Cormorant Garamond (next/font) pour l’italique du fil.
+ */
 
 /* Mobile : pas de défilement horizontal « page », élastique horizontal réduit (iOS) */
 @media (max-width: 767px) {

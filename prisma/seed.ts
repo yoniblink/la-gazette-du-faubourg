@@ -245,6 +245,14 @@ async function main() {
     data: { featuredOnHome: true, featuredSortOrder: 2, layout: ArticleLayout.standard },
   });
 
+  const crillonTitle = await prisma.article.updateMany({
+    where: { slug: "hotel-de-crillon-a-rosewood-hotel" },
+    data: { title: "Hôtel De Crillon A Rosewood Hotel" },
+  });
+  if (crillonTitle.count > 0) {
+    console.log(`Updated article title « Hôtel De Crillon A Rosewood Hotel » (${crillonTitle.count}).`);
+  }
+
   await seedAdmin();
 }
 
