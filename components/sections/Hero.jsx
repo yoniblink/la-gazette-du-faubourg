@@ -107,7 +107,7 @@ export function Hero() {
                 />
               </Link>
 
-              <nav aria-label="Navigation Hero" className="-mt-3 w-full md:-mt-4 lg:-mt-5 lg:flex lg:justify-center">
+              <nav aria-label="Navigation Hero" className="mt-2 w-full md:mt-3 lg:mt-4 lg:flex lg:justify-center">
                 <ul className="flex max-md:flex-wrap max-md:gap-y-2 max-md:justify-center md:flex-nowrap md:justify-center md:gap-x-1 md:pb-0 lg:gap-x-1.5 xl:gap-x-2">
                   {heroInlineNavLinks.map((link) => (
                     <li key={link.href} className="shrink-0">
