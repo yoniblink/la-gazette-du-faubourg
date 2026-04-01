@@ -534,16 +534,17 @@ export function ArticleForm({
                   <div className="mt-4">
                     <label className="text-[11px] font-medium uppercase tracking-wider text-stone-500">URL</label>
                     <input
-                      required
                       value={coverImageUrl}
                       onChange={(e) => setCoverImageUrl(e.target.value)}
                       className="mt-2 w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm"
                     />
+                    <p className="mt-1.5 text-[11px] text-stone-500">
+                      Laisser vide pour n’afficher que le corps (type page Elementor).
+                    </p>
                   </div>
                   <div className="mt-4">
                     <label className="text-[11px] font-medium uppercase tracking-wider text-stone-500">Alt</label>
                     <input
-                      required
                       value={coverAltInp}
                       onChange={(e) => setCoverAltInp(e.target.value)}
                       className="mt-2 w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm"

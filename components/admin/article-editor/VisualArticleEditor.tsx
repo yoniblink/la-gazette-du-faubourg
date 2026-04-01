@@ -293,7 +293,7 @@ export function VisualArticleEditor({
           sourceUrl={preview.sourceUrl.trim() ? preview.sourceUrl : undefined}
           inlineEdit={inlineEdit}
         >
-          <div className="article-tiptap-html mt-14 space-y-6 border-t border-black/[0.08] pt-12">
+          <div className="article-tiptap-html mt-12 space-y-6">
             {blocks.map((b) => (
               <PreviewChunk
                 key={b.id}

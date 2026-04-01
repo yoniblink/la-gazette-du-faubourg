@@ -19,6 +19,7 @@ import { generateJSON } from "@tiptap/html";
 import type { JSONContent } from "@tiptap/core";
 import { PrismaClient, ArticleStatus, ArticleLayout } from "@prisma/client";
 import { getTiptapExtensions } from "@/lib/tiptap/extensions";
+import { firstImageFromTipTapDoc } from "../lib/article-cover-resolve";
 
 const WP_BASE = (process.env.WORDPRESS_IMPORT_BASE_URL ?? "https://www.lagazettedufaubourg.fr").replace(
   /\/$/,
@@ -126,22 +127,6 @@ async function fetchAllWpPosts(): Promise<WpPost[]> {
   return fetchAllWpPostsByCategory();
 }
 
-function firstImageSrcFromDoc(doc: object): string | null {
-  const walk = (n: unknown): string | null => {
-    if (!n || typeof n !== "object") return null;
-    const o = n as { type?: string; attrs?: { src?: string }; content?: unknown[] };
-    if (o.type === "image" && typeof o.attrs?.src === "string") return o.attrs.src;
-    if (Array.isArray(o.content)) {
-      for (const c of o.content) {
-        const u = walk(c);
-        if (u) return u;
-      }
-    }
-    return null;
-  };
-  return walk(doc);
-}
-
 async function main() {
   const prisma = new PrismaClient();
   const category = await prisma.category.findUnique({ where: { slug: GAZETTE_CATEGORY_SLUG } });
@@ -181,7 +166,7 @@ async function main() {
       title
     ).slice(0, 500);
 
-    const coverFromBody = firstImageSrcFromDoc(content);
+    const coverFromBody = firstImageFromTipTapDoc(content)?.src ?? "";
     const coverImageUrl = coverFromFeatured || coverFromBody || category.imageSrc;
     const coverImageAlt = coverAlt || title;
 

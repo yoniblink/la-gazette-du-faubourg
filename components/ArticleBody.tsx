@@ -1,12 +1,15 @@
 import { generateHTML } from "@tiptap/html";
 import type { JSONContent } from "@tiptap/core";
 import { getTiptapExtensions } from "@/lib/tiptap/extensions";
+import { resolveWpMediaInArticleHtml } from "@/lib/wp-article-media-urls";
 
 export function ArticleBody({ content }: { content: object }) {
-  const html = generateHTML(content as JSONContent, getTiptapExtensions());
+  const html = resolveWpMediaInArticleHtml(
+    generateHTML(content as JSONContent, getTiptapExtensions()),
+  );
   return (
     <div
-      className="article-tiptap-html mt-14 space-y-6 border-t border-black/[0.08] pt-12"
+      className="article-tiptap-html mt-12 space-y-6"
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );

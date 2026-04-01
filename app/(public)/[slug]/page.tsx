@@ -89,14 +89,18 @@ export default async function RubriquePage({ params }: Props) {
                         <div
                           className="absolute inset-0 origin-center [backface-visibility:hidden] [transform:translateZ(0)_scale(1)] [transform-style:preserve-3d] transition-[transform] duration-[2.9s] ease-[cubic-bezier(0.33,1,0.32,1)] will-change-transform group-hover/cover:[transform:translateZ(42px)_scale(1.14)] motion-reduce:transition-none motion-reduce:will-change-auto motion-reduce:group-hover/cover:[transform:translateZ(0)_scale(1)]"
                         >
-                          <Image
-                            src={a.coverImageUrl}
-                            alt={a.coverImageAlt}
-                            fill
-                            sizes="(max-width:768px) 100vw, (max-width:1024px) 50vw, 58vw"
-                            className="object-cover"
-                            style={{ objectPosition: a.coverObjectPosition }}
-                          />
+                          {a.coverImageUrl.trim() ? (
+                            <Image
+                              src={a.coverImageUrl.trim()}
+                              alt={a.coverImageAlt || ""}
+                              fill
+                              sizes="(max-width:768px) 100vw, (max-width:1024px) 50vw, 58vw"
+                              className="object-cover"
+                              style={{ objectPosition: a.coverObjectPosition }}
+                            />
+                          ) : (
+                            <span className="sr-only">Pas d’image de couverture</span>
+                          )}
                         </div>
                         {/* Profondeur et highlight façon vitrine */}
                         <div

@@ -11,7 +11,7 @@ export function getTiptapExtensions(placeholder?: string) {
       HTMLAttributes: { rel: "noopener noreferrer", class: "underline decoration-stone-400 underline-offset-2" },
     }),
     ArticleImage.configure({
-      HTMLAttributes: { class: "max-h-[480px] w-full object-contain" },
+      HTMLAttributes: { class: "h-auto w-full max-w-full object-contain" },
     }),
     ...(placeholder
       ? [

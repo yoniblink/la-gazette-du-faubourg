@@ -6,6 +6,7 @@ import { getRubriqueBySlug } from "@/lib/content/rubriques";
 import { paragraphsToTipTapDoc } from "@/lib/tiptap/empty-doc";
 import { DEFAULT_COVER_OBJECT_POSITION } from "@/lib/cover-object-position";
 import { tryPrisma } from "@/lib/prisma";
+import { resolveArticleCoverFields } from "@/lib/article-cover-resolve";
 
 /** Rubrique « fil » : tous les articles publiés (pas seulement ceux catégorisés « Actualité »). */
 export const ACTUALITE_HUB_SLUG = "actualite";
@@ -99,7 +100,7 @@ export const getPublishedArticlesByCategorySlug = cache(
           { publishedAt: { sort: "desc", nulls: "last" } },
           { createdAt: "desc" },
         ],
-        include: { category: { select: { title: true, slug: true } } },
+        include: { category: { select: { title: true, slug: true, imageSrc: true, imageAlt: true } } },
       });
       if (isActualiteHub) {
         rows.sort((a, b) => {
@@ -111,16 +112,27 @@ export const getPublishedArticlesByCategorySlug = cache(
           return db - da;
         });
       }
-      return rows.map((r) => ({
-        id: r.id,
-        slug: r.slug,
-        title: r.title,
-        excerpt: r.excerpt,
-        coverImageUrl: r.coverImageUrl,
-        coverImageAlt: r.coverImageAlt,
-        coverObjectPosition: r.coverObjectPosition,
-        category: r.category,
-      }));
+      return rows.map((r) => {
+        const { coverImageUrl, coverImageAlt } = resolveArticleCoverFields(
+          {
+            coverImageUrl: r.coverImageUrl,
+            coverImageAlt: r.coverImageAlt,
+            title: r.title,
+            content: r.content,
+          },
+          { imageSrc: r.category.imageSrc, imageAlt: r.category.imageAlt },
+        );
+        return {
+          id: r.id,
+          slug: r.slug,
+          title: r.title,
+          excerpt: r.excerpt,
+          coverImageUrl,
+          coverImageAlt,
+          coverObjectPosition: r.coverObjectPosition,
+          category: { title: r.category.title, slug: r.category.slug },
+        };
+      });
     }
     if (categorySlug === ACTUALITE_HUB_SLUG) {
       return staticAllPublishedForActualiteHub().sort((a, b) => {
@@ -186,7 +198,7 @@ function staticArticleBySlugs(
 export const getPublishedArticleBySlugs = cache(async (categorySlug: string, articleSlug: string) => {
   const db = tryPrisma();
   if (db) {
-    return db.article.findFirst({
+    const row = await db.article.findFirst({
       where: {
         slug: articleSlug,
         status: "PUBLISHED",
@@ -194,6 +206,17 @@ export const getPublishedArticleBySlugs = cache(async (categorySlug: string, art
       },
       include: { category: true },
     });
+    if (!row) return null;
+    const { coverImageUrl, coverImageAlt } = resolveArticleCoverFields(
+      {
+        coverImageUrl: row.coverImageUrl,
+        coverImageAlt: row.coverImageAlt,
+        title: row.title,
+        content: row.content,
+      },
+      { imageSrc: row.category.imageSrc, imageAlt: row.category.imageAlt },
+    );
+    return { ...row, coverImageUrl, coverImageAlt };
   }
   return staticArticleBySlugs(categorySlug, articleSlug);
 });
@@ -202,14 +225,31 @@ export const getPublishedArticleBySlugs = cache(async (categorySlug: string, art
 export const getFeaturedArticlesForHome = cache(async (take?: number) => {
   const db = tryPrisma();
   if (db) {
-    return db.article.findMany({
+    const rows = await db.article.findMany({
       where: { status: "PUBLISHED" },
       orderBy: [
         { publishedAt: { sort: "desc", nulls: "last" } },
         { createdAt: "desc" },
       ],
       ...(take != null ? { take } : {}),
-      include: { category: { select: { title: true, slug: true } } },
+      include: { category: { select: { title: true, slug: true, imageSrc: true, imageAlt: true } } },
+    });
+    return rows.map((r) => {
+      const { coverImageUrl, coverImageAlt } = resolveArticleCoverFields(
+        {
+          coverImageUrl: r.coverImageUrl,
+          coverImageAlt: r.coverImageAlt,
+          title: r.title,
+          content: r.content,
+        },
+        { imageSrc: r.category.imageSrc, imageAlt: r.category.imageAlt },
+      );
+      return {
+        ...r,
+        coverImageUrl,
+        coverImageAlt,
+        category: { title: r.category.title, slug: r.category.slug },
+      };
     });
   }
   return [];

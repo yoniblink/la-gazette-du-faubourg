@@ -392,16 +392,19 @@ body {
 
 .article-tiptap-html p {
   margin-bottom: 1rem;
-  font-family: var(--font-sans), system-ui, sans-serif;
-  font-size: 15px;
-  line-height: 1.85;
-  color: #3a3a3a;
+  font-family: Garamond, ui-serif, Georgia, serif;
+  font-size: 17px;
+  line-height: 1.6;
+  letter-spacing: -0.2px;
+  text-align: justify;
+  text-wrap: pretty;
+  color: #0a0a0a;
 }
 
 @media (min-width: 768px) {
   .article-tiptap-html p {
-    font-size: 16px;
-    line-height: 1.82;
+    font-size: 18px;
+    line-height: 1.6;
   }
 }
 
@@ -413,10 +416,17 @@ body {
 
 .article-tiptap-html li {
   margin-bottom: 0.35rem;
-  font-family: var(--font-sans), system-ui, sans-serif;
-  font-size: 15px;
-  line-height: 1.75;
-  color: #3a3a3a;
+  font-family: Garamond, ui-serif, Georgia, serif;
+  font-size: 17px;
+  line-height: 1.6;
+  letter-spacing: -0.2px;
+  color: #0a0a0a;
+}
+
+@media (min-width: 768px) {
+  .article-tiptap-html li {
+    font-size: 18px;
+  }
 }
 
 .article-tiptap-html a {

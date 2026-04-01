@@ -22,6 +22,9 @@
     "import:wp-media:resync": "IMPORT_WP_MEDIA_RESYNC=1 tsx scripts/import-wp-media.ts",
     "sync:article-covers": "tsx scripts/sync-article-covers-from-imported-media.ts",
     "sync:actualites-elementor-covers": "tsx scripts/sync-actualites-elementor-covers.ts",
+    "wp:sync-article": "tsx scripts/wp-sync-article-from-local.ts",
+    "import:wp-grand-lady-kalla": "SYNC_ARTICLE_SLUG=grand-lady-kalla GAZETTE_IMPORT_CATEGORY_SLUG=horlogerie-joaillerie tsx scripts/wp-sync-article-from-local.ts",
+    "hydrate:article-inline-images": "tsx scripts/hydrate-article-inline-images.ts",
     "github:publish": "bash scripts/publish-to-github.sh",
     "postinstall": "prisma generate"
   },

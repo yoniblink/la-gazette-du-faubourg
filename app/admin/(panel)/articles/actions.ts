@@ -16,8 +16,9 @@ const articleFormSchema = z.object({
   slug: z.string().optional(),
   kicker: z.string().optional(),
   excerpt: z.string().min(1),
-  coverImageUrl: z.string().min(1),
-  coverImageAlt: z.string().min(1),
+  /** Vide = pas de bandeau couverture (contenu type Elementor, images dans le corps). */
+  coverImageUrl: z.string(),
+  coverImageAlt: z.string(),
   coverObjectPosition: z.string().optional(),
   categoryId: z.string().min(1),
   authorName: z.string().min(1),

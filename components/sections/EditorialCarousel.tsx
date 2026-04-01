@@ -100,15 +100,17 @@ export function EditorialCarousel({ items }: Props) {
           transition={{ duration: tEnter, ease: EDITORIAL_EASE }}
           className="absolute inset-0"
         >
-          <Image
-            src={active.imageSrc}
-            alt={active.imageAlt}
-            fill
-            sizes="(max-width: 768px) 100vw, 1152px"
-            className="object-cover"
-            style={{ objectPosition: active.imageObjectPosition ?? "50% 50%" }}
-            priority={activeIndex === 0}
-          />
+          {active.imageSrc.trim() ? (
+            <Image
+              src={active.imageSrc.trim()}
+              alt={active.imageAlt || ""}
+              fill
+              sizes="(max-width: 768px) 100vw, 1152px"
+              className="object-cover"
+              style={{ objectPosition: active.imageObjectPosition ?? "50% 50%" }}
+              priority={activeIndex === 0}
+            />
+          ) : null}
         </motion.div>
       </AnimatePresence>
 
