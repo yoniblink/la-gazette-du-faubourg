@@ -27,13 +27,18 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.lagazettedufaubourg.fr"),
   title: {
-    default: `${site.name} — Magazine du Faubourg Saint-Honoré`,
+    default: site.officialTitle,
     template: `%s | ${site.name}`,
   },
-  description: site.description,
+  description: site.officialTitle,
+  icons: {
+    icon: site.navbarLogoSrc,
+    shortcut: site.navbarLogoSrc,
+    apple: site.navbarLogoSrc,
+  },
   openGraph: {
     title: `${site.name}`,
-    description: site.description,
+    description: site.officialTitle,
     locale: "fr_FR",
     type: "website",
     siteName: site.name,
@@ -41,7 +46,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: site.name,
-    description: site.description,
+    description: site.officialTitle,
   },
   alternates: {
     canonical: "/",
