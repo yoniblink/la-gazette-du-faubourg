@@ -12,6 +12,7 @@ const nav = [
   { href: "/admin/articles", label: "Articles" },
   { href: "/admin/categories", label: "Rubriques" },
   { href: "/admin/media", label: "Médias" },
+  { href: "/admin/media-kit", label: "Médiakit" },
   { href: "/admin/instagram-reels", label: "Instagram Reels" },
   { href: "/admin/flipbook", label: "Flipbook" },
   { href: "/admin/settings", label: "Réglages" },

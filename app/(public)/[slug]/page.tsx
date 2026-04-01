@@ -10,6 +10,8 @@ import { hasDatabaseUrl } from "@/lib/prisma";
 import { getHomeFlipbookManifest, getHomeFlipbookPdfUrl } from "@/lib/site-settings";
 
 const LA_REVUE_SLUG = "la-revue";
+const ACTUALITE_DB_SLUG = "actualite";
+const ACTUALITES_PUBLIC_SLUG = "actualites";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -18,13 +20,15 @@ export const revalidate = 60;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const rubrique = await getCategoryBySlug(slug);
+  const normalizedSlug = slug === ACTUALITES_PUBLIC_SLUG ? ACTUALITE_DB_SLUG : slug;
+  const rubrique = await getCategoryBySlug(normalizedSlug);
   if (!rubrique) return {};
+  const rubriqueTitle = rubrique.slug === ACTUALITE_DB_SLUG ? "Actualités" : rubrique.title;
   return {
-    title: `${rubrique.title} | ${site.name}`,
+    title: `${rubriqueTitle} | ${site.name}`,
     description: rubrique.description,
     openGraph: {
-      title: `${rubrique.title} | ${site.name}`,
+      title: `${rubriqueTitle} | ${site.name}`,
       description: rubrique.description,
       locale: "fr_FR",
     },
@@ -33,10 +37,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function RubriquePage({ params }: Props) {
   const { slug } = await params;
-  const rubrique = await getCategoryBySlug(slug);
+  const normalizedSlug = slug === ACTUALITES_PUBLIC_SLUG ? ACTUALITE_DB_SLUG : slug;
+  const rubrique = await getCategoryBySlug(normalizedSlug);
   if (!rubrique) notFound();
 
-  const articles = await getPublishedArticlesByCategorySlug(slug);
+  const articles = await getPublishedArticlesByCategorySlug(normalizedSlug);
+  const rubriqueTitle = rubrique.slug === ACTUALITE_DB_SLUG ? "Actualités" : rubrique.title;
 
   const isLaRevue = slug === LA_REVUE_SLUG;
   const flipbookPdfUrl =
@@ -52,7 +58,7 @@ export default async function RubriquePage({ params }: Props) {
             Accueil
           </Link>
           <span className="mx-2 text-[#c9c9c9]">/</span>
-          <span className="text-[#0a0a0a]">{rubrique.title}</span>
+          <span className="text-[#0a0a0a]">{rubriqueTitle}</span>
         </nav>
 
         <header className="mt-10 grid gap-10 md:grid-cols-12 md:gap-16">
@@ -61,7 +67,7 @@ export default async function RubriquePage({ params }: Props) {
               Rubrique
             </p>
             <h1 className="mt-3 font-[family-name:var(--font-serif)] text-[clamp(2rem,4vw,3rem)] font-light leading-tight text-[#0a0a0a]">
-              {rubrique.title}
+              {rubriqueTitle}
             </h1>
             <p className="mt-4 font-[family-name:var(--font-sans)] text-sm uppercase tracking-[0.18em] text-[#6b6b6b]">
               {rubrique.tagline}
@@ -90,7 +96,7 @@ export default async function RubriquePage({ params }: Props) {
               articles.map((a) => (
                 <li key={a.id} className="py-12 md:py-16 first:pt-0">
                   <Link
-                    href={`/${a.category.slug}/${a.slug}`}
+                    href={`/${a.category.slug === ACTUALITE_DB_SLUG ? ACTUALITES_PUBLIC_SLUG : a.category.slug}/${a.slug}`}
                     className="group grid grid-cols-1 items-center gap-10 md:grid-cols-12 md:gap-12 lg:gap-16"
                   >
                     <div className="md:col-span-6 lg:col-span-7">
@@ -106,7 +112,7 @@ export default async function RubriquePage({ params }: Props) {
                             alt={a.coverImageAlt}
                             fill
                             sizes="(max-width:768px) 100vw, (max-width:1024px) 50vw, 58vw"
-                            className="object-cover transition-[filter] duration-[2.9s] ease-[cubic-bezier(0.33,1,0.32,1)] group-hover:brightness-[1.045] group-hover:contrast-[1.02] motion-reduce:transition-none motion-reduce:group-hover:brightness-100 motion-reduce:group-hover:contrast-100"
+                            className="object-cover"
                             style={{ objectPosition: a.coverObjectPosition }}
                           />
                         </div>
@@ -115,17 +121,6 @@ export default async function RubriquePage({ params }: Props) {
                           className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/[0.18] via-black/[0.02] to-transparent opacity-40 transition-opacity duration-[1.65s] ease-[cubic-bezier(0.33,1,0.32,1)] group-hover:opacity-100"
                           aria-hidden
                         />
-                        <div
-                          className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/[0.14] via-transparent to-transparent opacity-0 transition-opacity duration-[1.65s] ease-[cubic-bezier(0.33,1,0.32,1)] group-hover:opacity-100"
-                          aria-hidden
-                        />
-                        {/* Reflet satiné au survol */}
-                        <div
-                          className="pointer-events-none absolute inset-0 overflow-hidden opacity-0 transition-opacity duration-500 group-hover:opacity-100 motion-reduce:hidden"
-                          aria-hidden
-                        >
-                          <div className="absolute -inset-y-6 left-0 w-[45%] -translate-x-full skew-x-[-12deg] bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-[1.2s] ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:translate-x-[320%]" />
-                        </div>
                       </div>
                     </div>
                     <div className="flex min-w-0 flex-col justify-center md:col-span-6 lg:col-span-5">

@@ -13,6 +13,8 @@ export type HeaderCategory = { slug: string; title: string };
 const MENU_EASE = [0.43, 0.13, 0.23, 0.96] as const;
 
 export function Header({ categories }: { categories: HeaderCategory[] }) {
+  const publicRubriqueHref = (slug: string) => (slug === "actualite" ? "/actualites" : `/${slug}`);
+
   const pathname = usePathname();
   const [isVisible, setIsVisible] = useState(pathname !== "/");
   const [mounted, setMounted] = useState(false);
@@ -75,8 +77,8 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
   }, [pathname]);
 
   const linkDesktop = (active: boolean) =>
-    `shrink-0 whitespace-nowrap text-center font-[family-name:var(--font-sans)] text-[8px] font-medium uppercase tracking-[0.12em] transition-opacity sm:text-[9px] md:text-[10px] md:tracking-[0.14em] lg:text-[11px] ${
-      active ? "text-[#0a0a0a] opacity-100" : "text-[#0a0a0a] opacity-55 hover:opacity-100"
+    `shrink-0 whitespace-nowrap text-center font-[family-name:var(--font-serif)] text-[15px] italic leading-none transition-opacity sm:text-[16px] md:text-[17px] lg:text-[18px] ${
+      active ? "text-[#0a0a0a] opacity-100" : "text-[#0a0a0a] opacity-90 hover:opacity-100"
     }`;
 
   const headerNode = (
@@ -128,7 +130,7 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
         <div className="absolute left-1/2 top-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 md:static md:z-auto md:col-start-1 md:row-start-1 md:translate-x-0 md:translate-y-0">
           <Link
             href="/"
-            className="relative flex h-9 w-[min(10rem,42vw)] max-w-[168px] items-center justify-center rounded-sm outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#0a0a0a]/25 sm:h-10 md:h-11 md:w-11 md:max-w-none"
+            className="relative flex h-9 w-[min(10rem,42vw)] max-w-[168px] items-center justify-center rounded-sm outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#0a0a0a]/25 sm:h-10 md:h-11 md:w-[190px] md:max-w-none"
             aria-label="La Gazette du Faubourg — Accueil"
             onClick={() => setMenuOpen(false)}
           >
@@ -142,12 +144,12 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
               priority
             />
             <Image
-              src={site.navbarLogoSrc}
+              src={site.navbarLogoMobileSrc}
               alt=""
-              width={180}
-              height={180}
+              width={360}
+              height={120}
               className="hidden h-full w-full object-contain md:block"
-              sizes="44px"
+              sizes="190px"
             />
           </Link>
         </div>
@@ -169,7 +171,7 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
             |
           </span>
           {categories.map((r) => {
-            const href = `/${r.slug}`;
+            const href = publicRubriqueHref(r.slug);
             const active = pathname === href;
             return (
               <Link
@@ -178,7 +180,7 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
                 className={linkDesktop(active)}
                 aria-current={active ? "page" : undefined}
               >
-                {r.title}
+                {r.slug === "actualite" ? "Actualités" : r.title}
               </Link>
             );
           })}
@@ -250,7 +252,7 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
                   Accueil
                 </Link>
                 {categories.map((r) => {
-                  const href = `/${r.slug}`;
+                  const href = publicRubriqueHref(r.slug);
                   const active = pathname === href;
                   return (
                     <Link
@@ -264,7 +266,7 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
                       }`}
                       aria-current={active ? "page" : undefined}
                     >
-                      {r.title}
+                      {r.slug === "actualite" ? "Actualités" : r.title}
                     </Link>
                   );
                 })}

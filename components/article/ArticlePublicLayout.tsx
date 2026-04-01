@@ -129,7 +129,6 @@ export function ArticlePublicLayout({
   children,
   inlineEdit,
 }: ArticlePublicLayoutProps) {
-  const source = sourceUrl?.trim();
   const showCover = coverImageUrl.trim().length > 0;
   const showMetaLine = publishedAt != null || Boolean(inlineEdit);
 
@@ -239,20 +238,6 @@ export function ArticlePublicLayout({
 
         {inlineEdit ? null : (
           <footer className="mt-16 border-t border-black/[0.08] pt-10">
-            {source ? (
-              <p className="font-[family-name:var(--font-sans)] text-sm text-[#5a5a5a]">
-                Version publiée également sur le{" "}
-                <Link
-                  href={source}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline decoration-black/20 underline-offset-4 hover:decoration-black/50"
-                >
-                  site de La Gazette du Faubourg
-                </Link>
-                .
-              </p>
-            ) : null}
             <Link
               href={`/${categorySlug}`}
               className="mt-6 inline-flex font-[family-name:var(--font-sans)] text-[11px] font-medium uppercase tracking-[0.22em] text-[#0a0a0a] transition-opacity hover:opacity-60"

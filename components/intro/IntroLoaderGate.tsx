@@ -1,12 +1,12 @@
 "use client";
 
+import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
 import { usePathname } from "next/navigation";
 import {
   useCallback,
   useEffect,
   useLayoutEffect,
-  useMemo,
   useState,
   type ReactNode,
 } from "react";
@@ -162,32 +162,22 @@ function MagazineIntroOverlay({
   onSequenceComplete: () => void;
   onFadeOutComplete: () => void;
 }) {
-  const title = site.name;
-  const chars = useMemo(() => title.split(""), [title]);
   const exiting = phase === "exiting";
 
-  /* Slower, more legible pacing (~×1.5 vs original). */
-  const stagger = 0.048;
-  const delayChildren = 0.28;
-  const letterDuration = 0.95;
-  const holdAfterLetters = 0.58;
-  const totalLetterSequence =
-    delayChildren + (chars.length - 1) * stagger + letterDuration;
+  const logoDelay = 0.26;
+  const logoFillDelay = logoDelay + 0.1;
+  const logoDuration = 3.0;
+  const holdAfterLogo = 0;
+  const totalLogoSequence = logoFillDelay + logoDuration;
 
   useEffect(() => {
     if (phase !== "intro" || exiting) return;
-    const ms = (totalLetterSequence + holdAfterLetters) * 1000;
+    const ms = (totalLogoSequence + holdAfterLogo) * 1000;
     const t = setTimeout(() => onSequenceComplete(), ms);
     return () => clearTimeout(t);
-  }, [
-    phase,
-    exiting,
-    onSequenceComplete,
-    totalLetterSequence,
-    holdAfterLetters,
-  ]);
+  }, [phase, exiting, onSequenceComplete, totalLogoSequence, holdAfterLogo]);
 
-  const showLetters = phase === "intro" || exiting;
+  const showLogo = phase === "intro" || exiting;
 
   return (
     <motion.div
@@ -214,92 +204,65 @@ function MagazineIntroOverlay({
       }}
     >
       <div className="flex max-w-[min(90vw,42rem)] flex-col items-center text-center">
-        <motion.h1
-          className="font-[family-name:var(--font-serif)] text-[clamp(1.35rem,4.5vw,2.35rem)] font-light leading-[1.15] tracking-[0.02em] text-[#0a0a0a]"
-          initial="hidden"
-          animate={showLetters ? "show" : "hidden"}
-          variants={{
-            hidden: {},
-            show: {
-              transition: {
-                delayChildren,
-                staggerChildren: stagger,
-              },
-            },
-          }}
-        >
-          {chars.map((char, i) => (
-            <motion.span
-              key={`${i}-${char === " " ? "sp" : char}`}
-              className="inline-block"
-              style={{
-                width: char === " " ? "0.28em" : undefined,
-                minWidth: char === " " ? "0.28em" : undefined,
-              }}
-              variants={{
-                hidden: {
-                  opacity: 0,
-                  y: 14,
-                  filter: "blur(12px)",
-                },
-                show: {
-                  opacity: 1,
-                  y: 0,
-                  filter: "blur(0px)",
-                  transition: {
-                    duration: letterDuration,
-                    ease: easeLux,
-                  },
-                },
-              }}
-            >
-              {char === " " ? "\u00a0" : char}
-            </motion.span>
-          ))}
-        </motion.h1>
-
         <motion.div
-          className="mt-7 h-px w-10 bg-[rgba(201,169,98,0.38)]"
-          initial={{ opacity: 0, scaleX: 0 }}
+          className="relative h-[110px] w-[min(90vw,520px)]"
+          initial={{ opacity: 0, y: 12, filter: "blur(10px)" }}
           animate={
-            showLetters && !exiting
-              ? {
-                  opacity: 1,
-                  scaleX: 1,
-                  transition: {
-                    delay: delayChildren + 0.52,
-                    duration: 1.28,
-                    ease: easeLux,
-                  },
-                }
-              : exiting
-                ? { opacity: 0, transition: { duration: 0.5 } }
-                : { opacity: 0, scaleX: 0 }
-          }
-        />
-
-        <motion.p
-          className="mt-5 font-[family-name:var(--font-sans)] text-[10px] font-medium uppercase tracking-[0.28em] text-[#6b6b6b]"
-          initial={{ opacity: 0, y: 6, filter: "blur(6px)" }}
-          animate={
-            showLetters && !exiting
+            showLogo && !exiting
               ? {
                   opacity: 1,
                   y: 0,
                   filter: "blur(0px)",
                   transition: {
-                    delay: delayChildren + 0.82,
-                    duration: 1.05,
+                    delay: logoDelay,
+                    duration: logoDuration,
                     ease: easeLux,
                   },
                 }
               : exiting
                 ? { opacity: 0, transition: { duration: 0.5 } }
-                : { opacity: 0, y: 6, filter: "blur(6px)" }
+                : { opacity: 0, y: 12, filter: "blur(10px)" }
           }
         >
-          Magazine du Faubourg
-        </motion.p>
+          <Image
+            src={site.navbarLogoMobileSrc}
+            alt={site.name}
+            fill
+            priority
+            sizes="520px"
+            className="object-contain object-center opacity-20"
+          />
+          <motion.div
+            className="absolute inset-0 overflow-hidden"
+            initial={{ clipPath: "inset(0 100% 0 0)" }}
+            animate={
+              showLogo && !exiting
+                ? {
+                    clipPath: "inset(0 0% 0 0)",
+                    transition: {
+                      delay: logoFillDelay,
+                      duration: logoDuration,
+                      ease: easeLux,
+                    },
+                  }
+                : exiting
+                  ? {
+                      opacity: 0,
+                      transition: { duration: 0.35 },
+                    }
+                  : { clipPath: "inset(0 100% 0 0)" }
+            }
+          >
+            <Image
+              src={site.navbarLogoMobileSrc}
+              alt=""
+              fill
+              priority
+              sizes="520px"
+              className="object-contain object-center"
+            />
+          </motion.div>
+        </motion.div>
       </div>
     </motion.div>
   );

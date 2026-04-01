@@ -92,6 +92,18 @@ const categoriesSeed = [
     sortOrder: 6,
     showInMainNav: false,
   },
+  {
+    slug: "media-kit",
+    title: "Média kit",
+    tagline: "Présentation et dossier annonceurs",
+    description:
+      "Ressources média et informations clés pour les partenaires, marques et annonceurs.",
+    imageSrc:
+      "https://images.unsplash.com/photo-1455390582262-044cdead277a?q=80&w=2000&auto=format&fit=crop",
+    imageAlt: "Dossier de presse et documents de présentation",
+    sortOrder: 7,
+    showInMainNav: false,
+  },
 ] as const;
 
 async function seedAdmin() {

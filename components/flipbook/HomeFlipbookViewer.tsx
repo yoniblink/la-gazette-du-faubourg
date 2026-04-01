@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useLayoutEffect, useState, type ComponentType } from "react";
+import { useCallback, useLayoutEffect, useRef, useState, type ComponentType } from "react";
 import { FlipbookPageImage } from "@/components/flipbook/FlipbookPageImage";
 import { useFlipbookLinkPreload } from "@/hooks/useFlipbookLinkPreload";
 import { useFlipbookLoadedPages } from "@/hooks/useFlipbookLoadedPages";
@@ -69,6 +69,7 @@ export function HomeFlipbookViewer({
   }, []);
   const [currentPage, setCurrentPage] = useState(0);
   const [sceneFlipping, setSceneFlipping] = useState(false);
+  const flipbookRef = useRef<unknown>(null);
   const { markLoaded } = useFlipbookLoadedPages(pageUrls.length);
 
   useFlipbookPreload(pageUrls, currentPage);
@@ -86,6 +87,22 @@ export function HomeFlipbookViewer({
     setSceneFlipping(isFlipbookActivelyTurning(e.data));
   }, []);
 
+  const goPrev = useCallback(() => {
+    const refValue = flipbookRef.current as
+      | { pageFlip?: () => { flipPrev?: () => void }; getPageFlip?: () => { flipPrev?: () => void } }
+      | null;
+    const api = refValue?.pageFlip?.() ?? refValue?.getPageFlip?.();
+    api?.flipPrev?.();
+  }, []);
+
+  const goNext = useCallback(() => {
+    const refValue = flipbookRef.current as
+      | { pageFlip?: () => { flipNext?: () => void }; getPageFlip?: () => { flipNext?: () => void } }
+      | null;
+    const api = refValue?.pageFlip?.() ?? refValue?.getPageFlip?.();
+    api?.flipNext?.();
+  }, []);
+
   const w = Math.max(120, Math.round(pageW));
   const h = Math.max(160, Math.round(pageH));
   const sizes = "(max-width: 768px) 95vw, 680px";
@@ -100,11 +117,17 @@ export function HomeFlipbookViewer({
     `flipbook-premium-scene mx-auto w-full max-w-[min(100%,1360px)] px-3 pb-14 pt-2 md:px-6 md:pb-20 md:pt-4` +
     (sceneFlipping ? " flipbook-premium-scene--flipping" : "");
 
+  const canGoPrev = currentPage > 0;
+  const canGoNext = currentPage < pageUrls.length - 1;
+  const navBtnBaseClass =
+    "pointer-events-auto absolute top-1/2 z-30 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-white/[0.08] bg-black/15 text-white/75 shadow-none backdrop-blur-[2px] transition-[opacity,background-color,color] duration-300 hover:border-white/15 hover:bg-black/28 hover:text-white hover:opacity-100 sm:h-8 sm:w-8";
+
   return (
     <div className={sceneClass}>
       <div className="flipbook-premium-stage flex flex-col items-stretch">
-        <div className="flipbook-premium-tilt w-full">
+        <div className="flipbook-premium-tilt relative w-full">
           <HTMLFlipBook
+            ref={flipbookRef as never}
             width={pageW}
             height={pageH}
             size="stretch"
@@ -113,8 +136,8 @@ export function HomeFlipbookViewer({
             minHeight={380}
             maxHeight={1100}
             showCover
-            drawShadow
-            maxShadowOpacity={FLIPBOOK_STPAGE_FLIP_VISUAL.maxShadowOpacity}
+            drawShadow={false}
+            maxShadowOpacity={0}
             flippingTime={FLIPBOOK_STPAGE_FLIP_VISUAL.flippingTime}
             startZIndex={FLIPBOOK_STPAGE_FLIP_VISUAL.startZIndex}
             swipeDistance={FLIPBOOK_STPAGE_FLIP_VISUAL.swipeDistance}
@@ -141,14 +164,10 @@ export function HomeFlipbookViewer({
                 <div
                   key={`${src}-${i}`}
                   data-density={full ? "hard" : "soft"}
-                  className={`flipbook-page-sheet relative h-full w-full overflow-hidden rounded-[2px] bg-[#f3f1ed] shadow-[inset_0_1px_0_rgba(255,255,255,0.78),inset_0_0_0_1px_rgba(10,10,10,0.055),inset_-10px_0_28px_-14px_rgba(0,0,0,0.055)] [transform-style:preserve-3d] ${
+                  className={`flipbook-page-sheet relative h-full w-full overflow-hidden rounded-[2px] bg-[#f3f1ed] [transform-style:preserve-3d] ${
                     full ? "" : "flex items-stretch justify-stretch"
                   }`}
                 >
-                  <div
-                    className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-r from-black/[0.03] via-transparent to-transparent"
-                    aria-hidden
-                  />
                   <div className="relative z-0 h-full w-full">
                     <FlipbookPageImage
                       src={src}
@@ -167,6 +186,66 @@ export function HomeFlipbookViewer({
               );
             })}
           </HTMLFlipBook>
+          {pageUrls.length > 1 ? (
+            <>
+              {canGoPrev ? (
+                <button
+                  type="button"
+                  aria-label="Page précédente"
+                  className={`${navBtnBaseClass} left-1 sm:left-1.5 opacity-55`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    goPrev();
+                  }}
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden
+                    className="sm:h-[18px] sm:w-[18px]"
+                  >
+                    <path
+                      d="M14 6L8 12L14 18"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+              ) : null}
+              {canGoNext ? (
+                <button
+                  type="button"
+                  aria-label="Page suivante"
+                  className={`${navBtnBaseClass} right-1 sm:right-1.5 opacity-55`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    goNext();
+                  }}
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden
+                    className="sm:h-[18px] sm:w-[18px]"
+                  >
+                    <path
+                      d="M10 6L16 12L10 18"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+              ) : null}
+            </>
+          ) : null}
         </div>
 
         <div className="flipbook-premium-contact shrink-0" aria-hidden />
