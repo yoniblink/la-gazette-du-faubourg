@@ -17,10 +17,13 @@ export function NewsletterSection() {
           className="flex flex-col items-start justify-between gap-10 md:flex-row md:items-end"
         >
           <div className="max-w-xl">
-            <h2 className="font-[family-name:var(--font-serif)] text-2xl font-light text-[#0a0a0a] md:text-3xl">
+            <h2 className="font-['Griffiths'] text-2xl font-normal text-[#0a0a0a] md:text-3xl">
               Abonnez-vous à la Newsletter
             </h2>
-            <p className="mt-4 font-[family-name:var(--font-sans)] text-sm leading-relaxed text-[#5a5a5a]">
+            <p
+              className="mt-4 text-sm leading-relaxed text-[#5a5a5a]"
+              style={{ fontFamily: "Garamond, var(--font-serif), Georgia, serif" }}
+            >
               Recevez les temps forts du Faubourg et les nouvelles parutions — le traitement des données
               correspond aux engagements du site officiel.
             </p>

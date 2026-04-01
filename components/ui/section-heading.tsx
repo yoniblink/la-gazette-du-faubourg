@@ -1,13 +1,22 @@
 import { MotionDiv } from "@/components/motion-prefers";
 import { fadeUp } from "@/lib/motion";
+import type { CSSProperties } from "react";
 
 type Props = {
   eyebrow?: string;
   title: string;
   className?: string;
+  titleClassName?: string;
+  titleStyle?: CSSProperties;
 };
 
-export function SectionHeading({ eyebrow, title, className = "" }: Props) {
+export function SectionHeading({
+  eyebrow,
+  title,
+  className = "",
+  titleClassName = "",
+  titleStyle,
+}: Props) {
   return (
     <header className={`mx-auto max-w-6xl px-6 md:px-10 ${className}`}>
       {eyebrow ? (
@@ -26,7 +35,8 @@ export function SectionHeading({ eyebrow, title, className = "" }: Props) {
         initial="hidden"
         whileInView="show"
         viewport={{ once: true, margin: "-10% 0px" }}
-        className={`${eyebrow ? "mt-3" : ""} font-[family-name:var(--font-serif)] text-3xl font-light tracking-tight text-[#0a0a0a] md:text-4xl`}
+        className={`${eyebrow ? "mt-3" : ""} font-[family-name:var(--font-serif)] text-3xl font-light tracking-tight text-[#0a0a0a] md:text-4xl ${titleClassName}`}
+        style={titleStyle}
       >
         {title}
       </MotionDiv>

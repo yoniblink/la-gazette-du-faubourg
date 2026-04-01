@@ -31,6 +31,7 @@ const heroInlineNavLinks = [
   { href: "/gastronomie", label: "Gastronomie" },
   { href: "/rencontres", label: "Rencontres" },
   { href: "/la-revue", label: "La Revue" },
+  { href: "/contact", label: "Contact" },
 ] as const;
 
 function ChevronDown({
@@ -101,7 +102,7 @@ export function Hero() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="font-[family-name:var(--font-serif)] text-[18px] italic text-[#111111] transition-opacity hover:opacity-65"
+                      className="relative inline-block pb-1 font-[family-name:var(--font-serif)] text-[18px] italic text-[#111111] transition-opacity duration-300 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:origin-center after:scale-x-0 after:bg-[#111111]/40 after:transition-transform after:duration-300 after:ease-out hover:opacity-65 hover:after:scale-x-100"
                     >
                       {link.label}
                     </Link>
@@ -111,7 +112,10 @@ export function Hero() {
             </motion.nav>
           </div>
 
-          <div className="mt-8 w-full max-w-xl font-[family-name:var(--font-sans)] text-[15px] leading-[1.82] text-[#3a3a3a] lg:max-w-[28rem] lg:text-[16px]">
+          <div
+            className="mt-8 w-full max-w-xl text-[16px] leading-[1.82] text-[#3a3a3a] lg:max-w-[28rem] lg:text-[17px]"
+            style={{ fontFamily: "Garamond, var(--font-serif), Georgia, serif" }}
+          >
             <p>{p1}</p>
 
             <button
@@ -120,7 +124,8 @@ export function Hero() {
               aria-expanded={open}
               aria-controls="hero-read-more-panel"
               onClick={() => setOpen((v) => !v)}
-              className="mt-2 flex w-full items-center justify-between gap-4 border-b border-black/[0.08] py-2.5 text-left font-[family-name:var(--font-sans)] text-[11px] font-medium uppercase tracking-[0.22em] text-[#0a0a0a] transition-opacity hover:opacity-60"
+              style={{ fontFamily: '"Garamond Italic", Garamond, var(--font-serif), Georgia, serif' }}
+              className="mt-2 flex w-full items-center justify-between gap-4 border-b border-black/[0.08] py-2.5 text-left text-[16px] font-normal leading-snug text-[#0a0a0a] transition-opacity hover:opacity-60 lg:text-[17px]"
             >
               <span>{open ? "Réduire" : "Lire la suite"}</span>
               <ChevronDown

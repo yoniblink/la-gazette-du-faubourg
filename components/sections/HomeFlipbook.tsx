@@ -1,6 +1,4 @@
 "use client";
-
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { HomeFlipbookViewer } from "@/components/flipbook/HomeFlipbookViewer";
 import type { FlipbookManifest } from "@/lib/flipbook-manifest";
@@ -88,7 +86,7 @@ export function HomeFlipbook({
             viewport={{ once: true, margin: "-10% 0px" }}
             className="text-center"
           >
-            <h2 className="font-[family-name:var(--font-serif)] text-[clamp(1.65rem,3vw,2.35rem)] font-light leading-snug text-[#0a0a0a]">
+            <h2 className="font-['Griffiths'] text-[clamp(1.65rem,3vw,2.35rem)] font-normal leading-snug text-[#0a0a0a]">
               Découvrez La Gazette du Faubourg en format papier.
               <span className="mt-2 block text-[0.92em] text-[#3a3a3a]">
                 Présente là où l’élégance se vit…
@@ -134,19 +132,9 @@ export function HomeFlipbook({
           <div className="mt-10 flex flex-col items-center gap-3 text-center font-[family-name:var(--font-sans)] text-sm text-[#5a5a5a]">
             {totalPdfPages > renderedPdfPages ? (
               <p>
-                Aperçu de {renderedPdfPages} page{renderedPdfPages > 1 ? "s" : ""} PDF sur {totalPdfPages} —
-                téléchargez le fichier pour la version complète.
+                Aperçu de {renderedPdfPages} page{renderedPdfPages > 1 ? "s" : ""} PDF sur {totalPdfPages}.
               </p>
             ) : null}
-            <Link
-              href={pdfUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 border border-[#0a0a0a]/25 px-5 py-2.5 text-[11px] font-medium uppercase tracking-[0.2em] text-[#0a0a0a] transition-colors hover:border-[#0a0a0a] hover:bg-[#0a0a0a] hover:text-white"
-            >
-              Télécharger le PDF
-              <span aria-hidden>↓</span>
-            </Link>
           </div>
         ) : null}
       </div>

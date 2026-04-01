@@ -11,7 +11,11 @@ export type { FeaturedItem };
 export function Featured({ items }: { items: FeaturedItem[] }) {
   return (
     <section id="actualite" className="scroll-mt-24 bg-white py-24 md:py-32">
-      <SectionHeading title="L’actualité du Faubourg …" />
+      <SectionHeading
+        title="L’actualité du Faubourg ..."
+        titleClassName="text-[40px] font-normal leading-none tracking-normal"
+        titleStyle={{ fontFamily: '"Griffiths", "Garamond Italic", Garamond, Georgia, serif' }}
+      />
       {items.length === 0 ? (
         <p className="mx-auto mt-14 max-w-6xl px-6 text-center text-sm text-[#7a7a7a] md:px-10">
           Les prochains articles paraîtront ici.

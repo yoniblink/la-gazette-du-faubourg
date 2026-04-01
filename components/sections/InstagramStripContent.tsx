@@ -38,10 +38,13 @@ export function InstagramStripContent({ reels }: { reels: InstagramReelPublic[] 
       >
         <div className="flex flex-col items-start gap-8 md:flex-row md:items-center md:justify-between">
           <div>
-            <h2 className="font-[family-name:var(--font-serif)] text-2xl font-light text-[#0a0a0a] md:text-3xl">
+            <h2 className="font-['Griffiths'] text-2xl font-normal text-[#0a0a0a] md:text-3xl">
               Retrouvez-nous sur Instagram
             </h2>
-            <p className="mt-3 max-w-md font-[family-name:var(--font-sans)] text-sm leading-relaxed text-[#5a5a5a]">
+            <p
+              className="mt-3 max-w-md text-sm leading-relaxed text-[#5a5a5a]"
+              style={{ fontFamily: "Garamond, var(--font-serif), Georgia, serif" }}
+            >
               Le fil du Faubourg — coulisses, temps forts et regard éditorial.
             </p>
           </div>

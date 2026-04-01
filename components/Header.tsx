@@ -14,6 +14,7 @@ const MENU_EASE = [0.43, 0.13, 0.23, 0.96] as const;
 
 export function Header({ categories }: { categories: HeaderCategory[] }) {
   const publicRubriqueHref = (slug: string) => (slug === "actualite" ? "/actualites" : `/${slug}`);
+  const navCategories = categories.filter((c) => c.slug !== "media-kit");
 
   const pathname = usePathname();
   const [isVisible, setIsVisible] = useState(pathname !== "/");
@@ -76,10 +77,11 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
     return () => observer.disconnect();
   }, [pathname]);
 
-  const linkDesktop = (active: boolean) =>
-    `shrink-0 whitespace-nowrap text-center font-[family-name:var(--font-serif)] text-[15px] italic leading-none transition-opacity sm:text-[16px] md:text-[17px] lg:text-[18px] ${
-      active ? "text-[#0a0a0a] opacity-100" : "text-[#0a0a0a] opacity-90 hover:opacity-100"
-    }`;
+  /**
+   * Comme la nav du Hero : léger fade au survol + ligne qui se dessine sous le libellé.
+   */
+  const linkDesktopClass =
+    "relative inline-block shrink-0 whitespace-nowrap pb-1 text-center font-[family-name:var(--font-serif)] text-[15px] italic leading-none text-[#111111] opacity-100 transition-opacity duration-300 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:origin-center after:scale-x-0 after:bg-[#111111]/40 after:transition-transform after:duration-300 after:ease-out hover:opacity-65 hover:after:scale-x-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0a0a0a]/20 focus-visible:after:scale-x-100 sm:text-[16px] md:text-[17px] lg:text-[18px]";
 
   const headerNode = (
     <header
@@ -87,7 +89,7 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
         isVisible ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-5 opacity-0"
       }`}
     >
-      <div className="relative mx-auto flex h-14 w-full max-w-[100rem] items-center justify-between gap-x-4 px-4 md:grid md:h-16 md:grid-cols-[auto_1fr] md:justify-normal md:gap-x-6 md:px-8 lg:gap-x-8 lg:px-10 xl:px-12">
+      <div className="relative mx-auto flex h-14 w-full max-w-[100rem] items-center justify-between gap-x-4 px-4 md:h-16 md:justify-center md:gap-x-7 md:px-8 lg:gap-x-9 lg:px-10 xl:px-12">
         <button
           type="button"
           className="relative z-10 flex h-10 w-10 shrink-0 flex-col items-center justify-center rounded-sm border border-[#0a0a0a]/10 bg-transparent text-[#0a0a0a] transition-[border-color,background-color] hover:border-[#0a0a0a]/22 hover:bg-[#0a0a0a]/[0.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0a0a0a]/25 md:hidden"
@@ -127,7 +129,7 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
           </span>
         </button>
 
-        <div className="absolute left-1/2 top-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 md:static md:z-auto md:col-start-1 md:row-start-1 md:translate-x-0 md:translate-y-0">
+        <div className="absolute left-1/2 top-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 md:static md:z-auto md:-ml-5 md:translate-x-0 md:translate-y-0">
           <Link
             href="/"
             className="relative flex h-9 w-[min(10rem,42vw)] max-w-[168px] items-center justify-center rounded-sm outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#0a0a0a]/25 sm:h-10 md:h-11 md:w-[190px] md:max-w-none"
@@ -158,26 +160,23 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
 
         <nav
           aria-label="Navigation principale"
-          className="hidden min-w-0 flex-nowrap items-center justify-center gap-x-2.5 overflow-x-auto overflow-y-hidden py-1 [-ms-overflow-style:auto] [scrollbar-width:thin] md:flex sm:gap-x-3.5 md:col-start-2 md:row-start-1 md:gap-x-4 lg:gap-x-5 [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-black/15 [&::-webkit-scrollbar-track]:bg-transparent"
+          className="hidden min-w-0 flex-nowrap items-center justify-center gap-x-2.5 overflow-x-auto overflow-y-hidden py-1 [-ms-overflow-style:auto] [scrollbar-width:thin] md:flex md:flex-none sm:gap-x-3.5 md:gap-x-4 lg:gap-x-5 [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-black/15 [&::-webkit-scrollbar-track]:bg-transparent"
         >
           <Link
             href="/"
-            className={linkDesktop(pathname === "/")}
+            className={linkDesktopClass}
             aria-current={pathname === "/" ? "page" : undefined}
           >
             Accueil
           </Link>
-          <span className="shrink-0 px-0.5 text-black/20" aria-hidden>
-            |
-          </span>
-          {categories.map((r) => {
+          {navCategories.map((r) => {
             const href = publicRubriqueHref(r.slug);
             const active = pathname === href;
             return (
               <Link
                 key={r.slug}
                 href={href}
-                className={linkDesktop(active)}
+                className={linkDesktopClass}
                 aria-current={active ? "page" : undefined}
               >
                 {r.slug === "actualite" ? "Actualités" : r.title}
@@ -186,7 +185,7 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
           })}
           <Link
             href="/contact"
-            className={linkDesktop(pathname === "/contact")}
+            className={linkDesktopClass}
             aria-current={pathname === "/contact" ? "page" : undefined}
           >
             Contact
@@ -251,7 +250,7 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
                 >
                   Accueil
                 </Link>
-                {categories.map((r) => {
+                {navCategories.map((r) => {
                   const href = publicRubriqueHref(r.slug);
                   const active = pathname === href;
                   return (
