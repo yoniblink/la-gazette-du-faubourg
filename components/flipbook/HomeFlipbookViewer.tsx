@@ -7,6 +7,11 @@ import { useFlipbookLinkPreload } from "@/hooks/useFlipbookLinkPreload";
 import { useFlipbookLoadedPages } from "@/hooks/useFlipbookLoadedPages";
 import { useFlipbookPreload } from "@/hooks/useFlipbookPreload";
 import { FLIPBOOK_STPAGE_FLIP_VISUAL } from "@/lib/flipbook-stpageflip-visual";
+import {
+  NavChevronIcon,
+  publicExternalNavButtonClass,
+  publicExternalNavSlotClass,
+} from "@/components/icons/NavChevronIcon";
 
 const HTMLFlipBook = dynamic(() => import("react-pageflip").then((m) => m.default), {
   ssr: false,
@@ -38,12 +43,6 @@ function easeInOutCubic(t: number): number {
   if (t >= 1) return 1;
   return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2;
 }
-
-/** Même style que les flèches externes Instagram / À la une (bouton clair hors du bloc). */
-const flipbookExternalNavBtnClass =
-  "relative z-30 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-black/12 bg-white/95 text-[#0a0a0a]/45 shadow-[0_2px_12px_rgba(0,0,0,0.06)] backdrop-blur-[2px] transition-all duration-200 hover:border-black/20 hover:bg-white hover:text-[#0a0a0a]/85 hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0a0a0a]/20 md:h-10 md:w-10";
-
-const flipbookExternalNavSlotClass = "h-9 w-9 shrink-0 md:h-10 md:w-10";
 
 type PageFlipRuntime = {
   getCurrentPageIndex: () => number;
@@ -254,32 +253,16 @@ export function HomeFlipbookViewer({
                 <button
                   type="button"
                   aria-label="Page précédente"
-                  className={flipbookExternalNavBtnClass}
+                  className={publicExternalNavButtonClass}
                   onClick={(e) => {
                     e.stopPropagation();
                     goPrev();
                   }}
                 >
-                  <span className="absolute inset-0 rounded-full border border-black/[0.05]" aria-hidden />
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    aria-hidden
-                    className="relative md:h-[18px] md:w-[18px]"
-                  >
-                    <path
-                      d="M14 6L8 12L14 18"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
+                  <NavChevronIcon direction="left" className="relative h-5 w-5 md:h-[22px] md:w-[22px]" />
                 </button>
               ) : (
-                <span className={flipbookExternalNavSlotClass} aria-hidden />
+                <span className={publicExternalNavSlotClass} aria-hidden />
               )}
             </div>
           ) : null}
@@ -359,32 +342,16 @@ export function HomeFlipbookViewer({
                 <button
                   type="button"
                   aria-label="Page suivante"
-                  className={flipbookExternalNavBtnClass}
+                  className={publicExternalNavButtonClass}
                   onClick={(e) => {
                     e.stopPropagation();
                     goNext();
                   }}
                 >
-                  <span className="absolute inset-0 rounded-full border border-black/[0.05]" aria-hidden />
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    aria-hidden
-                    className="relative md:h-[18px] md:w-[18px]"
-                  >
-                    <path
-                      d="M10 6L16 12L10 18"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
+                  <NavChevronIcon direction="right" className="relative h-5 w-5 md:h-[22px] md:w-[22px]" />
                 </button>
               ) : (
-                <span className={flipbookExternalNavSlotClass} aria-hidden />
+                <span className={publicExternalNavSlotClass} aria-hidden />
               )}
             </div>
           ) : null}

@@ -3,14 +3,32 @@
 import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import type { FeaturedItem } from "@/lib/content/featured-item";
+import { NavChevronIcon, publicExternalNavButtonClass } from "@/components/icons/NavChevronIcon";
+import { garamondNavItalic } from "@/lib/fonts/garamond-nav";
 
 const EDITORIAL_EASE = [0.43, 0.13, 0.23, 0.96] as const;
 const AUTOPLAY_MS = 4000;
 const TRANSITION_S = 0.32;
 
 type Props = { items: FeaturedItem[] };
+
+/** Enlève le tiret (cadratin, demi-cadratin ou « - » espacé) avant « Maison … » et le remplace par un saut de ligne. */
+function editorialCarouselTitleLines(title: string): ReactNode {
+  const re = /(?:\s*[–—]\s*|\s+-\s+)(?=Maison\b)/u;
+  const m = title.match(re);
+  if (!m || m.index === undefined) return title;
+  const before = title.slice(0, m.index).trimEnd();
+  const after = title.slice(m.index + m[0].length);
+  return (
+    <>
+      {before}
+      <br />
+      {after}
+    </>
+  );
+}
 
 export function EditorialCarousel({ items }: Props) {
   const reduceMotion = useReducedMotion();
@@ -45,9 +63,6 @@ export function EditorialCarousel({ items }: Props) {
     ? { target: "_blank" as const, rel: "noopener noreferrer" as const }
     : {};
 
-  const navBtnClass =
-    "relative z-30 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-black/12 bg-white/95 text-[#0a0a0a]/45 shadow-[0_2px_12px_rgba(0,0,0,0.06)] backdrop-blur-[2px] transition-all duration-200 hover:border-black/20 hover:bg-white hover:text-[#0a0a0a]/85 hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0a0a0a]/20 md:h-10 md:w-10";
-
   return (
     <div
       role="region"
@@ -60,27 +75,16 @@ export function EditorialCarousel({ items }: Props) {
       <motion.button
         type="button"
         aria-label="Article précédent"
-        whileHover={reduceMotion ? {} : { scale: 1.02 }}
-        whileTap={reduceMotion ? {} : { scale: 0.98 }}
         onClick={(e) => {
           e.preventDefault();
           prev();
         }}
-        className={navBtnClass}
+        className={publicExternalNavButtonClass}
       >
-        <span className="absolute inset-0 rounded-full border border-black/[0.05]" aria-hidden />
-        <svg width="15" height="15" viewBox="0 0 20 20" fill="none" className="relative" aria-hidden>
-          <path
-            d="M12 4L6 10L12 16"
-            stroke="currentColor"
-            strokeWidth="1.35"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        <NavChevronIcon direction="left" className="relative h-5 w-5 md:h-[22px] md:w-[22px]" />
       </motion.button>
 
-      <div className="relative min-w-0 flex-1 overflow-hidden rounded-sm bg-[#060606] text-white shadow-[0_24px_80px_rgba(0,0,0,0.18)]">
+      <div className="relative min-w-0 flex-1 overflow-hidden rounded-sm bg-[#060606] shadow-[0_24px_80px_rgba(0,0,0,0.18)]">
       {/* Bloc en flux : hauteur non nulle pour les parents des Image fill (évite warning Next) */}
       <div
         className="pointer-events-none w-full max-md:[aspect-ratio:4/5] max-md:min-h-[360px] md:[aspect-ratio:1200/645] md:min-h-[280px] lg:min-h-[320px]"
@@ -109,32 +113,37 @@ export function EditorialCarousel({ items }: Props) {
       </AnimatePresence>
 
       <div
-        className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-black/75 via-black/25 to-black/30"
+        className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-black/35 via-transparent to-black/10"
         aria-hidden
       />
 
-      {/* Méta coins (style Framer GPS / EXIF → rubrique / mise en avant) */}
-      <div className="pointer-events-none absolute left-5 top-5 z-[3] md:left-8 md:top-8">
-        <p className="font-mono text-[10px] font-normal uppercase tracking-[0.12em] text-white/65 md:text-[11px]">
-          {active.rubrique}
-        </p>
-      </div>
-      {/* Contenu central */}
-      <div className="absolute left-1/2 top-1/2 z-[2] w-[88%] max-w-[640px] -translate-x-1/2 -translate-y-1/2 md:w-[75%] md:max-w-[720px] lg:w-[90%]">
+      {/* Encadré blanc bas — titre & texte lisibles sur l’image (réf. éditoriale luxe) */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] flex justify-center px-3 pb-3 pt-20 sm:px-4 sm:pb-4 sm:pt-24 md:px-6 md:pb-6 md:pt-28">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={active.id}
-            initial={reduceMotion ? {} : { opacity: 0, y: 22 }}
+            initial={reduceMotion ? {} : { opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={reduceMotion ? {} : { opacity: 0, y: -16 }}
+            exit={reduceMotion ? {} : { opacity: 0, y: 12 }}
             transition={{ duration: tEnter, ease: EDITORIAL_EASE }}
-            className="pointer-events-none mx-auto w-full max-w-xl hyphens-auto [overflow-wrap:break-word] [&_h3]:hyphens-manual"
+            className="w-full max-w-[min(100%,40rem)] hyphens-auto rounded-sm bg-white/[0.9] px-5 py-5 shadow-[0_8px_40px_rgba(0,0,0,0.12)] backdrop-blur-[2px] [overflow-wrap:break-word] sm:px-7 sm:py-6 md:px-9 md:py-8"
             lang="fr"
           >
-            <h3 className="w-full text-left text-balance font-[family-name:var(--font-serif)] text-[1.35rem] font-light uppercase leading-[1.12] tracking-[0.06em] text-white [text-shadow:0_2px_28px_rgba(0,0,0,0.45)] sm:text-2xl md:text-3xl lg:text-[2.5rem]">
-              {active.title}
+            <p
+              className={`${garamondNavItalic.className} text-center text-balance text-[17px] font-medium leading-none text-[#111111] [font-synthesis:none] antialiased sm:text-[18px] md:text-[18px] lg:text-[19px] xl:text-[20px]`}
+            >
+              {active.rubrique}
+            </p>
+            <h3
+              className="mx-auto mt-2.5 w-max max-w-full text-center text-[24px] font-normal italic leading-tight tracking-tight text-black sm:mt-3 sm:text-[26px] md:text-[28px] lg:text-[34px] lg:leading-[1.12]"
+              style={{ fontFamily: "Griffiths, serif" }}
+            >
+              {editorialCarouselTitleLines(active.title)}
             </h3>
-            <p className="mt-5 w-full text-justify text-pretty font-[family-name:var(--font-sans)] text-[13px] leading-relaxed text-white/88 md:text-[15px]">
+            <p
+              className="mb-0 mt-4 text-justify text-[18px] font-normal leading-[1.6] text-black text-pretty max-[767px]:leading-[1.55] max-[1024px]:text-[17px] max-[1024px]:leading-[1.58] md:mt-5"
+              style={{ fontFamily: "Garamond, serif", letterSpacing: "-0.2px" }}
+            >
               {active.excerpt}
             </p>
           </motion.div>
@@ -145,7 +154,7 @@ export function EditorialCarousel({ items }: Props) {
       <Link
         href={active.href}
         {...linkProps}
-        className="absolute inset-0 z-[4] outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/40"
+        className="absolute inset-0 z-[4] outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0a0a0a]/25"
         aria-label={`Lire : ${active.title}`}
       />
       </div>
@@ -153,24 +162,13 @@ export function EditorialCarousel({ items }: Props) {
       <motion.button
         type="button"
         aria-label="Article suivant"
-        whileHover={reduceMotion ? {} : { scale: 1.02 }}
-        whileTap={reduceMotion ? {} : { scale: 0.98 }}
         onClick={(e) => {
           e.preventDefault();
           next();
         }}
-        className={navBtnClass}
+        className={publicExternalNavButtonClass}
       >
-        <span className="absolute inset-0 rounded-full border border-black/[0.05]" aria-hidden />
-        <svg width="15" height="15" viewBox="0 0 20 20" fill="none" className="relative" aria-hidden>
-          <path
-            d="M8 4L14 10L8 16"
-            stroke="currentColor"
-            strokeWidth="1.35"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        <NavChevronIcon direction="right" className="relative h-5 w-5 md:h-[22px] md:w-[22px]" />
       </motion.button>
     </div>
   );

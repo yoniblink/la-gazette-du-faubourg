@@ -38,20 +38,20 @@ export default function QuiSommesNousPage() {
   return (
     <main className="flex flex-1 flex-col bg-[#f8f8f8] pb-24 pt-20 md:pb-28 md:pt-28">
       <section className="mx-auto grid max-w-6xl grid-cols-1 gap-12 px-6 md:grid-cols-12 md:items-start md:gap-16 md:px-10">
-        <div className="md:col-span-5">
-          <div className="relative mx-auto aspect-[3/4] w-full max-w-[360px]">
+        <div className="md:col-span-7">
+          <div className="relative mx-auto aspect-[3/4] w-full max-w-[520px] md:mx-0 md:max-w-full">
             <Image
               src="/qui-sommes-nous-illustration-transparent.png"
               alt="La Gazette du Faubourg Media — illustration"
               fill
               priority
               className="object-contain object-center"
-              sizes="(max-width: 768px) 80vw, 360px"
+              sizes="(max-width: 768px) 92vw, (max-width: 1024px) 55vw, 672px"
             />
           </div>
         </div>
 
-        <div className="space-y-14 md:col-span-6 md:col-start-7">
+        <div className="space-y-14 md:col-span-5 md:col-start-8">
           {members.map((member) => (
             <article key={member.name}>
               <h1 className="font-[family-name:var(--font-serif)] text-[clamp(1.4rem,2.2vw,2rem)] font-light leading-[1.2] text-[#0a0a0a]">

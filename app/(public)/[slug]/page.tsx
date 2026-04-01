@@ -51,7 +51,7 @@ export default async function RubriquePage({ params }: Props) {
     isLaRevue && hasDatabaseUrl() ? await getHomeFlipbookManifest() : null;
 
   return (
-    <main className="flex flex-1 flex-col bg-white pt-14 pb-24 md:pt-16 md:pb-32">
+    <main className="flex flex-1 flex-col bg-white pt-20 pb-24 md:pt-24 md:pb-32">
       <header className="w-full bg-black px-4 py-14 md:px-6 md:py-20">
         <h1
           className="mx-auto w-max max-w-full text-center text-[34px] font-normal italic leading-tight tracking-tight text-white lg:text-[48px] lg:leading-[1.12]"
@@ -74,20 +74,20 @@ export default async function RubriquePage({ params }: Props) {
           }`}
         >
           <section className="mt-16 md:mt-24">
-            <ul className="divide-y divide-black/[0.06]">
+            <ul>
               {articles.map((a) => (
                 <li key={a.id} className="py-12 md:py-16 first:pt-0">
                   <Link
                     href={`/${a.category.slug === ACTUALITE_DB_SLUG ? ACTUALITES_PUBLIC_SLUG : a.category.slug}/${a.slug}`}
-                    className="group grid grid-cols-1 items-center gap-10 md:grid-cols-12 md:gap-12 lg:gap-16"
+                    className="grid grid-cols-1 items-center gap-10 md:grid-cols-12 md:gap-12 lg:gap-16"
                   >
                     <div className="md:col-span-6 lg:col-span-7">
                       <div
-                        className="relative aspect-[4/3] min-h-[12rem] w-full overflow-hidden rounded-2xl bg-[#e8e6e2] shadow-[0_10px_40px_rgba(10,10,10,0.07),inset_0_0_0_1px_rgba(10,10,10,0.05)] ring-1 ring-inset ring-black/[0.04] transition-[transform,box-shadow,ring-color] duration-[1.8s] ease-[cubic-bezier(0.33,1,0.32,1)] will-change-transform [perspective:1400px] [perspective-origin:50%_50%] group-hover:-translate-y-1.5 group-hover:shadow-[0_28px_60px_rgba(10,10,10,0.14),0_0_0_1px_rgba(184,154,98,0.22),inset_0_1px_0_rgba(255,255,255,0.35)] group-hover:ring-[#c4a574]/35 motion-reduce:transition-none motion-reduce:will-change-auto motion-reduce:group-hover:translate-y-0 motion-reduce:group-hover:shadow-[0_10px_40px_rgba(10,10,10,0.07),inset_0_0_0_1px_rgba(10,10,10,0.05)] motion-reduce:group-hover:ring-black/[0.04]"
+                        className="group/cover relative aspect-[4/3] min-h-[12rem] w-full overflow-hidden rounded-2xl bg-[#e8e6e2] shadow-[0_10px_40px_rgba(10,10,10,0.07),inset_0_0_0_1px_rgba(10,10,10,0.05)] ring-1 ring-inset ring-black/[0.04] transition-[transform,box-shadow,ring-color] duration-[1.8s] ease-[cubic-bezier(0.33,1,0.32,1)] will-change-transform [perspective:1400px] [perspective-origin:50%_50%] group-hover/cover:-translate-y-1.5 group-hover/cover:shadow-[0_28px_60px_rgba(10,10,10,0.14),0_0_0_1px_rgba(184,154,98,0.22),inset_0_1px_0_rgba(255,255,255,0.35)] group-hover/cover:ring-[#c4a574]/35 motion-reduce:transition-none motion-reduce:will-change-auto motion-reduce:group-hover/cover:translate-y-0 motion-reduce:group-hover/cover:shadow-[0_10px_40px_rgba(10,10,10,0.07),inset_0_0_0_1px_rgba(10,10,10,0.05)] motion-reduce:group-hover/cover:ring-black/[0.04]"
                       >
-                        {/* Couche 3D : zoom « caméra qui avance » (translateZ + scale) */}
+                        {/* Couche 3D : zoom « caméra qui avance » (translateZ + scale) — déclenché au survol de l’image uniquement */}
                         <div
-                          className="absolute inset-0 origin-center [backface-visibility:hidden] [transform:translateZ(0)_scale(1)] [transform-style:preserve-3d] transition-[transform] duration-[2.9s] ease-[cubic-bezier(0.33,1,0.32,1)] will-change-transform group-hover:[transform:translateZ(42px)_scale(1.14)] motion-reduce:transition-none motion-reduce:will-change-auto motion-reduce:group-hover:[transform:translateZ(0)_scale(1)]"
+                          className="absolute inset-0 origin-center [backface-visibility:hidden] [transform:translateZ(0)_scale(1)] [transform-style:preserve-3d] transition-[transform] duration-[2.9s] ease-[cubic-bezier(0.33,1,0.32,1)] will-change-transform group-hover/cover:[transform:translateZ(42px)_scale(1.14)] motion-reduce:transition-none motion-reduce:will-change-auto motion-reduce:group-hover/cover:[transform:translateZ(0)_scale(1)]"
                         >
                           <Image
                             src={a.coverImageUrl}
@@ -100,7 +100,7 @@ export default async function RubriquePage({ params }: Props) {
                         </div>
                         {/* Profondeur et highlight façon vitrine */}
                         <div
-                          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/[0.18] via-black/[0.02] to-transparent opacity-40 transition-opacity duration-[1.65s] ease-[cubic-bezier(0.33,1,0.32,1)] group-hover:opacity-100"
+                          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/[0.18] via-black/[0.02] to-transparent opacity-40 transition-opacity duration-[1.65s] ease-[cubic-bezier(0.33,1,0.32,1)] group-hover/cover:opacity-100"
                           aria-hidden
                         />
                       </div>
@@ -114,7 +114,7 @@ export default async function RubriquePage({ params }: Props) {
                           {a.excerpt}
                         </p>
                       ) : null}
-                      <span className="mt-6 inline-flex w-fit font-[family-name:var(--font-sans)] text-[11px] font-medium uppercase tracking-[0.2em] text-[#0a0a0a] underline decoration-black/20 underline-offset-[6px] transition-colors group-hover:decoration-black/55">
+                      <span className="mt-6 inline-flex w-fit font-[family-name:var(--font-sans)] text-[11px] font-medium uppercase tracking-[0.2em] text-[#0a0a0a] underline decoration-black/20 underline-offset-[6px]">
                         Lire la suite
                       </span>
                     </div>

@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import type { InstagramReelPublic } from "@/lib/data/instagram-reels";
 import { site } from "@/lib/content/site";
+import { NavChevronIcon, publicExternalNavButtonClass } from "@/components/icons/NavChevronIcon";
 
 function StoryProgressSegments({
   count,
@@ -185,9 +186,6 @@ function StoryReelOverlay({
     </div>
   );
 }
-
-const reelNavExternalBtnClass =
-  "relative z-30 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-black/12 bg-white/95 text-[#0a0a0a]/45 shadow-[0_2px_12px_rgba(0,0,0,0.06)] backdrop-blur-[2px] transition-all duration-200 hover:border-black/20 hover:bg-white hover:text-[#0a0a0a]/85 hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0a0a0a]/20 md:h-10 md:w-10";
 
 function relativeIndex(i: number, active: number, n: number): number {
   let d = i - active;
@@ -371,31 +369,13 @@ export function InstagramReelsStack({ reels }: { reels: InstagramReelPublic[] })
             <motion.button
               type="button"
               aria-label="Vidéo précédente"
-              whileHover={reduceMotion ? {} : { scale: 1.02 }}
-              whileTap={reduceMotion ? {} : { scale: 0.98 }}
-              className={reelNavExternalBtnClass}
+              className={publicExternalNavButtonClass}
               onClick={(e) => {
                 e.preventDefault();
                 go(-1);
               }}
             >
-              <span className="absolute inset-0 rounded-full border border-black/[0.05]" aria-hidden />
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                aria-hidden
-                className="relative md:h-[18px] md:w-[18px]"
-              >
-                <path
-                  d="M14 6L8 12L14 18"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <NavChevronIcon direction="left" className="relative h-5 w-5 md:h-[22px] md:w-[22px]" />
             </motion.button>
           ) : null}
 
@@ -474,31 +454,13 @@ export function InstagramReelsStack({ reels }: { reels: InstagramReelPublic[] })
             <motion.button
               type="button"
               aria-label="Vidéo suivante"
-              whileHover={reduceMotion ? {} : { scale: 1.02 }}
-              whileTap={reduceMotion ? {} : { scale: 0.98 }}
-              className={reelNavExternalBtnClass}
+              className={publicExternalNavButtonClass}
               onClick={(e) => {
                 e.preventDefault();
                 go(1);
               }}
             >
-              <span className="absolute inset-0 rounded-full border border-black/[0.05]" aria-hidden />
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                aria-hidden
-                className="relative md:h-[18px] md:w-[18px]"
-              >
-                <path
-                  d="M10 6L16 12L10 18"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <NavChevronIcon direction="right" className="relative h-5 w-5 md:h-[22px] md:w-[22px]" />
             </motion.button>
           ) : null}
         </div>

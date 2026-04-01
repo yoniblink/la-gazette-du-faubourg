@@ -90,7 +90,7 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
         isVisible ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-5 opacity-0"
       }`}
     >
-      <div className="relative mx-auto flex h-14 w-full max-w-[100rem] items-center justify-between gap-x-4 px-4 md:grid md:h-16 md:grid-cols-[auto_minmax(0,1fr)] md:items-center md:gap-x-3 md:px-6 lg:gap-x-5 lg:px-8 xl:gap-x-6 xl:px-10">
+      <div className="relative mx-auto flex h-20 w-full max-w-[100rem] items-center justify-between gap-x-4 px-4 md:grid md:h-24 md:grid-cols-[auto_minmax(0,1fr)] md:items-center md:gap-x-3 md:px-6 lg:gap-x-5 lg:px-8 xl:gap-x-6 xl:px-10">
         <button
           type="button"
           className="relative z-10 flex h-10 w-10 shrink-0 flex-col items-center justify-center rounded-sm border border-[#0a0a0a]/10 bg-transparent text-[#0a0a0a] transition-[border-color,background-color] hover:border-[#0a0a0a]/22 hover:bg-[#0a0a0a]/[0.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0a0a0a]/25 md:hidden"
@@ -130,10 +130,10 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
           </span>
         </button>
 
-        <div className="absolute left-1/2 top-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 md:static md:z-auto md:flex md:h-16 md:translate-x-0 md:translate-y-0 md:items-center">
+        <div className="absolute left-1/2 top-1/2 z-10 flex max-md:-translate-x-1/2 max-md:-translate-y-1/2 md:static md:z-auto md:ml-8 md:flex md:h-24 md:items-center lg:ml-10 xl:ml-12">
           <Link
             href="/"
-            className="relative flex h-9 w-[min(10rem,42vw)] max-w-[168px] shrink-0 items-center justify-center rounded-sm outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#0a0a0a]/25 sm:h-10 md:h-11 md:w-[190px] md:max-w-none"
+            className="relative flex h-12 w-[min(13.5rem,58vw)] max-w-[280px] shrink-0 items-center justify-center rounded-sm outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#0a0a0a]/25 sm:h-14 md:h-16 md:w-[320px] md:max-w-none"
             aria-label="La Gazette du Faubourg — Accueil"
             onClick={() => setMenuOpen(false)}
           >
@@ -143,7 +143,7 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
               width={360}
               height={120}
               className="h-full w-full object-contain object-center md:hidden"
-              sizes="(max-width:767px) 168px, 1px"
+              sizes="(max-width:767px) 280px, 1px"
               priority
             />
             <Image
@@ -152,7 +152,7 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
               width={360}
               height={120}
               className="hidden h-full w-full object-contain md:block"
-              sizes="190px"
+              sizes="320px"
             />
           </Link>
         </div>
@@ -161,7 +161,7 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
 
         <nav
           aria-label="Navigation principale"
-          className="hidden min-h-0 min-w-0 flex-nowrap items-center justify-center gap-x-2 sm:gap-x-2.5 md:flex md:h-16 lg:gap-x-3 xl:gap-x-3.5"
+          className="hidden min-h-0 min-w-0 flex-nowrap items-center justify-center gap-x-2 sm:gap-x-2.5 md:flex md:h-24 lg:gap-x-3 xl:gap-x-3.5"
         >
           <Link
             href="/"

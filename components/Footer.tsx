@@ -29,8 +29,8 @@ export function Footer({ categories }: { categories: FooterCategory[] }) {
             />
           </div>
           <p
-            className="mt-3 text-sm leading-relaxed text-white/70"
-            style={{ fontFamily: "Garamond, var(--font-serif), Georgia, serif" }}
+            className="mb-0 mt-3 text-justify text-[18px] font-normal leading-[1.6] text-pretty text-white/70 max-[767px]:leading-[1.55] max-[1024px]:text-[17px] max-[1024px]:leading-[1.58]"
+            style={{ fontFamily: "Garamond, serif", letterSpacing: "-0.2px" }}
           >
             {site.officialTitle}. Un média dédié à l’actualité et à l’art de vivre du Faubourg Saint-Honoré.
           </p>

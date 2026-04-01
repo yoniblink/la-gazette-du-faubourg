@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { site } from "@/lib/content/site";
+import { garamondNavItalic } from "@/lib/fonts/garamond-nav";
 import { fadeUp } from "@/lib/motion";
 import type { InstagramReelPublic } from "@/lib/data/instagram-reels";
 import { InstagramReelsStack } from "@/components/sections/InstagramReelsStack";
@@ -37,7 +38,10 @@ export function InstagramStripContent({ reels }: { reels: InstagramReelPublic[] 
         className="mx-auto max-w-6xl px-6 md:px-10"
       >
         <div className="flex flex-col items-center gap-6 text-center md:gap-8">
-          <h2 className="max-w-xl text-center font-['Griffiths'] text-2xl font-normal text-[#0a0a0a] md:text-3xl">
+          <h2
+            className="mx-auto w-max max-w-full text-center text-[34px] font-normal italic leading-tight tracking-tight text-black lg:text-[48px] lg:leading-[1.12]"
+            style={{ fontFamily: "Griffiths, serif" }}
+          >
             Retrouvez-nous sur Instagram
           </h2>
           <Link
@@ -51,7 +55,12 @@ export function InstagramStripContent({ reels }: { reels: InstagramReelPublic[] 
               <p className="font-[family-name:var(--font-sans)] text-[10px] uppercase tracking-[0.28em] text-[#7a7a7a]">
                 {site.instagramLabel}
               </p>
-              <p className="mt-1 font-[family-name:var(--font-serif)] text-lg text-[#0a0a0a]">
+              <p
+                className={[
+                  garamondNavItalic.className,
+                  "mt-1 text-left text-[17px] font-medium italic leading-none text-black antialiased transition-opacity group-hover:opacity-80 md:text-[17px] lg:text-[18px] xl:text-[19px]",
+                ].join(" ")}
+              >
                 Suivre la Gazette
               </p>
             </div>

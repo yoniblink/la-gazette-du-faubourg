@@ -86,9 +86,12 @@ export function HomeFlipbook({
             viewport={{ once: true, margin: "-10% 0px" }}
             className="text-center"
           >
-            <h2 className="font-['Griffiths'] text-[clamp(1.65rem,3vw,2.35rem)] font-normal leading-snug text-[#0a0a0a]">
+            <h2
+              className="mx-auto w-max max-w-full text-center text-[34px] font-normal italic leading-tight tracking-tight text-black lg:text-[48px] lg:leading-[1.12]"
+              style={{ fontFamily: "Griffiths, serif" }}
+            >
               Découvrez La Gazette du Faubourg en format papier.
-              <span className="mt-2 block text-[0.92em] text-[#3a3a3a]">
+              <span className="mt-2 block text-[0.88em] font-normal italic leading-tight tracking-tight text-[#3a3a3a]">
                 Présente là où l’élégance se vit…
               </span>
             </h2>
