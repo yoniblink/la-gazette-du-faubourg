@@ -80,7 +80,7 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
   /** Cormorant Garamond italic (next/font) — les .ttf locaux du repo sont souvent absents, Safari ne fait pas tomber sur une typo correcte. */
   const linkDesktopClass = [
     garamondNavItalic.className,
-    "relative inline-block shrink-0 whitespace-nowrap py-1 text-center text-[17px] font-medium leading-none text-[#111111] [font-synthesis:none] opacity-100 antialiased transition-opacity duration-300 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:origin-center after:scale-x-0 after:bg-[#111111]/40 after:transition-transform after:duration-300 after:ease-out hover:opacity-65 hover:after:scale-x-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0a0a0a]/20 focus-visible:after:scale-x-100 sm:text-[18px] md:text-[18px] lg:text-[19px] xl:text-[20px]",
+    "relative inline-block shrink-0 whitespace-nowrap py-1 text-left text-[17px] font-medium leading-none text-[#111111] [font-synthesis:none] opacity-100 antialiased transition-opacity duration-300 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:origin-left after:scale-x-0 after:bg-[#111111]/40 after:transition-transform after:duration-300 after:ease-out hover:opacity-65 hover:after:scale-x-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0a0a0a]/20 focus-visible:after:scale-x-100 sm:text-[18px] md:text-[18px] lg:text-[19px] xl:text-[20px]",
   ].join(" ");
 
   const headerNode = (
@@ -160,7 +160,7 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
 
         <nav
           aria-label="Navigation principale"
-          className="hidden min-h-0 min-w-0 flex-nowrap items-center justify-center gap-x-2 sm:gap-x-2.5 md:flex md:h-24 lg:gap-x-3 xl:gap-x-3.5"
+          className="hidden min-h-0 min-w-0 flex-nowrap items-center justify-start gap-x-2 sm:gap-x-2.5 md:flex md:h-24 lg:gap-x-3 xl:gap-x-3.5"
         >
           <Link
             href="/"
