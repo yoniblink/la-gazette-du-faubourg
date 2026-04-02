@@ -388,24 +388,193 @@ body {
   display: block;
 }
 
-/* Image standalone (hors lead-media et hors split) : même largeur que la colonne split (60%) */
-.article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-img-zoom-wrap,
-.article-tiptap-html.article-tiptap-elementor-structure > figure,
-.article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-figure {
-  max-width: 60% !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
-}
-
 .article-tiptap-html.article-tiptap-elementor-structure > * + .article-tiptap-split {
   margin-top: 30px;
 }
 
-/* Espace entre un bloc split et l'image standalone qui suit */
+/* Deux images consécutives → deux demi-colnes. flex-start : pas de cellule étirée derrière object-fit contain (transparence PNG/WebP visible). */
+.article-tiptap-pair {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: flex-start;
+  column-gap: 30px;
+  margin-top: 30px;
+  margin-bottom: 30px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* Uniquement la 2e paire (`.article-tiptap-pair--stack`, posée par applyElementorArticleLayout). */
+.article-tiptap-pair.article-tiptap-pair--stack {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  row-gap: 30px;
+  column-gap: 0;
+}
+
+/* Largeur totale = colonne .article-tiptap-split__copy (60% du contenu, cf. split ≥768px). */
+@media (min-width: 768px) {
+  .article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-lead-media {
+    max-width: 60%;
+    width: 100%;
+    margin-inline: auto;
+    box-sizing: border-box;
+  }
+
+  .article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-pair {
+    max-width: 60%;
+    margin-inline: auto;
+  }
+
+  .article-tiptap-html.article-tiptap-elementor-structure > p {
+    max-width: 60%;
+    margin-inline: auto;
+  }
+}
+
+/* 50% − moitié du gap : tient dans la largeur utile comme deux colonnes côte à côte */
+.article-tiptap-html .article-tiptap-pair:not(.article-tiptap-pair--stack) > .article-tiptap-img-zoom-wrap,
+.article-tiptap-html .article-tiptap-pair:not(.article-tiptap-pair--stack) > figure,
+.article-tiptap-html .article-tiptap-pair:not(.article-tiptap-pair--stack) > .article-tiptap-figure {
+  flex: 1 1 0;
+  max-width: calc(50% - 15px) !important;
+  min-width: 0;
+  min-height: 0;
+  margin: 0 !important;
+}
+
+.article-tiptap-html .article-tiptap-pair--stack > .article-tiptap-img-zoom-wrap,
+.article-tiptap-html .article-tiptap-pair--stack > figure,
+.article-tiptap-html .article-tiptap-pair--stack > .article-tiptap-figure {
+  flex: 0 1 auto;
+  max-width: 100% !important;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  margin: 0 !important;
+}
+
+.article-tiptap-html .article-tiptap-pair > .article-tiptap-img-zoom-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+}
+
+.article-tiptap-html .article-tiptap-pair > .article-tiptap-figure,
+.article-tiptap-html .article-tiptap-pair > figure {
+  display: flex;
+  flex-direction: column;
+}
+
+.article-tiptap-pair:not(.article-tiptap-pair--stack) > .article-tiptap-figure .article-tiptap-img-zoom-wrap,
+.article-tiptap-pair:not(.article-tiptap-pair--stack) > figure .article-tiptap-img-zoom-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.article-tiptap-pair.article-tiptap-pair--stack > .article-tiptap-figure .article-tiptap-img-zoom-wrap,
+.article-tiptap-pair.article-tiptap-pair--stack > figure .article-tiptap-img-zoom-wrap {
+  flex: 0 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (min-width: 768px) {
+  .article-tiptap-pair:not(.article-tiptap-pair--stack) > .article-tiptap-img-zoom-wrap img,
+  .article-tiptap-pair:not(.article-tiptap-pair--stack) > figure img,
+  .article-tiptap-pair:not(.article-tiptap-pair--stack) > .article-tiptap-figure img {
+    display: block;
+    width: auto !important;
+    height: auto !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    min-width: 0;
+    object-fit: contain;
+    object-position: center;
+  }
+
+  .article-tiptap-pair.article-tiptap-pair--stack > .article-tiptap-img-zoom-wrap img,
+  .article-tiptap-pair.article-tiptap-pair--stack > figure img,
+  .article-tiptap-pair.article-tiptap-pair--stack > .article-tiptap-figure img {
+    display: block;
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    min-width: 0;
+    object-fit: initial;
+  }
+}
+
+/*
+ * Détourage visuel (fond blanc / très clair type studio) : multiply fusionne avec #fafafa.
+ * Désactiver sur un bloc : class article-tiptap-img-no-blend sur .article-tiptap-img-zoom-wrap (HTML manuel).
+ * Pas sur .article-tiptap-lead-media (titres / visuels souvent à conserver tels quels).
+ */
+.article-tiptap-html.article-tiptap-elementor-structure .article-tiptap-pair .article-tiptap-img-zoom-wrap:not(.article-tiptap-img-no-blend) img,
+.article-tiptap-html.article-tiptap-elementor-structure .article-tiptap-split__media .article-tiptap-img-zoom-wrap:not(.article-tiptap-img-no-blend) img,
+.article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-img-zoom-wrap:not(.article-tiptap-img-no-blend) img {
+  mix-blend-mode: multiply;
+}
+
+@media (max-width: 767px) {
+  .article-tiptap-pair {
+    flex-wrap: wrap;
+    align-items: stretch;
+  }
+  .article-tiptap-html .article-tiptap-pair > .article-tiptap-img-zoom-wrap,
+  .article-tiptap-html .article-tiptap-pair > figure,
+  .article-tiptap-html .article-tiptap-pair > .article-tiptap-figure {
+    flex: 0 0 100%;
+    max-width: 100% !important;
+  }
+
+  .article-tiptap-html .article-tiptap-pair > .article-tiptap-img-zoom-wrap {
+    display: block;
+  }
+
+  .article-tiptap-html .article-tiptap-pair > .article-tiptap-figure,
+  .article-tiptap-html .article-tiptap-pair > figure {
+    display: block;
+  }
+
+  .article-tiptap-pair > .article-tiptap-figure .article-tiptap-img-zoom-wrap,
+  .article-tiptap-pair > figure .article-tiptap-img-zoom-wrap {
+    display: block;
+  }
+
+  .article-tiptap-pair > .article-tiptap-img-zoom-wrap img,
+  .article-tiptap-pair > figure img,
+  .article-tiptap-pair > .article-tiptap-figure img {
+    display: block;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0;
+    height: auto !important;
+    max-height: none !important;
+    object-fit: initial;
+  }
+}
+
+/* Image standalone après un bloc split : même largeur que la colonne split__media (60%) + espace */
 .article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-split + .article-tiptap-img-zoom-wrap,
 .article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-split + figure,
 .article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-split + .article-tiptap-figure {
+  max-width: 60% !important;
   margin-top: 60px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
 }
 
 .article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-lead-media + .article-tiptap-split {
@@ -639,6 +808,7 @@ body {
 .article-tiptap-html .article-tiptap-img-zoom-wrap {
   overflow: hidden;
   border-radius: 4px;
+  background: transparent;
   /* Surcharge le style inline TipTap (max-width: XX%) : jamais plus large que la colonne */
   max-width: 100% !important;
   box-sizing: border-box;

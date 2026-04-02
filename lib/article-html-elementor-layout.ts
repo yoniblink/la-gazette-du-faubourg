@@ -17,6 +17,9 @@ export function applyElementorArticleLayout(html: string): string {
 
   const out = parse("<div></div>").firstChild as HTMLElement;
 
+  /** Seule la 2e paire d’images (pair[1] dans le DOM) est en pile ; les autres restent côte à côte. */
+  let pairIndex = 0;
+
   /** Comme eef2d28 : première image pleine largeur si elle est suivie d’un second bloc média (rangée image|texte). */
   let i = 0;
   if (
@@ -42,6 +45,32 @@ export function applyElementorArticleLayout(html: string): string {
       }
 
       if (j === i + 1) {
+        /* Deux images consécutives → côte à côte (paire). */
+        const nextEl = blocks[j]; // === blocks[i + 1]
+        if (nextEl) {
+          /* Cherche combien de blocs texte suivent la seconde image avant la prochaine image. */
+          let j2 = j + 1;
+          while (j2 < blocks.length && !isMediaBlock(blocks[j2])) {
+            j2 += 1;
+          }
+
+          const stackClass = pairIndex === 1 ? " article-tiptap-pair--stack" : "";
+          const pairRow = parse(
+            `<div class="article-tiptap-pair${stackClass}" role="presentation"></div>`,
+          ).firstChild as HTMLElement;
+          pairIndex += 1;
+          pairRow.appendChild(el);
+          pairRow.appendChild(nextEl);
+          out.appendChild(pairRow);
+
+          /* Si la 2e image avait du texte (ex-split__copy), on le sort en blocs indépendants. */
+          for (let k = j + 1; k < j2; k += 1) {
+            out.appendChild(blocks[k]);
+          }
+
+          i = j2;
+          continue;
+        }
         out.appendChild(el);
         i += 1;
         continue;
