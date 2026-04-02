@@ -50,12 +50,13 @@ export const ArticleImage = Image.extend({
     const w = (node.attrs.widthPercent as number) ?? 100;
     const caption = String(node.attrs.caption ?? "").trim();
     const width = Math.min(100, Math.max(25, w));
+    /* Même échelle que les blocs Elementor (row-gap / kit ≈ 30px entre image et titre). */
     const margin =
       align === "left"
-        ? "1.25rem auto 1.25rem 0"
+        ? "30px auto 30px 0"
         : align === "right"
-          ? "1.25rem 0 1.25rem auto"
-          : "1.25rem auto";
+          ? "30px 0 30px auto"
+          : "30px auto";
     const wrapStyle = `overflow:hidden;border-radius:4px;max-width:${width}%;width:100%;margin:${margin}`;
     const imgStyle = `max-width:100%;width:100%;height:auto;display:block;margin:0`;
 

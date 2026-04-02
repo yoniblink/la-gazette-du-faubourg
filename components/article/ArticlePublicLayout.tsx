@@ -55,7 +55,7 @@ export function ArticlePublicLayout({
 
   return (
     <main className={`flex flex-1 flex-col bg-[#fafafa] ${mainPad}`}>
-      <article className="mx-auto max-w-3xl px-6 md:px-10">
+      <article className="mx-auto w-full max-w-[1140px] px-5 md:px-8 lg:px-10">
         <h1 className="sr-only">{title}</h1>
 
         {showCoverBlock ? (

@@ -38,7 +38,7 @@ export const ArticleGallery = Node.create({
 
   renderHTML({ node, HTMLAttributes }) {
     const baseAttrs = mergeAttributes(HTMLAttributes, {
-      class: "article-tiptap-gallery my-8 grid gap-4 sm:grid-cols-2",
+      class: "article-tiptap-gallery my-[30px] grid gap-4 sm:grid-cols-2",
     });
 
     if (node.content.childCount > 0) {

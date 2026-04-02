@@ -362,49 +362,206 @@ body {
   border-radius: 0.5rem;
 }
 
-/* TipTap HTML rendu (public) */
-.article-tiptap-html h1 {
-  margin-top: 1.75rem;
-  margin-bottom: 0.55rem;
-  font-family: var(--font-serif), ui-serif, Georgia, serif;
-  font-size: clamp(1.45rem, 3vw, 1.85rem);
-  font-weight: 300;
-  color: #0a0a0a;
+/* TipTap HTML rendu (public) — typo alignée sur l’export Elementor (article single). */
+
+/* ——— Structure type Elementor (page post 1090, e-con-inner + 497417a + 1c4981a / a237241) ——— */
+
+/* Bandeau pleine largeur eef2d28 — margin-bottom du conteneur enfant */
+.article-tiptap-lead-media {
+  width: 100%;
+  margin-bottom: 35px;
+  text-align: center;
 }
 
-.article-tiptap-html h2 {
-  margin-top: 1.5rem;
-  margin-bottom: 0.5rem;
-  font-family: var(--font-serif), ui-serif, Georgia, serif;
-  font-size: clamp(1.25rem, 2.5vw, 1.5rem);
-  font-weight: 300;
-  color: #0a0a0a;
+.article-tiptap-lead-media .article-tiptap-img-zoom-wrap,
+.article-tiptap-lead-media figure {
+  margin: 0 !important;
+  width: 100%;
+  max-width: 100%;
 }
 
-.article-tiptap-html h3 {
-  margin-top: 1.1rem;
-  margin-bottom: 0.35rem;
-  font-family: var(--font-serif), ui-serif, Georgia, serif;
-  font-size: 1.05rem;
-  font-weight: 500;
-  color: #1a1a1a;
+.article-tiptap-lead-media img {
+  margin: 0 !important;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  display: block;
 }
 
-.article-tiptap-html p {
-  margin-bottom: 1rem;
-  font-family: Garamond, ui-serif, Georgia, serif;
-  font-size: 17px;
-  line-height: 1.6;
-  letter-spacing: -0.2px;
-  text-align: justify;
-  text-wrap: pretty;
-  color: #0a0a0a;
+.article-tiptap-html.article-tiptap-elementor-structure > * + .article-tiptap-split {
+  margin-top: 30px;
+}
+
+.article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-lead-media + .article-tiptap-split {
+  margin-top: 0;
+}
+
+.article-tiptap-split {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 30px;
+  width: 100%;
 }
 
 @media (min-width: 768px) {
+  .article-tiptap-split {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    column-gap: 30px;
+    row-gap: 30px;
+  }
+
+  /* Export Elementor : --width:60% sur colonnes image / texte (min-width:768px) */
+  .article-tiptap-split__media,
+  .article-tiptap-split__copy {
+    flex: 0 1 60%;
+    max-width: 60%;
+    min-width: 0;
+  }
+}
+
+.article-tiptap-split__media {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.article-tiptap-split__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+}
+
+.article-tiptap-split__media > figure,
+.article-tiptap-split__media > .article-tiptap-img-zoom-wrap,
+.article-tiptap-split__media > .article-tiptap-gallery {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* Colonne texte a237241 : marges widgets heading / text-editor (pas de gap en plus). */
+.article-tiptap-split__copy > :not(h1, h2, h3):first-child {
+  margin-top: 0;
+}
+
+.article-tiptap-split__copy > :is(h1, h2, h3) {
+  margin: 10px 0 30px !important;
+}
+
+.article-tiptap-split__copy > :is(h1, h2, h3):first-child {
+  margin-top: 10px !important;
+}
+
+@media (max-width: 767px) {
+  .article-tiptap-split__media img {
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+.article-tiptap-html > :is(h1, h2, h3):first-child {
+  margin-top: 0;
+}
+
+.article-tiptap-html h1,
+.article-tiptap-html h2 {
+  /* Widget Elementor : margin 10px 0 calc(20px + 10px) sur le titre */
+  margin: 10px 0 30px;
+  font-family: "Haarlem Deco", ui-serif, serif;
+  font-size: 36px;
+  font-weight: 400;
+  line-height: 1;
+  text-align: center;
+  text-transform: uppercase;
+  color: #7d7c7e;
+  /* Sauts de ligne explicites (<br>) comme .elementor-heading-title, sans césure “intelligente”. */
+  white-space: normal;
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: manual;
+}
+
+@media (max-width: 1024px) {
+  .article-tiptap-html h1,
+  .article-tiptap-html h2 {
+    font-size: 32px;
+  }
+}
+
+@media (max-width: 767px) {
+  .article-tiptap-html h1,
+  .article-tiptap-html h2 {
+    font-size: 25px;
+  }
+}
+
+.article-tiptap-html h3 {
+  margin: 10px 0 30px;
+  font-family: "Haarlem Deco", ui-serif, serif;
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 1;
+  text-align: center;
+  text-transform: uppercase;
+  color: #7d7c7e;
+  white-space: normal;
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: manual;
+}
+
+@media (max-width: 1024px) {
+  .article-tiptap-html h3 {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 767px) {
+  .article-tiptap-html h3 {
+    font-size: 20px;
+  }
+}
+
+/* Chiffres dans les titres (export WP : span.font-number-style → "Griffits" côté Elementor). */
+.article-tiptap-html .font-number-style {
+  font-family: "Griffiths", serif;
+}
+
+.article-tiptap-html p {
+  /* Comme l’éditeur Elementor : pas de marge basse entre paragraphes (l’air vient du line-height). */
+  margin: 0;
+  font-family: Garamond, ui-serif, Georgia, serif;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: -0.1px;
+  word-spacing: 0;
+  text-align: justify;
+  /* Pas de text-wrap: pretty — reprend les mêmes coupures que le texte Elementor (<br> et espaces). */
+  text-wrap: wrap;
+  white-space: normal;
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: manual;
+  color: #000;
+}
+
+@media (max-width: 1024px) {
   .article-tiptap-html p {
-    font-size: 18px;
-    line-height: 1.6;
+    font-size: 17px;
+  }
+}
+
+@media (max-width: 767px) {
+  .article-tiptap-html p {
+    font-size: 16px;
   }
 }
 
@@ -417,15 +574,22 @@ body {
 .article-tiptap-html li {
   margin-bottom: 0.35rem;
   font-family: Garamond, ui-serif, Georgia, serif;
-  font-size: 17px;
-  line-height: 1.6;
-  letter-spacing: -0.2px;
-  color: #0a0a0a;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: -0.1px;
+  color: #000;
 }
 
-@media (min-width: 768px) {
+@media (max-width: 1024px) {
   .article-tiptap-html li {
-    font-size: 18px;
+    font-size: 17px;
+  }
+}
+
+@media (max-width: 767px) {
+  .article-tiptap-html li {
+    font-size: 16px;
   }
 }
 
@@ -435,9 +599,10 @@ body {
   text-underline-offset: 4px;
 }
 
+/* Images hors figure / legacy : même échelle que --row-gap:30px entre blocs Elementor */
 .article-tiptap-html img {
-  margin-top: 1.25rem;
-  margin-bottom: 1.25rem;
+  margin-top: 30px;
+  margin-bottom: 30px;
   max-width: 100%;
   height: auto;
   border-radius: 4px;
@@ -447,6 +612,12 @@ body {
 .article-tiptap-html .article-tiptap-img-zoom-wrap {
   overflow: hidden;
   border-radius: 4px;
+}
+
+/* La figure porte le 30px vertical ; le wrap n’ajoute pas un second creux (inline margin TipTap). */
+.article-tiptap-html .article-tiptap-figure .article-tiptap-img-zoom-wrap {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
 }
 
 .article-tiptap-html .article-tiptap-img-zoom-wrap img {
@@ -461,7 +632,7 @@ body {
 }
 
 .article-tiptap-html .article-tiptap-figure {
-  margin: 1.5rem 0;
+  margin: 30px 0;
 }
 
 /* Ancien HTML : figure > img sans wrapper (articles déjà en base) */
