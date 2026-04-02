@@ -221,6 +221,30 @@ export const getPublishedArticleBySlugs = cache(async (categorySlug: string, art
   return staticArticleBySlugs(categorySlug, articleSlug);
 });
 
+/** Article (tout statut) pour l’édition admin sur l’URL publique — uniquement Prisma, pas de fallback statique. */
+export const getArticleBySlugsForAdmin = cache(async (categorySlug: string, articleSlug: string) => {
+  const db = tryPrisma();
+  if (!db) return null;
+  const row = await db.article.findFirst({
+    where: {
+      slug: articleSlug,
+      category: { slug: categorySlug },
+    },
+    include: { category: true },
+  });
+  if (!row) return null;
+  const { coverImageUrl, coverImageAlt } = resolveArticleCoverFields(
+    {
+      coverImageUrl: row.coverImageUrl,
+      coverImageAlt: row.coverImageAlt,
+      title: row.title,
+      content: row.content,
+    },
+    { imageSrc: row.category.imageSrc, imageAlt: row.category.imageAlt },
+  );
+  return { ...row, coverImageUrl, coverImageAlt };
+});
+
 /** Articles pour le carrousel « L’actualité du Faubourg » : tous les publiés, du plus récent au plus ancien. */
 export const getFeaturedArticlesForHome = cache(async (take?: number) => {
   const db = tryPrisma();

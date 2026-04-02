@@ -1,17 +1,29 @@
 "use client";
 
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import type { JSONContent } from "@tiptap/core";
 import { type DragEndEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 import type { ArticleBlock } from "@/lib/article-blocks/types";
 import { createBlock } from "@/lib/article-blocks/types";
-import { blockToHtml } from "@/lib/article-blocks/tiptap-convert";
+import { blocksToTipTap, tipTapToBlocks } from "@/lib/article-blocks/tiptap-convert";
 import { EditorBlocksPanel } from "@/components/admin/article-editor/EditorBlocksPanel";
-import { ImageBlockPreview } from "@/components/admin/article-editor/ImageBlockPreview";
-import { SelectedBlockDelete } from "@/components/admin/article-editor/SelectedBlockDelete";
-import { ArticlePublicLayout, type ArticleInlineEditProps } from "@/components/article/ArticlePublicLayout";
-import { EDITOR_BAR_TOP } from "@/components/admin/article-editor/editor-layout-constants";
+import { ArticlePublicLayout } from "@/components/article/ArticlePublicLayout";
+import { ArticleTiptapSurface } from "@/components/article/ArticleTiptapSurface";
+import {
+  EDITOR_BAR_TOP,
+  SITE_HEADER_HEIGHT_MD,
+  SITE_HEADER_HEIGHT_MOBILE,
+} from "@/components/admin/article-editor/editor-layout-constants";
 import type { EditorViewportMode } from "@/components/admin/article-editor/EditorViewportToggle";
+import { buildArticleSurfaceHtml } from "@/lib/article-surface-html";
+import {
+  isMagazineColumnArticle,
+  isPairCarouselArticle,
+  isSplitCarouselArticle,
+  splitCarouselExcludeHeadingSplits,
+  splitCarouselSkipLeadingSplits,
+} from "@/lib/article-layout-variants";
 
 export type VisualArticlePreviewProps = {
   categorySlug: string;
@@ -27,23 +39,24 @@ export type VisualArticlePreviewProps = {
   sourceUrl: string;
 };
 
-export type { ArticleInlineEditProps };
-
 type BlockKind = ArticleBlock["type"];
 
-/** Languette au bord gauche : uniquement la flèche pour ouvrir blocs / structure. */
+/** Languette gauche : centrée verticalement dans l’espace sous header site + barre d’édition (`--editor-fixed-stack`). */
 function EditorLeftDock({ leftPanelOpen, onOpenPanel }: { leftPanelOpen: boolean; onOpenPanel: () => void }) {
   if (leftPanelOpen) return null;
 
+  const stack = "var(--editor-fixed-stack, 3.75rem)";
   return (
     <div
-      className="pointer-events-auto fixed left-0 z-40 flex w-7 -translate-y-1/2 flex-col overflow-hidden rounded-r-[10px] border border-black/[0.07] border-l-0 bg-[#f3f3f4]/95 shadow-[3px_0_14px_rgba(10,10,10,0.07)] backdrop-blur-[6px]"
-      style={{ top: `calc(${EDITOR_BAR_TOP} + (100dvh - ${EDITOR_BAR_TOP}) / 2)` }}
+      className="pointer-events-auto fixed left-0 z-[62] flex w-7 -translate-y-1/2 flex-col overflow-hidden rounded-r-[10px] border-y border-r border-zinc-700 bg-zinc-950 shadow-[4px_0_24px_rgba(0,0,0,0.5)]"
+      style={{
+        top: `calc(${stack} + (100dvh - ${stack}) / 2)`,
+      }}
     >
       <button
         type="button"
         onClick={onOpenPanel}
-        className="flex h-12 w-full shrink-0 items-center justify-center text-zinc-500 transition-colors hover:bg-black/[0.035] hover:text-zinc-900"
+        className="flex h-12 w-full shrink-0 items-center justify-center text-zinc-400 transition-colors hover:bg-zinc-900 hover:text-zinc-100"
         title="Blocs et structure"
         aria-label="Ouvrir le panneau blocs et structure"
       >
@@ -51,135 +64,6 @@ function EditorLeftDock({ leftPanelOpen, onOpenPanel }: { leftPanelOpen: boolean
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 6l6 6-6 6" />
         </svg>
       </button>
-    </div>
-  );
-}
-
-function PreviewChunk({
-  block,
-  selected,
-  onSelect,
-  onUpdate,
-  onRemove,
-}: {
-  block: ArticleBlock;
-  selected: boolean;
-  onSelect: () => void;
-  onUpdate: (u: ArticleBlock | ((current: ArticleBlock) => ArticleBlock)) => void;
-  onRemove: () => void;
-}) {
-  if (block.type === "image")
-    return (
-      <ImageBlockPreview block={block} selected={selected} onSelect={onSelect} onUpdate={onUpdate} onRemove={onRemove} />
-    );
-
-  return (
-    <TextPreviewChunk
-      block={block}
-      selected={selected}
-      onSelect={onSelect}
-      onUpdate={onUpdate}
-      onRemove={onRemove}
-    />
-  );
-}
-
-function TextPreviewChunk({
-  block,
-  selected,
-  onSelect,
-  onUpdate,
-  onRemove,
-}: {
-  block: Exclude<ArticleBlock, { type: "image" }>;
-  selected: boolean;
-  onSelect: () => void;
-  onUpdate: (u: ArticleBlock | ((current: ArticleBlock) => ArticleBlock)) => void;
-  onRemove: () => void;
-}) {
-  const html = useMemo(() => blockToHtml(block), [block]);
-  const ref = useRef<HTMLDivElement>(null);
-  const editable = block.type === "heading" || block.type === "paragraph" || block.type === "quote";
-
-  useLayoutEffect(() => {
-    const el = ref.current;
-    if (!el || !editable) return;
-    const focused = document.activeElement === el;
-    const innerHtml = el.innerHTML;
-    const equal = innerHtml === html;
-    const innerText = el.textContent ?? "";
-    const htmlText = html.replace(/<[^>]+>/g, "").trim();
-    const htmlLooksEmpty = htmlText.length === 0;
-    if (focused) return;
-    // Ne pas écraser avec un html obsolète (ex. focus ailleurs avant le blur) : onInput tient le state à jour
-    if (equal) return;
-    // Si le state contient un HTML "vide" mais que le DOM affiche encore du texte,
-    // considérer le DOM comme source de vérité et ne pas tout effacer visuellement.
-    if (!focused && htmlLooksEmpty && innerText.trim().length > 0) {
-      return;
-    }
-    el.innerHTML = html;
-  }, [html, editable, block.id, block.type]);
-
-  const ring = selected
-    ? "ring-2 ring-rose-500/40 ring-offset-2 ring-offset-[#fafafa]"
-    : "hover:ring-1 hover:ring-zinc-300/80";
-
-  if (!editable) {
-    return (
-      <div className={`relative rounded-sm transition-shadow ${ring}`}>
-        {selected ? <SelectedBlockDelete onRemove={onRemove} /> : null}
-        <div
-          role="presentation"
-          className="rounded-sm"
-          onMouseDown={(e) => {
-            e.preventDefault();
-            onSelect();
-          }}
-        >
-          <div dangerouslySetInnerHTML={{ __html: html }} />
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className={`relative rounded-sm transition-shadow ${ring}`}>
-      {selected ? <SelectedBlockDelete onRemove={onRemove} /> : null}
-      <div
-        className="rounded-sm"
-        onMouseDown={onSelect}
-      >
-        <div
-          ref={ref}
-          contentEditable
-          suppressContentEditableWarning
-          role="textbox"
-          tabIndex={0}
-          aria-multiline={block.type !== "heading"}
-          className="cursor-text outline-none focus:outline-none"
-          onInput={(e) => {
-            const el = e.currentTarget;
-            const htmlLive = el.innerHTML;
-            const textLive = el.textContent ?? "";
-            onUpdate((b) => {
-              if (b.type === "heading") return { ...b, text: textLive };
-              if (b.type === "paragraph" || b.type === "quote") return { ...b, html: htmlLive };
-              return b;
-            });
-          }}
-          onBlur={(e) => {
-            const el = e.currentTarget;
-            const htmlSnap = el.innerHTML;
-            const textTrim = el.textContent?.trim() ?? "";
-            onUpdate((b) => {
-              if (b.type === "heading") return { ...b, text: textTrim };
-              if (b.type === "paragraph" || b.type === "quote") return { ...b, html: htmlSnap };
-              return b;
-            });
-          }}
-        />
-      </div>
     </div>
   );
 }
@@ -194,20 +78,50 @@ export function VisualArticleEditor({
   blocks,
   onChange,
   preview,
-  inlineEdit,
   viewport,
+  articleSlug,
+  liveSurfaceEdit = false,
+  stackBelowSiteHeader = false,
 }: {
   blocks: ArticleBlock[];
   onChange: (next: ArticleBlock[] | ((prev: ArticleBlock[]) => ArticleBlock[])) => void;
   preview: VisualArticlePreviewProps;
-  inlineEdit: ArticleInlineEditProps;
   viewport: EditorViewportMode;
+  /** Slug courant de l’article : mêmes règles de mise en page que la page publique. */
+  articleSlug: string;
+  /** Édition inline sur le HTML 1:1 (ex. page publique ?edit=1). */
+  liveSurfaceEdit?: boolean;
+  /** Sous le `Header` du site (édition `?edit=1`) : décaler panneaux fixes. */
+  stackBelowSiteHeader?: boolean;
 }) {
   const [selectedId, setSelectedId] = useState<string | null>(() => blocks[0]?.id ?? null);
   const [widgetQuery, setWidgetQuery] = useState("");
   const [paletteTab, setPaletteTab] = useState<"widgets" | "layers">("widgets");
-  /** Replié par défaut pour maximiser l’aperçu (onglet sur le bord pour rouvrir). */
   const [leftPanelOpen, setLeftPanelOpen] = useState(false);
+
+  const magazineColumn = isMagazineColumnArticle(articleSlug);
+  const pairCarousel = !magazineColumn && isPairCarouselArticle(articleSlug);
+  const splitCarousel = !magazineColumn && isSplitCarouselArticle(articleSlug);
+  const splitCarouselSkipLeading =
+    !magazineColumn && splitCarousel ? splitCarouselSkipLeadingSplits(articleSlug) : 0;
+  const splitCarouselExcludeHeadingInCopy =
+    !magazineColumn && splitCarousel && splitCarouselExcludeHeadingSplits(articleSlug);
+
+  const tipTapDoc = useMemo(() => blocksToTipTap(blocks), [blocks]);
+  const bodyHtml = useMemo(
+    () =>
+      buildArticleSurfaceHtml(tipTapDoc as object, {
+        layoutVariant: magazineColumn ? "magazine-column" : "default",
+      }),
+    [tipTapDoc, magazineColumn],
+  );
+
+  const onLiveTipTapDocChange = useCallback(
+    (doc: JSONContent) => {
+      onChange(tipTapToBlocks(doc));
+    },
+    [onChange],
+  );
 
   const selectedResolved = useMemo(() => {
     if (selectedId != null && blocks.some((b) => b.id === selectedId)) return selectedId;
@@ -225,27 +139,17 @@ export function VisualArticleEditor({
     onChange((prev) => arrayMove(prev, oldIdx, newIdx));
   }
 
-  function applyBlockUpdate(id: string, u: ArticleBlock | ((current: ArticleBlock) => ArticleBlock)) {
-    onChange((prev) =>
-      prev.map((b) => {
-        if (b.id !== id) return b;
-        return typeof u === "function" ? (u as (c: ArticleBlock) => ArticleBlock)(b) : u;
-      }),
-    );
-  }
-
   function updateBlock(id: string, patch: ArticleBlock) {
-    applyBlockUpdate(id, patch);
+    onChange((prev) => prev.map((b) => (b.id !== id ? b : patch)));
   }
 
   function removeBlock(id: string) {
-    let fallback: ArticleBlock[] = [];
     onChange((prev) => {
       const next = prev.filter((b) => b.id !== id);
-      fallback = next.length ? next : [createBlock("paragraph")];
-      return fallback;
+      return next.length > 0 ? next : [createBlock("paragraph")];
     });
-    if (selectedId === id) setSelectedId(fallback[0]!.id);
+    /** `selectedResolved` rechoisit `blocks[0]` après rendu — évite `fallback[0]` stale / undefined. */
+    setSelectedId((sel) => (sel === id ? null : sel));
   }
 
   function addBlock(type: BlockKind) {
@@ -258,14 +162,23 @@ export function VisualArticleEditor({
 
   return (
     <div
-      className="relative bg-[#fafafa]"
-      style={{ minHeight: `calc(100dvh - ${EDITOR_BAR_TOP})` }}
+      className={
+        stackBelowSiteHeader
+          ? `relative bg-[#fafafa] [--editor-fixed-stack:calc(${SITE_HEADER_HEIGHT_MOBILE}+${EDITOR_BAR_TOP})] md:[--editor-fixed-stack:calc(${SITE_HEADER_HEIGHT_MD}+${EDITOR_BAR_TOP})] min-h-[calc(100dvh-5rem-3.75rem)] md:min-h-[calc(100dvh-6rem-3.75rem)]`
+          : "relative bg-[#fafafa] min-h-[calc(100dvh-3.75rem)]"
+      }
+      style={
+        stackBelowSiteHeader ? undefined : { ["--editor-fixed-stack" as string]: EDITOR_BAR_TOP }
+      }
     >
       <aside
-        className={`fixed bottom-0 left-0 z-30 flex w-[min(100vw-1rem,320px)] min-w-[min(280px,100vw-1rem)] max-w-[min(320px,100vw-0.5rem)] flex-col border-r border-stone-200 bg-white shadow-xl shadow-black/10 transition-transform duration-300 ease-out max-[768px]:min-w-0 ${
+        className={`fixed left-0 z-[55] flex w-[min(100vw-1rem,320px)] min-h-0 min-w-[min(280px,100vw-1rem)] max-w-[min(320px,100vw-0.5rem)] flex-col overflow-hidden border-r border-zinc-700 bg-zinc-950 shadow-xl shadow-black/40 transition-transform duration-300 ease-out max-[768px]:min-w-0 ${
           leftPanelOpen ? "translate-x-0 pointer-events-auto" : "-translate-x-full pointer-events-none"
         }`}
-        style={{ top: EDITOR_BAR_TOP }}
+        style={{
+          top: "var(--editor-fixed-stack)",
+          height: "calc(100dvh - var(--editor-fixed-stack))",
+        }}
         aria-hidden={!leftPanelOpen}
       >
         <EditorBlocksPanel
@@ -304,20 +217,18 @@ export function VisualArticleEditor({
           coverImageAlt={preview.coverImageAlt}
           coverObjectPosition={preview.coverObjectPosition}
           sourceUrl={preview.sourceUrl.trim() ? preview.sourceUrl : undefined}
-          inlineEdit={inlineEdit}
+          articleSurface={magazineColumn ? "magazine-column" : "default"}
         >
-          <div className="article-tiptap-html mt-12 space-y-6">
-            {blocks.map((b) => (
-              <PreviewChunk
-                key={b.id}
-                block={b}
-                selected={selectedResolved === b.id}
-                onSelect={() => setSelectedId(b.id)}
-                onUpdate={(u) => applyBlockUpdate(b.id, u)}
-                onRemove={() => removeBlock(b.id)}
-              />
-            ))}
-          </div>
+          <ArticleTiptapSurface
+            html={bodyHtml}
+            layoutVariant={magazineColumn ? "magazine-column" : "default"}
+            pairCarousel={pairCarousel}
+            splitCarousel={splitCarousel}
+            splitCarouselSkipLeading={splitCarouselSkipLeading}
+            splitCarouselExcludeHeadingInCopy={splitCarouselExcludeHeadingInCopy}
+            editMode={liveSurfaceEdit}
+            onLiveTipTapDocChange={liveSurfaceEdit ? onLiveTipTapDocChange : undefined}
+          />
         </ArticlePublicLayout>
       </div>
     </div>

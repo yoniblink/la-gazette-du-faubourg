@@ -153,7 +153,7 @@ export default async function AdminArticlesPage({ searchParams }: Props) {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <Link
-                      href={`/admin/articles/${a.id}/edit`}
+                      href={`/${category.slug}/${a.slug}?edit=1`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-xs text-stone-700 underline-offset-2 hover:underline"

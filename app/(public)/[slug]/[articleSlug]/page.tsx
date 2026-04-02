@@ -1,10 +1,16 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getCategoryBySlug } from "@/lib/data/categories";
-import { getPublishedArticleBySlugs } from "@/lib/data/articles";
+import { auth } from "@/auth";
+import { ArticleForm } from "@/components/admin/ArticleForm";
 import { ArticleBody } from "@/components/ArticleBody";
 import { ArticlePublicLayout } from "@/components/article/ArticlePublicLayout";
+import {
+  getArticleBySlugsForAdmin,
+  getPublishedArticleBySlugs,
+} from "@/lib/data/articles";
+import { getCategoryBySlug } from "@/lib/data/categories";
 import { site } from "@/lib/content/site";
+import { prisma } from "@/lib/prisma";
 import {
   isMagazineColumnArticle,
   isPairCarouselArticle,
@@ -13,7 +19,10 @@ import {
   splitCarouselSkipLeadingSplits,
 } from "@/lib/article-layout-variants";
 
-type Props = { params: Promise<{ slug: string; articleSlug: string }> };
+type Props = {
+  params: Promise<{ slug: string; articleSlug: string }>;
+  searchParams: Promise<{ edit?: string }>;
+};
 
 export const dynamicParams = true;
 export const revalidate = 60;
@@ -36,11 +45,40 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function RubriqueArticlePage({ params }: Props) {
+export default async function RubriqueArticlePage({ params, searchParams }: Props) {
   const { slug, articleSlug } = await params;
+  const { edit } = await searchParams;
   const rubrique = await getCategoryBySlug(slug);
+  if (!rubrique) notFound();
+
+  const session = await auth();
+  const wantsEdit = edit === "1" || edit === "true";
+  const isAdmin = Boolean(session?.user?.email);
+
+  if (wantsEdit && isAdmin) {
+    const [fullRow, categories] = await Promise.all([
+      getArticleBySlugsForAdmin(slug, articleSlug),
+      prisma.category.findMany({ orderBy: { sortOrder: "asc" } }),
+    ]);
+    if (!fullRow) notFound();
+    const { category: articleCategory, ...article } = fullRow;
+    const userEmail = session!.user!.email ?? "";
+    const articlesIndexHref = `/admin/articles?rubrique=${encodeURIComponent(articleCategory.slug)}`;
+    return (
+      <ArticleForm
+        key={article.id}
+        userEmail={userEmail}
+        article={article}
+        categories={categories}
+        articlesIndexHref={articlesIndexHref}
+        stayOnPageAfterSave
+        enableAutosave
+      />
+    );
+  }
+
   const article = await getPublishedArticleBySlugs(slug, articleSlug);
-  if (!rubrique || !article) notFound();
+  if (!article) notFound();
 
   const sourceUrl = article.sourceUrl?.trim();
   const magazineColumn = isMagazineColumnArticle(articleSlug);

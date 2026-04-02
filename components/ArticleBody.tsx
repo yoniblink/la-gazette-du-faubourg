@@ -1,12 +1,7 @@
-import { generateHTML } from "@tiptap/html";
-import type { JSONContent } from "@tiptap/core";
 import { ArticleTiptapSurface } from "@/components/article/ArticleTiptapSurface";
-import { applyMagazineColumnEnhancements } from "@/lib/article-html-magazine-column";
-import { applyElementorArticleLayout } from "@/lib/article-html-elementor-layout";
-import { getTiptapExtensions } from "@/lib/tiptap/extensions";
-import { resolveWpMediaInArticleHtml } from "@/lib/wp-article-media-urls";
+import { buildArticleSurfaceHtml, type ArticleSurfaceHtmlLayoutVariant } from "@/lib/article-surface-html";
 
-export type ArticleBodyLayoutVariant = "default" | "magazine-column";
+export type ArticleBodyLayoutVariant = ArticleSurfaceHtmlLayoutVariant;
 
 export function ArticleBody({
   content,
@@ -27,13 +22,7 @@ export function ArticleBody({
   /** Exclut les splits avec chapô h1–h3 du carrousel. */
   splitCarouselExcludeHeadingInCopy?: boolean;
 }) {
-  const raw = resolveWpMediaInArticleHtml(
-    generateHTML(content as JSONContent, getTiptapExtensions()),
-  );
-  const html =
-    layoutVariant === "magazine-column"
-      ? applyMagazineColumnEnhancements(raw)
-      : applyElementorArticleLayout(raw);
+  const html = buildArticleSurfaceHtml(content, { layoutVariant });
 
   return (
     <ArticleTiptapSurface

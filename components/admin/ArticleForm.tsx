@@ -1,6 +1,13 @@
 "use client";
 
-import { startTransition, useActionState, useEffect, useMemo, useRef, useState } from "react";
+import {
+  startTransition,
+  useActionState,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useFormStatus } from "react-dom";
 import Link from "next/link";
 import Image, { type ImageLoader } from "next/image";
@@ -47,6 +54,8 @@ function ArticleEditorTopBar({
   onUndo,
   onRedo,
   articlesIndexHref,
+  publicArticleHref,
+  belowSiteHeader,
 }: {
   userEmail: string;
   titlePreview: string;
@@ -61,33 +70,56 @@ function ArticleEditorTopBar({
   onUndo: () => void;
   onRedo: () => void;
   articlesIndexHref: string;
+  /** Lien vers la page publique sans ?edit= (aperçu final). */
+  publicArticleHref?: string;
+  /** Édition sur la page publique : se caler sous le `Header` fixe (z-50). */
+  belowSiteHeader?: boolean;
 }) {
   const { pending } = useFormStatus();
   const display = titlePreview.trim() || "Sans titre";
   return (
     <div
-      className="sticky top-0 z-50 border-b border-stone-200 bg-white px-2 py-2 shadow-sm sm:px-4"
+      className={`sticky border-b border-zinc-700/90 bg-zinc-950 px-2 py-2 shadow-[0_1px_0_0_rgba(255,255,255,0.05)] sm:px-4 ${
+        belowSiteHeader
+          ? "top-20 z-[60] md:top-24"
+          : "top-0 z-50"
+      }`}
       style={{ minHeight: EDITOR_BAR_TOP }}
     >
       <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-3">
         <div className="flex min-w-0 items-center gap-2 justify-self-start sm:gap-3">
           <Link
             href={articlesIndexHref}
-            className="shrink-0 text-[10px] font-medium uppercase tracking-wider text-stone-500 transition-colors hover:text-stone-900"
+            className="shrink-0 text-[10px] font-medium uppercase tracking-wider text-zinc-200 transition-colors hover:text-white"
           >
             ← Articles
           </Link>
-          <div className="min-w-0 border-l border-stone-200 pl-2 sm:pl-3">
-            <p className="truncate font-[family-name:var(--font-sans)] text-[9px] font-medium uppercase tracking-[0.14em] text-stone-500">
+          {publicArticleHref ? (
+            <Link
+              href={publicArticleHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="shrink-0 text-[10px] font-medium uppercase tracking-wider text-violet-300 transition-colors hover:text-violet-200"
+            >
+              Aperçu public
+            </Link>
+          ) : null}
+          <div className="min-w-0 border-l border-zinc-700 pl-2 sm:pl-3">
+            <p className="truncate font-[family-name:var(--font-sans)] text-[9px] font-medium uppercase tracking-[0.14em] text-zinc-400">
               {isEdit ? "Article" : "Nouvel article"}
             </p>
-            <div className="mt-0.5 flex min-w-0 items-baseline gap-2">
-              <p className="truncate font-[family-name:var(--font-serif)] text-sm font-light tracking-tight text-stone-900 sm:text-[15px]">
+            <div className="mt-0.5 flex min-w-0 flex-wrap items-baseline gap-2">
+              <span className="shrink-0 rounded border border-amber-400/45 bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] text-amber-100">
+                Édition
+              </span>
+              <p className="min-w-0 truncate font-[family-name:var(--font-serif)] text-sm font-normal tracking-tight text-zinc-50 sm:text-[15px]">
                 {display}
               </p>
               <span
-                className={`shrink-0 rounded px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider ${
-                  publishOn ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-900"
+                className={`shrink-0 rounded border px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider ${
+                  publishOn
+                    ? "border-emerald-400/40 bg-emerald-500/20 text-emerald-200"
+                    : "border-amber-400/45 bg-amber-500/20 text-amber-100"
                 }`}
               >
                 {publishOn ? "Publié" : "Brouillon"}
@@ -97,14 +129,14 @@ function ArticleEditorTopBar({
         </div>
 
         <div className="justify-self-center flex items-center gap-1 sm:gap-2">
-          <div className="flex items-center rounded-lg border border-stone-200 bg-stone-50 p-0.5">
+          <div className="flex items-center rounded-lg border border-zinc-700 bg-zinc-900 p-0.5">
             <button
               type="button"
               onClick={onUndo}
               disabled={!canUndo}
               title="Annuler — ⌘Z / Ctrl+Z"
               aria-label="Annuler la dernière modification du contenu"
-              className="rounded-md px-2 py-2 text-stone-500 transition-colors enabled:hover:bg-stone-200 enabled:hover:text-stone-900 disabled:cursor-not-allowed disabled:opacity-35"
+              className="rounded-md px-2 py-2 text-zinc-200 transition-colors enabled:hover:bg-zinc-800 enabled:hover:text-white disabled:cursor-not-allowed disabled:text-zinc-500"
             >
               <svg className="h-4 w-4 sm:h-[18px] sm:w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 15L4 9l5-6 M4 9h10.5a5.5 5.5 0 010 11H12" />
@@ -116,7 +148,7 @@ function ArticleEditorTopBar({
               disabled={!canRedo}
               title="Rétablir — ⇧⌘Z / Ctrl+Y"
               aria-label="Rétablir une modification annulée"
-              className="rounded-md px-2 py-2 text-stone-500 transition-colors enabled:hover:bg-stone-200 enabled:hover:text-stone-900 disabled:cursor-not-allowed disabled:opacity-35"
+              className="rounded-md px-2 py-2 text-zinc-200 transition-colors enabled:hover:bg-zinc-800 enabled:hover:text-white disabled:cursor-not-allowed disabled:text-zinc-500"
             >
               <svg className="h-4 w-4 sm:h-[18px] sm:w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 15l5-6-5-6 M20 9H9.5a5.5 5.5 0 000 11H12" />
@@ -127,20 +159,20 @@ function ArticleEditorTopBar({
       </div>
 
         <div className="flex min-w-0 shrink-0 items-center justify-end gap-1.5 sm:gap-2">
-          <span className="hidden max-w-[8.5rem] truncate text-[10px] text-stone-500 lg:inline" title={userEmail}>
+          <span className="hidden max-w-[8.5rem] truncate text-[10px] text-zinc-300 lg:inline" title={userEmail}>
             {userEmail}
           </span>
           <button
             type="button"
             onClick={() => signOut({ callbackUrl: "/admin/login" })}
-            className="hidden shrink-0 rounded-lg px-2 py-1.5 text-[10px] text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-900 sm:inline"
+            className="hidden shrink-0 rounded-lg px-2 py-1.5 text-[10px] text-zinc-200 transition-colors hover:bg-zinc-800 hover:text-white sm:inline"
           >
             Déconnexion
           </button>
           <button
             type="button"
             onClick={() => signOut({ callbackUrl: "/admin/login" })}
-            className="sm:hidden shrink-0 rounded-lg px-2 py-1.5 text-[10px] text-stone-500 hover:bg-stone-100 hover:text-stone-900"
+            className="sm:hidden shrink-0 rounded-lg px-2 py-1.5 text-[10px] text-zinc-200 hover:bg-zinc-800 hover:text-white"
             title="Déconnexion"
             aria-label="Déconnexion"
           >
@@ -156,8 +188,8 @@ function ArticleEditorTopBar({
             title="Réglages de l’article"
             className={`rounded-lg border p-2.5 transition-colors ${
               settingsOpen
-                ? "border-violet-300 bg-violet-50 text-violet-700"
-                : "border-stone-300 text-stone-500 hover:border-stone-400 hover:bg-stone-100 hover:text-stone-900"
+                ? "border-violet-400/55 bg-violet-500/15 text-violet-200"
+                : "border-zinc-500 text-zinc-200 hover:border-zinc-400 hover:bg-zinc-800 hover:text-white"
             }`}
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
@@ -172,7 +204,7 @@ function ArticleEditorTopBar({
           <button
             type="submit"
             disabled={pending}
-            className="rounded-lg bg-stone-900 px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-white shadow-sm transition-colors hover:bg-stone-800 disabled:opacity-50"
+            className="rounded-lg bg-zinc-100 px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-950 shadow-sm transition-colors hover:bg-white disabled:opacity-50"
           >
             {pending ? "…" : isEdit ? "Enregistrer" : "Créer"}
           </button>
@@ -188,6 +220,8 @@ export function ArticleForm({
   categories,
   defaultCategoryId,
   articlesIndexHref = "/admin/articles",
+  stayOnPageAfterSave = false,
+  enableAutosave = false,
 }: {
   userEmail: string;
   article?: Article;
@@ -196,11 +230,16 @@ export function ArticleForm({
   defaultCategoryId?: string;
   /** List view + redirects after save/delete context. */
   articlesIndexHref?: string;
+  /** Après enregistrement : rester sur la page (ex. édition sur l’URL canonique ?edit=1). */
+  stayOnPageAfterSave?: boolean;
+  /** Sauvegarde serveur différée après modification des champs (édition sur la page article). */
+  enableAutosave?: boolean;
 }) {
   const router = useRouter();
   const isEdit = Boolean(article);
   const action = isEdit ? updateArticle : createArticle;
   const [state, formAction] = useActionState(action, null as ArticleActionResult | null);
+  const saveIntentRef = useRef<"manual" | "auto">("manual");
 
   const initialBlocks = useMemo((): ArticleBlock[] => {
     if (article?.content && typeof article.content === "object") {
@@ -308,13 +347,79 @@ export function ArticleForm({
   useEffect(() => {
     if (!state) return;
     if (state.ok) {
-      toast.success(isEdit ? "Article enregistré." : "Article créé.");
-      router.push(articlesIndexHref);
+      if (saveIntentRef.current === "auto") {
+        if (stayOnPageAfterSave) {
+          toast.success("Enregistré", { duration: 1600 });
+        }
+      } else {
+        toast.success(isEdit ? "Article enregistré." : "Article créé.");
+        if (!stayOnPageAfterSave) {
+          router.push(articlesIndexHref);
+        }
+      }
       router.refresh();
     } else {
       toast.error(state.error);
     }
-  }, [state, isEdit, router, articlesIndexHref]);
+  }, [state, isEdit, router, articlesIndexHref, stayOnPageAfterSave]);
+
+  const autosaveSkipFirst = useRef(true);
+  useEffect(() => {
+    if (!enableAutosave || !isEdit || !article?.id) return;
+    if (autosaveSkipFirst.current) {
+      autosaveSkipFirst.current = false;
+      return;
+    }
+    const t = window.setTimeout(() => {
+      saveIntentRef.current = "auto";
+      const fd = new FormData();
+      fd.set("id", article.id);
+      fd.set("title", titleInp);
+      if (slugInp.trim()) fd.set("slug", slugInp);
+      if (kickerInp.trim()) fd.set("kicker", kickerInp);
+      fd.set("excerpt", excerptInp);
+      fd.set("coverImageUrl", coverImageUrl);
+      fd.set("coverImageAlt", coverAltInp);
+      fd.set("coverObjectPosition", `${coverFocusX}% ${coverFocusY}%`);
+      fd.set("categoryId", categoryId);
+      fd.set("authorName", authorInp);
+      if (seoTitleInp.trim()) fd.set("seoTitle", seoTitleInp);
+      if (seoDescriptionInp.trim()) fd.set("seoDescription", seoDescriptionInp);
+      if (sourceUrlInp.trim()) fd.set("sourceUrl", sourceUrlInp);
+      fd.set("layout", layoutInp);
+      fd.set("featuredSortOrder", String(featuredSortOrderInp));
+      if (publishOn) fd.set("publish", "on");
+      if (featuredOnHomeInp) fd.set("featuredOnHome", "on");
+      fd.set("content", JSON.stringify(contentTipTap ?? emptyTipTapDoc));
+      startTransition(() => {
+        formAction(fd);
+      });
+    }, 3200);
+    return () => window.clearTimeout(t);
+  }, [
+    enableAutosave,
+    isEdit,
+    article?.id,
+    titleInp,
+    slugInp,
+    kickerInp,
+    excerptInp,
+    coverImageUrl,
+    coverAltInp,
+    coverFocusX,
+    coverFocusY,
+    categoryId,
+    authorInp,
+    seoTitleInp,
+    seoDescriptionInp,
+    sourceUrlInp,
+    layoutInp,
+    featuredSortOrderInp,
+    publishOn,
+    featuredOnHomeInp,
+    contentTipTap,
+    formAction,
+  ]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -344,6 +449,7 @@ export function ArticleForm({
       id="article-editor-form"
       onSubmit={(e) => {
         e.preventDefault();
+        saveIntentRef.current = "manual";
         // Le panneau « Réglages » est démonté quand il est fermé : ne pas s’appuyer sur les inputs du DOM.
         const fd = new FormData();
         if (article?.id) fd.set("id", article.id);
@@ -368,7 +474,7 @@ export function ArticleForm({
           formAction(fd);
         });
       }}
-      className="relative pb-8"
+      className={`relative pb-8 ${stayOnPageAfterSave ? "pt-20 md:pt-24" : ""}`}
     >
 
       <ArticleEditorTopBar
@@ -385,6 +491,12 @@ export function ArticleForm({
         onUndo={undo}
         onRedo={redo}
         articlesIndexHref={articlesIndexHref}
+        belowSiteHeader={stayOnPageAfterSave}
+        publicArticleHref={
+          stayOnPageAfterSave && selectedCategory?.slug && (slugInp.trim() || slugify(titleInp))
+            ? `/${selectedCategory.slug}/${slugInp.trim() || slugify(titleInp)}`
+            : undefined
+        }
       />
 
       <div className="min-w-0">
@@ -393,15 +505,9 @@ export function ArticleForm({
           onChange={setBlocks}
           preview={editorPreview}
           viewport={editorViewport}
-          inlineEdit={{
-            onTitleChange: (t) => {
-              setTitleInp(t);
-              if (!slugManual) setSlugInp(slugify(t));
-            },
-            onKickerChange: setKickerInp,
-            onExcerptChange: setExcerptInp,
-            onRequestCoverSettings: () => setSettingsOpen(true),
-          }}
+          articleSlug={slugInp.trim() || slugify(titleInp)}
+          liveSurfaceEdit={stayOnPageAfterSave}
+          stackBelowSiteHeader={stayOnPageAfterSave}
         />
       </div>
 
@@ -415,19 +521,19 @@ export function ArticleForm({
           />
           <aside
             id="article-settings-panel"
-            className="relative z-10 flex h-full w-full max-w-md flex-col border-l border-zinc-200 bg-white shadow-2xl"
+            className="relative z-10 flex h-full w-full max-w-md flex-col border-l border-zinc-700 bg-zinc-950 shadow-2xl shadow-black/50"
             role="dialog"
             aria-modal="true"
             aria-labelledby="article-settings-heading"
           >
-            <div className="flex shrink-0 items-center justify-between border-b border-stone-200 px-5 py-4">
-              <h2 id="article-settings-heading" className="text-sm font-medium text-stone-900">
+            <div className="flex shrink-0 items-center justify-between border-b border-zinc-800 px-5 py-4">
+              <h2 id="article-settings-heading" className="text-sm font-medium text-zinc-100">
                 Réglages de l’article
               </h2>
               <button
                 type="button"
                 onClick={() => setSettingsOpen(false)}
-                className="rounded-lg p-2 text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-900"
+                className="rounded-lg p-2 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
                 aria-label="Fermer"
               >
                 <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -438,10 +544,10 @@ export function ArticleForm({
             <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
               <div className="space-y-8">
                 <section>
-                  <h3 className="text-[10px] font-medium uppercase tracking-[0.22em] text-stone-500">Métadonnées</h3>
+                  <h3 className="text-[10px] font-medium uppercase tracking-[0.22em] text-zinc-500">Métadonnées</h3>
                   <div className="mt-4 space-y-4">
                     <div>
-                      <label className="block text-[11px] font-medium uppercase tracking-wider text-stone-500">
+                      <label className="block text-[11px] font-medium uppercase tracking-wider text-zinc-400">
                         Titre
                       </label>
                       <input
@@ -452,11 +558,11 @@ export function ArticleForm({
                           setTitleInp(v);
                           if (!slugManual) setSlugInp(slugify(v));
                         }}
-                        className="mt-2 w-full rounded-lg border border-stone-200 bg-white px-3 py-2 font-[family-name:var(--font-serif)] text-base text-stone-900 focus:border-stone-400 focus:outline-none"
+                        className="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 font-[family-name:var(--font-serif)] text-base text-zinc-100 placeholder:text-zinc-500 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500/30"
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-medium uppercase tracking-wider text-stone-500">
+                      <label className="block text-[11px] font-medium uppercase tracking-wider text-zinc-400">
                         Slug
                       </label>
                       <input
@@ -465,21 +571,21 @@ export function ArticleForm({
                           setSlugManual(true);
                           setSlugInp(e.target.value);
                         }}
-                        className="mt-2 w-full rounded-lg border border-stone-200 bg-white px-3 py-2 font-mono text-sm focus:border-stone-400 focus:outline-none"
+                        className="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 font-mono text-sm text-zinc-100 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500/30"
                       />
-                      <p className="mt-1.5 text-[11px] text-stone-500">
+                      <p className="mt-1.5 text-[11px] text-zinc-500">
                         Généré depuis le titre. Ajustez pour une URL fixe.
                       </p>
                     </div>
                     <div>
-                      <label className="block text-[11px] font-medium uppercase tracking-wider text-stone-500">
+                      <label className="block text-[11px] font-medium uppercase tracking-wider text-zinc-400">
                         Rubrique
                       </label>
                       <select
                         required
                         value={categoryId}
                         onChange={(e) => setCategoryId(e.target.value)}
-                        className="mt-2 w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm"
+                        className="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100"
                       >
                         {categories.map((c) => (
                           <option key={c.id} value={c.id}>
@@ -489,27 +595,27 @@ export function ArticleForm({
                       </select>
                     </div>
                     <div>
-                      <label className="block text-[11px] font-medium uppercase tracking-wider text-stone-500">
+                      <label className="block text-[11px] font-medium uppercase tracking-wider text-zinc-400">
                         Kicker
                       </label>
                       <input
                         value={kickerInp}
                         onChange={(e) => setKickerInp(e.target.value)}
-                        className="mt-2 w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm"
+                        className="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100"
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-medium uppercase tracking-wider text-stone-500">
+                      <label className="block text-[11px] font-medium uppercase tracking-wider text-zinc-400">
                         Auteur
                       </label>
                       <input
                         value={authorInp}
                         onChange={(e) => setAuthorInp(e.target.value)}
-                        className="mt-2 w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm"
+                        className="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100"
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-medium uppercase tracking-wider text-stone-500">
+                      <label className="block text-[11px] font-medium uppercase tracking-wider text-zinc-400">
                         Chapô
                       </label>
                       <textarea
@@ -517,42 +623,43 @@ export function ArticleForm({
                         rows={4}
                         value={excerptInp}
                         onChange={(e) => setExcerptInp(e.target.value)}
-                        className="mt-2 w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm leading-relaxed"
+                        className="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm leading-relaxed text-zinc-100"
                       />
                     </div>
                   </div>
                 </section>
 
                 <section>
-                  <h3 className="text-[10px] font-medium uppercase tracking-[0.22em] text-stone-500">
+                  <h3 className="text-[10px] font-medium uppercase tracking-[0.22em] text-zinc-500">
                     Image de couverture
                   </h3>
                   <EditorImageUpload
                     className="mt-4"
                     label="Téléverser"
+                    variant="dark"
                     onUploaded={(url) => setCoverImageUrl(url)}
                   />
                   <div className="mt-4">
-                    <label className="text-[11px] font-medium uppercase tracking-wider text-stone-500">URL</label>
+                    <label className="text-[11px] font-medium uppercase tracking-wider text-zinc-400">URL</label>
                     <input
                       value={coverImageUrl}
                       onChange={(e) => setCoverImageUrl(e.target.value)}
-                      className="mt-2 w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm"
+                      className="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100"
                     />
-                    <p className="mt-1.5 text-[11px] text-stone-500">
+                    <p className="mt-1.5 text-[11px] text-zinc-500">
                       Laisser vide pour n’afficher que le corps (type page Elementor).
                     </p>
                   </div>
                   <div className="mt-4">
-                    <label className="text-[11px] font-medium uppercase tracking-wider text-stone-500">Alt</label>
+                    <label className="text-[11px] font-medium uppercase tracking-wider text-zinc-400">Alt</label>
                     <input
                       value={coverAltInp}
                       onChange={(e) => setCoverAltInp(e.target.value)}
-                      className="mt-2 w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm"
+                      className="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100"
                     />
                   </div>
-                  <p className="mt-4 text-[11px] font-medium uppercase tracking-wider text-stone-500">Cadrage (4∶3)</p>
-                  <p className="mt-1 text-xs text-stone-600">Cliquez-glissez sur l’aperçu pour le point focal.</p>
+                  <p className="mt-4 text-[11px] font-medium uppercase tracking-wider text-zinc-400">Cadrage (4∶3)</p>
+                  <p className="mt-1 text-xs text-zinc-500">Cliquez-glissez sur l’aperçu pour le point focal.</p>
                   <CoverCropPreview
                     coverImageUrl={coverImageUrl}
                     coverFocusX={coverFocusX}
@@ -563,49 +670,50 @@ export function ArticleForm({
                 </section>
 
                 <section>
-                  <h3 className="text-[10px] font-medium uppercase tracking-[0.22em] text-stone-500">SEO & affichage</h3>
+                  <h3 className="text-[10px] font-medium uppercase tracking-[0.22em] text-zinc-500">SEO & affichage</h3>
                   <div className="mt-4 space-y-4">
                     <div>
-                      <label className="block text-[11px] font-medium uppercase tracking-wider text-stone-500">
+                      <label className="block text-[11px] font-medium uppercase tracking-wider text-zinc-400">
                         Balise titre (SEO)
                       </label>
                       <input
                         value={seoTitleInp}
                         onChange={(e) => setSeoTitleInp(e.target.value)}
-                        className="mt-2 w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm"
+                        className="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100"
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-medium uppercase tracking-wider text-stone-500">
+                      <label className="block text-[11px] font-medium uppercase tracking-wider text-zinc-400">
                         Meta description
                       </label>
                       <textarea
                         rows={2}
                         value={seoDescriptionInp}
                         onChange={(e) => setSeoDescriptionInp(e.target.value)}
-                        className="mt-2 w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm"
+                        className="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100"
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-medium uppercase tracking-wider text-stone-500">
+                      <label className="block text-[11px] font-medium uppercase tracking-wider text-zinc-400">
                         URL source
                       </label>
                       <input
                         value={sourceUrlInp}
                         onChange={(e) => setSourceUrlInp(e.target.value)}
-                        className="mt-2 w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm"
+                        className="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100"
                       />
                     </div>
                     <fieldset>
-                      <legend className="text-[11px] font-medium uppercase tracking-wider text-stone-500">
+                      <legend className="text-[11px] font-medium uppercase tracking-wider text-zinc-400">
                         Carte d’accueil
                       </legend>
-                      <div className="mt-2 flex flex-col gap-2 text-sm">
+                      <div className="mt-2 flex flex-col gap-2 text-sm text-zinc-300">
                         <label className="flex items-center gap-2">
                           <input
                             type="radio"
                             checked={layoutInp === "standard"}
                             onChange={() => setLayoutInp("standard")}
+                            className="border-zinc-600 text-rose-500 focus:ring-rose-500/40"
                           />
                           Standard
                         </label>
@@ -614,46 +722,47 @@ export function ArticleForm({
                             type="radio"
                             checked={layoutInp === "lead"}
                             onChange={() => setLayoutInp("lead")}
+                            className="border-zinc-600 text-rose-500 focus:ring-rose-500/40"
                           />
                           Pleine largeur
                         </label>
                       </div>
                     </fieldset>
                     <div>
-                      <label className="block text-[11px] font-medium uppercase tracking-wider text-stone-500">
+                      <label className="block text-[11px] font-medium uppercase tracking-wider text-zinc-400">
                         Ordre à l’accueil
                       </label>
                       <input
                         type="number"
                         value={featuredSortOrderInp}
                         onChange={(e) => setFeaturedSortOrderInp(Number(e.target.value) || 0)}
-                        className="mt-2 w-32 rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm"
+                        className="mt-2 w-32 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100"
                       />
                     </div>
                     <div className="flex flex-col gap-3 pt-1">
-                      <label className="flex items-center gap-2 text-sm text-stone-700">
+                      <label className="flex items-center gap-2 text-sm text-zinc-300">
                         <input
                           type="checkbox"
                           value="on"
                           checked={publishOn}
                           onChange={(e) => setPublishOn(e.target.checked)}
-                          className="rounded border-stone-300"
+                          className="rounded border-zinc-600 bg-zinc-900 text-rose-500 focus:ring-rose-500/40"
                         />
                         Publié
                       </label>
-                      <label className="flex items-center gap-2 text-sm text-stone-700">
+                      <label className="flex items-center gap-2 text-sm text-zinc-300">
                         <input
                           type="checkbox"
                           value="on"
                           checked={featuredOnHomeInp}
                           onChange={(e) => setFeaturedOnHomeInp(e.target.checked)}
-                          className="rounded border-stone-300"
+                          className="rounded border-zinc-600 bg-zinc-900 text-rose-500 focus:ring-rose-500/40"
                         />
                         Afficher à l’accueil
                       </label>
                     </div>
                     {article ? (
-                      <div className="border-t border-stone-200 pt-6">
+                      <div className="border-t border-zinc-800 pt-6">
                         <DeleteArticleButton
                           id={article.id}
                           title={article.title}
@@ -665,10 +774,10 @@ export function ArticleForm({
                 </section>
               </div>
             </div>
-            <div className="shrink-0 border-t border-stone-200 px-5 py-4">
+            <div className="shrink-0 border-t border-zinc-800 bg-zinc-900/50 px-5 py-4">
               <Link
                 href={articlesIndexHref}
-                className="inline-flex w-full items-center justify-center rounded-lg border border-stone-200 px-4 py-2.5 text-[11px] font-medium uppercase tracking-wider text-stone-600 hover:bg-stone-50"
+                className="inline-flex w-full items-center justify-center rounded-lg border border-zinc-700 px-4 py-2.5 text-[11px] font-medium uppercase tracking-wider text-zinc-300 hover:bg-zinc-800"
               >
                 Quitter l’éditeur
               </Link>
@@ -710,7 +819,7 @@ function CoverCropPreview({
   return (
     <div
       ref={coverPreviewRef}
-      className={`relative mt-4 aspect-[4/3] w-full max-w-sm overflow-hidden rounded-xl bg-stone-200 ring-1 ring-stone-300/60 touch-none select-none ${
+      className={`relative mt-4 aspect-[4/3] w-full max-w-sm overflow-hidden rounded-xl bg-zinc-800 ring-1 ring-zinc-600/80 touch-none select-none ${
         coverImageUrl.trim() ? "cursor-grab active:cursor-grabbing" : ""
       }`}
       onMouseDown={(e) => {
@@ -757,7 +866,7 @@ function CoverCropPreview({
           sizes="(max-width: 640px) 384px, 384px"
         />
       ) : (
-        <div className="flex h-full min-h-[120px] items-center justify-center px-4 text-center text-xs text-stone-500">
+        <div className="flex h-full min-h-[120px] items-center justify-center px-4 text-center text-xs text-zinc-500">
           Ajoutez une image de couverture.
         </div>
       )}

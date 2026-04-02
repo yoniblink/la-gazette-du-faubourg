@@ -38,7 +38,7 @@ export function DeleteArticleButton({
       <AlertDialog.Trigger asChild>
         <button
           type="button"
-          className="rounded-lg border border-red-200 px-4 py-2 text-[11px] font-medium uppercase tracking-wider text-red-700 hover:bg-red-50"
+          className="rounded-lg border border-red-500/35 bg-red-950/35 px-4 py-2 text-[11px] font-medium uppercase tracking-wider text-red-300 hover:bg-red-950/55"
         >
           Supprimer l’article
         </button>

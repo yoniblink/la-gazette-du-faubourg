@@ -6,7 +6,7 @@ export function TipTapMenuBar({ editor }: { editor: Editor | null }) {
   if (!editor) return null;
 
   return (
-    <div className="flex flex-wrap gap-1 border-b border-stone-200 bg-stone-50 px-2 py-2">
+    <div className="flex flex-wrap gap-1 border-b border-zinc-700 bg-zinc-950 px-2 py-2">
       <BarButton
         onClick={() => editor.chain().focus().toggleBold().run()}
         active={editor.isActive("bold")}
@@ -72,7 +72,7 @@ function BarButton({
       type="button"
       onClick={onClick}
       className={`rounded px-2 py-1 text-[11px] font-medium uppercase tracking-wider ${
-        active ? "bg-stone-900 text-white" : "text-stone-600 hover:bg-stone-200/80"
+        active ? "bg-zinc-100 text-zinc-950" : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
       }`}
     >
       {label}

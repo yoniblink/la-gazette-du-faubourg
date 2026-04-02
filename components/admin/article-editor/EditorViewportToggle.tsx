@@ -19,7 +19,7 @@ export function EditorViewportToggle({
 }) {
   return (
     <div
-      className="flex items-center gap-0.5 rounded-md border border-white/10 bg-black/25 p-0.5"
+      className="flex items-center gap-0.5 rounded-md border border-zinc-600 bg-zinc-900 p-0.5"
       role="toolbar"
       aria-label="Largeur d’aperçu"
     >
@@ -31,10 +31,10 @@ export function EditorViewportToggle({
           aria-label={label}
           aria-pressed={value === key}
           onClick={() => onChange(key)}
-          className={`rounded px-2.5 py-2 text-zinc-400 transition-colors ${
+          className={`rounded px-2.5 py-2 transition-colors ${
             value === key
-              ? "bg-white/10 text-white ring-1 ring-white/35 shadow-sm"
-              : "hover:bg-white/[0.06] hover:text-zinc-200"
+              ? "bg-zinc-700 text-zinc-50 ring-1 ring-zinc-500/60 shadow-sm"
+              : "text-zinc-300 hover:bg-zinc-800 hover:text-white"
           }`}
         >
           {key === "desktop" ? (
