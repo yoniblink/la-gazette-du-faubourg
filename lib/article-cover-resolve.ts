@@ -7,9 +7,28 @@ export function firstImageFromTipTapDoc(doc: unknown): { src: string; alt: strin
     if (!n || typeof n !== "object") return null;
     const o = n as {
       type?: string;
-      attrs?: { src?: string; alt?: string };
+      attrs?: { src?: string; alt?: string; images?: unknown };
       content?: unknown[];
     };
+    if (o.type === "articleGallery") {
+      const fromAttrs = o.attrs?.images;
+      if (Array.isArray(fromAttrs)) {
+        for (const row of fromAttrs) {
+          if (!row || typeof row !== "object") continue;
+          const src = String((row as { src?: string }).src ?? "").trim();
+          if (!src) continue;
+          const alt = String((row as { alt?: string }).alt ?? "").trim();
+          return { src, alt };
+        }
+      }
+      if (Array.isArray(o.content)) {
+        for (const c of o.content) {
+          const hit = walk(c);
+          if (hit) return hit;
+        }
+      }
+      return null;
+    }
     if (o.type === "image" && typeof o.attrs?.src === "string") {
       const src = o.attrs.src.trim();
       if (!src) return null;

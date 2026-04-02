@@ -441,10 +441,65 @@ body {
   max-width: 100%;
   height: auto;
   border-radius: 4px;
+  transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.article-tiptap-html .article-tiptap-img-zoom-wrap {
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.article-tiptap-html .article-tiptap-img-zoom-wrap img {
+  margin-top: 0;
+  margin-bottom: 0;
+  border-radius: 0;
+}
+
+.article-tiptap-html .article-tiptap-img-zoom-wrap:hover img,
+.article-tiptap-html .article-tiptap-figure:hover .article-tiptap-img-zoom-wrap img {
+  transform: scale(1.06);
 }
 
 .article-tiptap-html .article-tiptap-figure {
   margin: 1.5rem 0;
+}
+
+/* Ancien HTML : figure > img sans wrapper (articles déjà en base) */
+.article-tiptap-html .article-tiptap-figure:not(:has(.article-tiptap-img-zoom-wrap)) {
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.article-tiptap-html .article-tiptap-figure:not(:has(.article-tiptap-img-zoom-wrap)) img {
+  margin-top: 0;
+  margin-bottom: 0;
+  display: block;
+}
+
+.article-tiptap-html .article-tiptap-figure:not(:has(.article-tiptap-img-zoom-wrap)):hover img {
+  transform: scale(1.06);
+}
+
+/* Galerie : images TipTap rendues directement dans la grille */
+.article-tiptap-html .article-tiptap-gallery > img:hover,
+.article-tiptap-html p img:hover,
+.article-tiptap-html > img:hover {
+  transform: scale(1.06);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .article-tiptap-html img {
+    transition: none;
+  }
+
+  .article-tiptap-html .article-tiptap-img-zoom-wrap:hover img,
+  .article-tiptap-html .article-tiptap-figure:hover .article-tiptap-img-zoom-wrap img,
+  .article-tiptap-html .article-tiptap-figure:not(:has(.article-tiptap-img-zoom-wrap)):hover img,
+  .article-tiptap-html .article-tiptap-gallery > img:hover,
+  .article-tiptap-html p img:hover,
+  .article-tiptap-html > img:hover {
+    transform: none;
+  }
 }
 
 .article-tiptap-html .article-tiptap-figcaption {

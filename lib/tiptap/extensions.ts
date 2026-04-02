@@ -2,6 +2,7 @@ import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import { ArticleImage } from "@/lib/tiptap/article-image";
+import { ArticleGallery } from "@/lib/tiptap/article-gallery";
 
 export function getTiptapExtensions(placeholder?: string) {
   return [
@@ -13,6 +14,7 @@ export function getTiptapExtensions(placeholder?: string) {
     ArticleImage.configure({
       HTMLAttributes: { class: "h-auto w-full max-w-full object-contain" },
     }),
+    ArticleGallery,
     ...(placeholder
       ? [
           Placeholder.configure({

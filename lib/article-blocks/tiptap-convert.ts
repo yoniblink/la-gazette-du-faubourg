@@ -114,6 +114,36 @@ export function tipTapToBlocks(doc: JSONContent | null | undefined): ArticleBloc
         });
         break;
       }
+      case "articleGallery": {
+        const images: { src: string; alt: string }[] = [];
+        const pushFromAttrs = (row: unknown) => {
+          if (!row || typeof row !== "object") return;
+          const src = String((row as { src?: string }).src ?? "").trim();
+          if (!src) return;
+          images.push({ src, alt: String((row as { alt?: string }).alt ?? "").trim() });
+        };
+        if (Array.isArray(n.content)) {
+          for (const c of n.content) {
+            if (!c || typeof c !== "object" || (c as { type?: string }).type !== "image") continue;
+            const attrs = ((c as { attrs?: Record<string, unknown> }).attrs ?? {}) as Record<
+              string,
+              unknown
+            >;
+            const src = String(attrs.src ?? "").trim();
+            if (src) images.push({ src, alt: String(attrs.alt ?? "").trim() });
+          }
+        }
+        const attrImgs = n.attrs?.images;
+        if (images.length === 0 && Array.isArray(attrImgs)) {
+          for (const row of attrImgs) pushFromAttrs(row);
+        }
+        if (images.length === 0) {
+          out.push({ id: blockId(), type: "paragraph", html: "" });
+        } else {
+          out.push({ id: blockId(), type: "gallery", images });
+        }
+        break;
+      }
       case "bulletList":
       case "orderedList": {
         const lines = listItemsToText(n);

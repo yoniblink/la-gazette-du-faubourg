@@ -56,27 +56,30 @@ export const ArticleImage = Image.extend({
         : align === "right"
           ? "1.25rem 0 1.25rem auto"
           : "1.25rem auto";
-    const style = `max-width:${width}%;width:100%;height:auto;display:block;margin:${margin};border-radius:4px;`;
+    const wrapStyle = `overflow:hidden;border-radius:4px;max-width:${width}%;width:100%;margin:${margin}`;
+    const imgStyle = `max-width:100%;width:100%;height:auto;display:block;margin:0`;
 
     const img = [
       "img",
       mergeAttributes(HTMLAttributes, {
-        style,
+        style: imgStyle,
         "data-align": align,
         "data-width": String(width),
         ...(caption ? { "data-caption": caption } : {}),
       }),
     ] as const;
 
+    const zoomWrap = ["div", { class: "article-tiptap-img-zoom-wrap", style: wrapStyle }, img] as const;
+
     if (caption) {
       return [
         "figure",
         { class: "article-tiptap-figure" },
-        img,
+        zoomWrap,
         ["figcaption", { class: "article-tiptap-figcaption" }, caption],
       ] as const;
     }
 
-    return img;
+    return zoomWrap;
   },
 });
