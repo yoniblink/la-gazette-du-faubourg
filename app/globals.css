@@ -28,6 +28,10 @@
   font-family: "Garamond Italic", Garamond, ui-serif, Georgia, serif;
 }
 
+.font-garamond {
+  font-family: "Garamond", ui-serif, Georgia, serif;
+}
+
 /* Roboto — extrait du HTML Elementor (100–400 statiques + 500 woff2 + 600–900 variables v2). */
 @font-face {
   font-family: "Roboto";

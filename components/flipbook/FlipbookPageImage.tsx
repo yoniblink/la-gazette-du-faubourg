@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { memo, useEffect, useRef, useState } from "react";
-import { Lightbox } from "@/components/ui/Lightbox";
 
 export type FlipbookPageImageProps = {
   src: string;
@@ -35,7 +34,6 @@ export const FlipbookPageImage = memo(function FlipbookPageImage({
   onLoadComplete,
 }: FlipbookPageImageProps) {
   const [visible, setVisible] = useState(false);
-  const [zoomOpen, setZoomOpen] = useState(false);
   const onLoadCompleteRef = useRef(onLoadComplete);
 
   useEffect(() => {
@@ -56,17 +54,7 @@ export const FlipbookPageImage = memo(function FlipbookPageImage({
           aria-hidden
         />
       ) : null}
-      <button
-        type="button"
-        className="block h-full w-full"
-        data-zoom-handled="true"
-        aria-label={alt?.trim() ? `Agrandir : ${alt}` : "Agrandir l’image"}
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setZoomOpen(true);
-        }}
-      >
+      <div className="block h-full w-full" data-zoom-handled="true">
         <Image
           src={src}
           alt={alt}
@@ -76,10 +64,10 @@ export const FlipbookPageImage = memo(function FlipbookPageImage({
           quality={100}
           unoptimized
           priority={isPriority}
-          data-zoomable="true"
+          data-no-zoom="true"
           {...(loadingProp !== undefined ? { loading: loadingProp } : {})}
           draggable={false}
-          className={`h-full w-full select-none object-contain transition-opacity duration-500 ease-out motion-reduce:transition-none cursor-zoom-in ${
+          className={`h-full w-full select-none object-contain transition-opacity duration-500 ease-out motion-reduce:transition-none cursor-default ${
             visible ? "opacity-100" : "opacity-0"
           }`}
           onLoad={() => {
@@ -91,8 +79,7 @@ export const FlipbookPageImage = memo(function FlipbookPageImage({
             onLoadCompleteRef.current?.(index);
           }}
         />
-      </button>
-      <Lightbox open={zoomOpen} src={src} alt={alt} onClose={() => setZoomOpen(false)} />
+      </div>
     </div>
   );
 }, areFlipbookPageImagePropsEqual);

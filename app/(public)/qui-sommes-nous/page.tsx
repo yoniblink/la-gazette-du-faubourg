@@ -54,19 +54,21 @@ export default function QuiSommesNousPage() {
         <div className="space-y-14 md:col-span-5 md:col-start-8 md:justify-self-center md:max-w-[520px]">
           {members.map((member) => (
             <article key={member.name}>
-              <h1 className="font-[family-name:'Garamond Italic'] text-[clamp(1.4rem,2.2vw,2rem)] font-light leading-[1.2] text-[#0a0a0a]">
+              <h1
+                className="font-garamond-italic text-[clamp(1.4rem,2.2vw,2rem)] font-light leading-[1.2] text-[#0a0a0a]"
+              >
                 {member.name}
               </h1>
-              <p className="mt-2 font-[family-name:'Garamond'] text-[clamp(1.1rem,1.6vw,1.35rem)] leading-[1.3] text-[#111]">
+              <p className="mt-2 font-garamond text-[clamp(1.1rem,1.6vw,1.35rem)] leading-[1.3] text-[#111]">
                 {member.role}
               </p>
               {member.extra ? (
-                <p className="mt-1 max-w-[40ch] font-[family-name:'Garamond'] text-[clamp(1.05rem,1.45vw,1.25rem)] leading-[1.35] text-[#111]">
+                <p className="mt-1 max-w-[40ch] font-garamond text-[clamp(1.05rem,1.45vw,1.25rem)] leading-[1.35] text-[#111]">
                   {member.extra}
                 </p>
               ) : null}
               {member.email ? (
-                <p className="mt-2 font-[family-name:'Garamond'] text-[1rem] font-semibold text-[#0a0a0a]">
+                <p className="mt-2 font-garamond text-[1rem] font-semibold text-[#0a0a0a]">
                   {member.email}
                 </p>
               ) : null}
