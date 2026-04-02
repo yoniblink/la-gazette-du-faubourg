@@ -621,9 +621,11 @@ body {
   box-sizing: border-box;
 }
 
+/* Bande splits = 60 % (viewport seul) ; flèches hors colonne, sur toute la largeur article — comme pair-carousel. */
 .article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-split-carousel {
-  max-width: 60%;
-  margin-inline: auto;
+  width: 100%;
+  max-width: 100%;
+  margin-inline: 0;
   box-sizing: border-box;
 }
 
@@ -892,19 +894,22 @@ body {
 .article-tiptap-split-carousel {
   position: relative;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: nowrap;
   align-items: center;
+  justify-content: center;
+  gap: clamp(8px, 1.5vw, 16px);
   width: 100%;
   max-width: 100%;
   min-width: 0;
   margin: 30px 0;
   box-sizing: border-box;
+  padding-inline: 0;
 }
 
 .article-tiptap-split-carousel__btn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
+  position: relative;
+  flex: 0 0 auto;
   z-index: 2;
   display: flex;
   align-items: center;
@@ -917,14 +922,15 @@ body {
   cursor: pointer;
   line-height: 0;
   transition: color 0.15s ease, opacity 0.15s ease;
+  align-self: center;
 }
 
-.article-tiptap-split-carousel__btn--prev {
-  left: 0;
-}
-
+.article-tiptap-split-carousel__btn--prev,
 .article-tiptap-split-carousel__btn--next {
-  right: 0;
+  top: auto;
+  left: auto;
+  right: auto;
+  transform: none;
 }
 
 .article-tiptap-split-carousel__btn:hover:not(:disabled) {
@@ -941,16 +947,19 @@ body {
 }
 
 .article-tiptap-split-carousel__viewport {
-  width: 100%;
-  max-width: 100%;
+  /* Même principe que pair-carousel : 60 % pour 3 montres nets, flèches dans les ~20 % latéraux. */
+  flex: 0 0 60%;
+  width: 60%;
+  max-width: 60%;
   min-width: 0;
-  margin-inline: auto;
-  padding-inline: 2rem;
+  margin-inline: 0;
+  padding-inline: 0;
   box-sizing: border-box;
   overflow-x: auto;
   overflow-y: hidden;
   scroll-snap-type: x mandatory;
-  scroll-padding-inline: 2px;
+  scroll-behavior: smooth;
+  scroll-padding-inline: 0;
   scrollbar-width: none;
   -ms-overflow-style: none;
   container-type: inline-size;
@@ -962,6 +971,8 @@ body {
 }
 
 .article-tiptap-split-carousel__track {
+  /* 3 colonnes : largeur pilotée par 100cqi (viewport = container-query). */
+  --carousel-slide-count: 3;
   --carousel-gap: clamp(16px, 2vw, 24px);
   display: flex;
   flex-direction: row;
@@ -972,14 +983,14 @@ body {
   padding-block: 4px;
 }
 
-/*
- * Largeur des slides : --carousel-slide-w (js) si carrousel présent ; layout serveur sans carrousel désormais.
- * / 3 colonnes) pour éviter qu’une 4e montre ne dépasse à cause des arrondis cqi.
- */
+/* Exactement 3 montres visibles : cqi = content box du viewport (hors padding-inline). */
 .article-tiptap-split-carousel .article-tiptap-split--carousel-slide {
-  flex: 0 0 var(--carousel-slide-w, calc((100cqi - 2 * var(--carousel-gap)) / 3));
-  width: var(--carousel-slide-w, auto);
-  max-width: var(--carousel-slide-w, calc((100cqi - 2 * var(--carousel-gap)) / 3));
+  --carousel-slide-w: calc(
+    (100cqi - (var(--carousel-slide-count) - 1) * var(--carousel-gap)) / var(--carousel-slide-count)
+  );
+  flex: 0 0 var(--carousel-slide-w);
+  width: var(--carousel-slide-w);
+  max-width: var(--carousel-slide-w);
   min-width: 0;
   overflow-x: hidden;
   scroll-snap-align: start;
@@ -996,7 +1007,9 @@ body {
   justify-content: flex-start;
   gap: 10px !important;
   margin: 0 !important;
-  width: auto;
+  /* Ne pas utiliser width: 100% ici : ça écrase var(--carousel-slide-w) et casse le flex (4e slide entrevue ~quelques px). */
+  width: var(--carousel-slide-w);
+  max-width: var(--carousel-slide-w);
   min-width: 0;
 }
 
@@ -1009,6 +1022,16 @@ body {
   flex: none !important;
   max-width: 100% !important;
   width: 100%;
+}
+
+.article-tiptap-split-carousel .article-tiptap-split--carousel-slide .article-tiptap-split__media {
+  overflow: hidden;
+}
+
+.article-tiptap-split-carousel .article-tiptap-split--carousel-slide .article-tiptap-split__media img {
+  display: block;
+  max-width: 100%;
+  height: auto;
 }
 
 .article-tiptap-split-carousel .article-tiptap-split--carousel-slide .article-tiptap-split__copy {
@@ -1024,6 +1047,19 @@ body {
   font-style: italic;
   font-size: 0.95em;
   color: #4a4a4a;
+}
+
+@media (max-width: 767px) {
+  .article-tiptap-split-carousel {
+    gap: clamp(6px, 2vw, 12px);
+  }
+
+  .article-tiptap-split-carousel__viewport {
+    flex: 1 1 60%;
+    width: 60%;
+    max-width: min(60%, calc(100% - 104px));
+    min-width: 0;
+  }
 }
 
 .article-tiptap-html > :is(h1, h2, h3):first-child {

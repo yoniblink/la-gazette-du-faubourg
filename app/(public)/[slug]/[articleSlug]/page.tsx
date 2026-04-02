@@ -5,7 +5,13 @@ import { getPublishedArticleBySlugs } from "@/lib/data/articles";
 import { ArticleBody } from "@/components/ArticleBody";
 import { ArticlePublicLayout } from "@/components/article/ArticlePublicLayout";
 import { site } from "@/lib/content/site";
-import { isMagazineColumnArticle, isPairCarouselArticle } from "@/lib/article-layout-variants";
+import {
+  isMagazineColumnArticle,
+  isPairCarouselArticle,
+  isSplitCarouselArticle,
+  splitCarouselExcludeHeadingSplits,
+  splitCarouselSkipLeadingSplits,
+} from "@/lib/article-layout-variants";
 
 type Props = { params: Promise<{ slug: string; articleSlug: string }> };
 
@@ -39,6 +45,7 @@ export default async function RubriqueArticlePage({ params }: Props) {
   const sourceUrl = article.sourceUrl?.trim();
   const magazineColumn = isMagazineColumnArticle(articleSlug);
   const pairCarousel = isPairCarouselArticle(articleSlug);
+  const splitCarousel = isSplitCarouselArticle(articleSlug);
 
   return (
     <ArticlePublicLayout
@@ -59,6 +66,13 @@ export default async function RubriqueArticlePage({ params }: Props) {
         content={article.content as object}
         layoutVariant={magazineColumn ? "magazine-column" : "default"}
         pairCarousel={!magazineColumn && pairCarousel}
+        splitCarousel={!magazineColumn && splitCarousel}
+        splitCarouselSkipLeading={
+          !magazineColumn && splitCarousel ? splitCarouselSkipLeadingSplits(articleSlug) : 0
+        }
+        splitCarouselExcludeHeadingInCopy={
+          !magazineColumn && splitCarousel && splitCarouselExcludeHeadingSplits(articleSlug)
+        }
       />
     </ArticlePublicLayout>
   );
