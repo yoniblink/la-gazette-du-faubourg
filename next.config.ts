@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["sharp", "unzipper"],
+  turbopack: {
+    root: __dirname,
+  },
   async redirects() {
     return [
       {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Image from "next/image";
 
 export type LightboxProps = {
   open: boolean;
@@ -47,12 +48,15 @@ export function Lightbox({ open, src, alt, onClose }: LightboxProps) {
       >
         Fermer
       </button>
-      <img
+      <Image
         src={src}
         alt={alt ?? ""}
+        width={2400}
+        height={1600}
         className="max-h-[92vh] w-auto max-w-[92vw] select-none object-contain"
         onClick={(e) => e.stopPropagation()}
         draggable={false}
+        unoptimized
       />
     </div>
   );

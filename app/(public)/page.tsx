@@ -1,9 +1,4 @@
-import { Hero } from "@/components/sections/Hero";
-import { HomeVideo } from "@/components/sections/HomeVideo";
-import { Featured } from "@/components/sections/Featured";
-import { InstagramStrip } from "@/components/sections/InstagramStrip";
-import { HomeFlipbook } from "@/components/sections/HomeFlipbook";
-import { NewsletterSection } from "@/components/sections/NewsletterSection";
+import { Featured, Hero, HomeFlipbook, HomeVideo, InstagramStrip, NewsletterSection } from "@/modules/public/ui";
 import { featuredArticles } from "@/lib/content/featured";
 import { getFeaturedArticlesForHome } from "@/lib/data/articles";
 import { hasDatabaseUrl } from "@/lib/prisma";

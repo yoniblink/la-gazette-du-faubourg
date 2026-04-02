@@ -34,22 +34,18 @@ export type ArticlePublicLayoutProps = {
 /**
  * Même structure que la page publique article — utilisé par le site et l’aperçu éditeur.
  */
-export function ArticlePublicLayout({
-  categorySlug,
-  categoryTitle,
-  title,
-  kicker: _kicker,
-  excerpt: _excerpt,
-  publishedAt: _publishedAt,
-  authorName: _authorName,
-  coverImageUrl,
-  coverImageAlt,
-  coverObjectPosition,
-  sourceUrl: _sourceUrl,
-  children,
-  articleSurface = "default",
-  inlineEdit,
-}: ArticlePublicLayoutProps) {
+export function ArticlePublicLayout(props: ArticlePublicLayoutProps) {
+  const {
+    categorySlug,
+    categoryTitle,
+    title,
+    coverImageUrl,
+    coverImageAlt,
+    coverObjectPosition,
+    children,
+    articleSurface = "default",
+    inlineEdit,
+  } = props;
   const showCover = coverImageUrl.trim().length > 0;
   /** Page publique : pas de grande image de couverture (le corps contient déjà les visuels). */
   const showCoverBlock = Boolean(inlineEdit);

@@ -3,7 +3,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import type { HTMLMotionProps } from "framer-motion";
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 
 type Props = HTMLMotionProps<"div">;
 
@@ -18,29 +18,24 @@ export function MotionDiv({
   ...rest
 }: Props) {
   const prefersReduced = useReducedMotion();
-  const [hydrated, setHydrated] = useState(false);
-  useEffect(() => {
-    setHydrated(true);
-  }, []);
-
-  const reduce = hydrated && prefersReduced;
   const nodes = children as ReactNode;
 
-  if (reduce) {
-    return <div {...(rest as React.ComponentPropsWithoutRef<"div">)}>{nodes}</div>;
-  }
+  const reducedTransition = useMemo(() => {
+    if (!prefersReduced) return undefined;
+    return { duration: 0 } as const;
+  }, [prefersReduced]);
 
   return (
     <motion.div
-      initial={initial}
-      animate={animate}
-      whileInView={whileInView}
-      variants={variants}
-      transition={transition}
-      viewport={viewport}
+      initial={prefersReduced ? false : initial}
+      animate={prefersReduced ? undefined : animate}
+      whileInView={prefersReduced ? undefined : whileInView}
+      variants={prefersReduced ? undefined : variants}
+      transition={prefersReduced ? reducedTransition : transition}
+      viewport={prefersReduced ? undefined : viewport}
       {...rest}
     >
-      {children}
+      {nodes}
     </motion.div>
   );
 }

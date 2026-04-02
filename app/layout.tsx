@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Roboto_Slab } from "next/font/google";
 import "./globals.css";
-import { Providers } from "@/components/providers";
+import { Providers } from "@/modules/shared/providers/Providers";
 import { site } from "@/lib/content/site";
 
 /** Roboto Slab : pas embarqué dans le HTML Elementor, chargement Google comme avant. */
@@ -66,6 +66,7 @@ export default function RootLayout({
     <html
       lang="fr"
       className={`${serif.variable} h-full scroll-smooth scroll-pt-20 antialiased md:scroll-pt-24`}
+      data-scroll-behavior="smooth"
     >
       <body className="min-h-full bg-[#fafafa] text-[#0a0a0a]">
         <Providers>{children}</Providers>

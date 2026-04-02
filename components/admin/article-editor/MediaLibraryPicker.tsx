@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import type { MediaCardItem } from "@/components/admin/MediaCard";
 
 function displayUrl(url: string): string {
@@ -22,8 +24,6 @@ export function MediaLibraryPicker({
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    setError(null);
-    setItems(null);
     const res = await fetch("/api/admin/media", { credentials: "same-origin" });
     const data = (await res.json()) as { items?: MediaCardItem[]; error?: string };
     if (!res.ok) {
@@ -36,7 +36,9 @@ export function MediaLibraryPicker({
 
   useEffect(() => {
     if (!open) return;
-    void load();
+    queueMicrotask(() => {
+      void load();
+    });
   }, [open, load]);
 
   useEffect(() => {
@@ -89,9 +91,12 @@ export function MediaLibraryPicker({
               <p className="text-sm text-stone-600">Aucun média pour le moment.</p>
               <p className="mt-2 text-xs text-stone-500">
                 Téléversez des images depuis{" "}
-                <a href="/admin/media" className="font-medium text-rose-700 underline-offset-2 hover:underline">
+                <Link
+                  href="/admin/media"
+                  className="font-medium text-rose-700 underline-offset-2 hover:underline"
+                >
                   Administration → Médias
-                </a>
+                </Link>
                 .
               </p>
             </div>
@@ -108,12 +113,13 @@ export function MediaLibraryPicker({
                     className="group w-full overflow-hidden rounded-xl border border-stone-200 bg-stone-50 text-left shadow-sm transition-[border-color,box-shadow] hover:border-rose-300 hover:shadow-md"
                   >
                     <div className="relative aspect-square bg-stone-100">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
+                      <Image
                         src={displayUrl(m.url)}
                         alt={m.alt ?? m.filename}
-                        className="h-full w-full object-cover"
-                        loading="lazy"
+                        fill
+                        sizes="(max-width: 768px) 50vw, 25vw"
+                        className="object-cover"
+                        unoptimized
                       />
                     </div>
                     <p className="truncate px-2 py-2 font-mono text-[9px] text-stone-500" title={m.filename}>
@@ -126,14 +132,14 @@ export function MediaLibraryPicker({
           )}
         </div>
         <div className="shrink-0 border-t border-stone-100 px-4 py-3 text-center sm:px-5">
-          <a
+          <Link
             href="/admin/media"
             target="_blank"
             rel="noreferrer"
             className="text-[11px] font-medium uppercase tracking-wider text-stone-500 hover:text-stone-800"
           >
             Ouvrir la page Médias dans un nouvel onglet
-          </a>
+          </Link>
         </div>
       </div>
     </div>

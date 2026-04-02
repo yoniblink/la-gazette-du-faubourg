@@ -5,7 +5,6 @@ import {
   createContext,
   useContext,
   useEffect,
-  useLayoutEffect,
   useRef,
   useState,
   type ReactNode,
@@ -58,10 +57,14 @@ export function NavigationPendingProvider({ children }: { children: ReactNode })
   const pathname = usePathname();
   const [pending, setPending] = useState(false);
   const pathnameRef = useRef(pathname);
-  pathnameRef.current = pathname;
+  useEffect(() => {
+    pathnameRef.current = pathname;
+  }, [pathname]);
 
-  useLayoutEffect(() => {
-    setPending(false);
+  useEffect(() => {
+    queueMicrotask(() => {
+      setPending(false);
+    });
   }, [pathname]);
 
   useEffect(() => {

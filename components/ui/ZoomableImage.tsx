@@ -18,6 +18,7 @@ export function ZoomableImage({
   const [open, setOpen] = useState(false);
 
   const close = useCallback(() => setOpen(false), []);
+  const isFill = "fill" in rest && rest.fill === true;
 
   const srcString =
     typeof src === "string"
@@ -30,7 +31,7 @@ export function ZoomableImage({
     <>
       <button
         type="button"
-        className="contents"
+        className={isFill ? "absolute inset-0" : "contents"}
         data-zoom-handled="true"
         onClick={(e) => {
           if (stopPropagation) e.stopPropagation();

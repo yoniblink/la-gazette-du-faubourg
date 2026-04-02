@@ -1,6 +1,4 @@
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
-import { IntroLoaderGate } from "@/components/intro/IntroLoaderGate";
+import { Footer, Header, IntroLoaderGate } from "@/modules/public/ui";
 import { getCategoriesOrdered } from "@/lib/data/categories";
 
 export const dynamic = "force-dynamic";

@@ -3,6 +3,7 @@
 import { startTransition, useActionState, useEffect, useMemo, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import Link from "next/link";
+import Image, { type ImageLoader } from "next/image";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { toast } from "sonner";
@@ -206,7 +207,7 @@ export function ArticleForm({
       return tipTapToBlocks(article.content as JSONContent);
     }
     return emptyBlocks();
-  }, [article?.id]);
+  }, [article?.content]);
 
   const { blocks, setBlocks, undo, redo, canUndo, canRedo } = useArticleBlocksHistory(initialBlocks);
 
@@ -692,6 +693,7 @@ function CoverCropPreview({
   setCoverFocusX: (n: number) => void;
   setCoverFocusY: (n: number) => void;
 }) {
+  const passthroughLoader: ImageLoader = ({ src }) => src;
   const coverPreviewRef = useRef<HTMLDivElement>(null);
 
   function applyCropFromClient(clientX: number, clientY: number) {
@@ -743,15 +745,16 @@ function CoverCropPreview({
       }}
     >
       {coverImageUrl.trim() ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <Image
+          loader={passthroughLoader}
+          unoptimized
           src={coverImageUrl.trim()}
           alt=""
-          className="pointer-events-none h-full w-full object-cover"
+          fill
+          className="pointer-events-none object-cover"
           draggable={false}
           style={{ objectPosition: `${coverFocusX}% ${coverFocusY}%` }}
-          loading="lazy"
-          decoding="async"
+          sizes="(max-width: 640px) 384px, 384px"
         />
       ) : (
         <div className="flex h-full min-h-[120px] items-center justify-center px-4 text-center text-xs text-stone-500">

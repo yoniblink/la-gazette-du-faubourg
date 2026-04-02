@@ -29,20 +29,33 @@ export function HomeFlipbook({
 
   useEffect(() => {
     if (!needPoll) return;
-    const t = setInterval(async () => {
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const tick = async () => {
       try {
         const r = await fetch("/api/flipbook/manifest", { cache: "no-store" });
         const j = (await r.json()) as ManifestResponse;
+        if (cancelled) return;
         if (j.manifest?.pageUrls?.length) {
           setManifest(j.manifest);
-        } else {
-          setPollN((n) => n + 1);
+          return;
         }
+        setPollN((n) => n + 1);
       } catch {
+        if (cancelled) return;
         setPollN((n) => n + 1);
       }
-    }, 2000);
-    return () => clearInterval(t);
+
+      if (cancelled) return;
+      timer = setTimeout(tick, 2000);
+    };
+
+    timer = setTimeout(tick, 2000);
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
   }, [needPoll]);
 
   const phase =

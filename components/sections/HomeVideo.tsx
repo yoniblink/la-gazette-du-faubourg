@@ -1,7 +1,7 @@
 "use client";
 
 import { useReducedMotion } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { site } from "@/lib/content/site";
 
 function pickStr(v: unknown): string {
@@ -19,11 +19,9 @@ function hasHomeVideo() {
 export function HomeVideo() {
   const reduceMotion = useReducedMotion();
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [canAutoplay, setCanAutoplay] = useState(true);
   const v = site.homeVideo;
 
   useEffect(() => {
-    setCanAutoplay(!reduceMotion);
     if (reduceMotion && videoRef.current) {
       videoRef.current.pause();
     }
@@ -63,7 +61,7 @@ export function HomeVideo() {
                 playsInline
                 muted
                 loop
-                autoPlay={canAutoplay}
+                autoPlay={!reduceMotion}
               />
             )}
           </div>

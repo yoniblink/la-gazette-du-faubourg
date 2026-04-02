@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
+import Image, { type ImageLoader } from "next/image";
 import type { ArticleBlockImage } from "@/lib/article-blocks/types";
 import { uploadAdminImageFile } from "@/lib/admin-upload-image";
 import { SelectedBlockDelete } from "@/components/admin/article-editor/SelectedBlockDelete";
@@ -24,6 +25,7 @@ export function ImageBlockPreview({
   onUpdate: (next: ArticleBlockImage) => void;
   onRemove: () => void;
 }) {
+  const passthroughLoader: ImageLoader = ({ src }) => src;
   const figureRef = useRef<HTMLElement>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -142,10 +144,13 @@ export function ImageBlockPreview({
           {selected ? <SelectedBlockDelete onRemove={onRemove} label="Supprimer l’image" /> : null}
           {show ? (
             <div className="relative">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
+                loader={passthroughLoader}
+                unoptimized
                 src={block.src.trim()}
                 alt={block.alt || ""}
+                width={1600}
+                height={1200}
                 className="block h-auto w-full max-w-full rounded-[4px]"
                 draggable={false}
               />

@@ -7,6 +7,9 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
@@ -71,8 +74,10 @@
     "@types/unzipper": "^0.10.11",
     "eslint": "^9",
     "eslint-config-next": "16.2.1",
+    "prettier": "^3.8.1",
     "prisma": "6.19.2",
     "tailwindcss": "^4",
+    "prettier": "^3.6.2",
     "tsx": "^4.19.3",
     "typescript": "^5"
   }

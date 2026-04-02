@@ -68,20 +68,35 @@ function PreviewChunk({
   onUpdate: (u: ArticleBlock | ((current: ArticleBlock) => ArticleBlock)) => void;
   onRemove: () => void;
 }) {
-  if (block.type === "image") {
+  if (block.type === "image")
     return (
-      <ImageBlockPreview
-        block={block}
-        selected={selected}
-        onSelect={onSelect}
-        onUpdate={(next) => {
-          onUpdate(next);
-        }}
-        onRemove={onRemove}
-      />
+      <ImageBlockPreview block={block} selected={selected} onSelect={onSelect} onUpdate={onUpdate} onRemove={onRemove} />
     );
-  }
 
+  return (
+    <TextPreviewChunk
+      block={block}
+      selected={selected}
+      onSelect={onSelect}
+      onUpdate={onUpdate}
+      onRemove={onRemove}
+    />
+  );
+}
+
+function TextPreviewChunk({
+  block,
+  selected,
+  onSelect,
+  onUpdate,
+  onRemove,
+}: {
+  block: Exclude<ArticleBlock, { type: "image" }>;
+  selected: boolean;
+  onSelect: () => void;
+  onUpdate: (u: ArticleBlock | ((current: ArticleBlock) => ArticleBlock)) => void;
+  onRemove: () => void;
+}) {
   const html = useMemo(() => blockToHtml(block), [block]);
   const ref = useRef<HTMLDivElement>(null);
   const editable = block.type === "heading" || block.type === "paragraph" || block.type === "quote";
@@ -133,9 +148,7 @@ function PreviewChunk({
       {selected ? <SelectedBlockDelete onRemove={onRemove} /> : null}
       <div
         className="rounded-sm"
-        onMouseDown={(e) => {
-          onSelect();
-        }}
+        onMouseDown={onSelect}
       >
         <div
           ref={ref}

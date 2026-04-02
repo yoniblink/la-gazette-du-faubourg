@@ -336,7 +336,9 @@ export function InstagramReelsStack({ reels }: { reels: InstagramReelPublic[] })
   }, [index, reels]);
 
   useEffect(() => {
-    setProgress01(0);
+    queueMicrotask(() => {
+      setProgress01(0);
+    });
   }, [index]);
 
   const toggleMute = useCallback(() => {

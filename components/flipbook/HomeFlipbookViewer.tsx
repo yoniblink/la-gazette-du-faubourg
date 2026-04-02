@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ComponentType } from "react";
+import { useCallback, useEffect, useRef, useState, type ComponentType } from "react";
 import { FlipbookPageImage } from "@/components/flipbook/FlipbookPageImage";
 import { useFlipbookLinkPreload } from "@/hooks/useFlipbookLinkPreload";
 import { useFlipbookLoadedPages } from "@/hooks/useFlipbookLoadedPages";
@@ -106,11 +106,15 @@ export function HomeFlipbookViewer({
   pageH,
   totalPdfPages,
 }: HomeFlipbookViewerProps) {
-  /** Premier rendu aligné SSR + hydratation (évite useSyncExternalStore → client true trop tôt). */
+  /**
+   * Important: le 1er rendu client doit matcher le SSR pour éviter les erreurs d’hydratation.
+   * On rend donc le placeholder d’abord, puis on active la version interactive après montage.
+   */
   const [mounted, setMounted] = useState(false);
-  useLayoutEffect(() => {
-    setMounted(true);
+  useEffect(() => {
+    queueMicrotask(() => setMounted(true));
   }, []);
+
   const [currentPage, setCurrentPage] = useState(0);
   const [sceneFlipping, setSceneFlipping] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -120,17 +124,21 @@ export function HomeFlipbookViewer({
   const rightNavShiftRef = useRef<HTMLDivElement>(null);
   const reduceMotionRef = useRef(false);
   const currentPageRef = useRef(0);
-  currentPageRef.current = currentPage;
   const { markLoaded } = useFlipbookLoadedPages(pageUrls.length);
 
   useEffect(() => {
+    currentPageRef.current = currentPage;
+  }, [currentPage]);
+
+  useEffect(() => {
+    if (!mounted) return;
     const onFullscreenChange = () => {
       setIsFullscreen(Boolean(document.fullscreenElement));
     };
     document.addEventListener("fullscreenchange", onFullscreenChange);
     onFullscreenChange();
     return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
-  }, []);
+  }, [mounted]);
 
   const toggleFullscreen = useCallback(async () => {
     const el = sceneRootRef.current;

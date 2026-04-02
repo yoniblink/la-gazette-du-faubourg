@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import Image, { type ImageLoader } from "next/image";
 
 function formatTime(s: number): string {
   if (!Number.isFinite(s)) return "0:00";
@@ -24,6 +25,7 @@ export function InstagramReelPosterPicker({
   onClearPoster,
   disabled,
 }: Props) {
+  const passthroughLoader: ImageLoader = ({ src }) => src;
   const videoRef = useRef<HTMLVideoElement>(null);
   const objectUrlRef = useRef<string | null>(null);
   const [posterPreviewUrl, setPosterPreviewUrl] = useState<string | null>(null);
@@ -193,8 +195,15 @@ export function InstagramReelPosterPicker({
         {posterFile && posterPreviewUrl ? (
           <div className="flex items-center gap-3 rounded-md border border-stone-200 bg-white p-2">
             <p className="min-w-0 flex-1 truncate text-xs text-stone-600">{posterFile.name}</p>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={posterPreviewUrl} alt="" className="h-14 w-10 shrink-0 rounded object-cover" />
+            <Image
+              loader={passthroughLoader}
+              unoptimized
+              src={posterPreviewUrl}
+              alt=""
+              width={40}
+              height={56}
+              className="h-14 w-10 shrink-0 rounded object-cover"
+            />
           </div>
         ) : null}
       </div>

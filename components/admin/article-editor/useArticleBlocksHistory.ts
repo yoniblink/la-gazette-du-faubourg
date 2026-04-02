@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { ArticleBlock } from "@/lib/article-blocks/types";
 
 const MAX_HISTORY = 40;
@@ -16,45 +16,58 @@ function blocksEqual(a: ArticleBlock[], b: ArticleBlock[]): boolean {
 
 export function useArticleBlocksHistory(initialBlocks: ArticleBlock[]) {
   const [blocks, setBlocksState] = useState<ArticleBlock[]>(initialBlocks);
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
+
   const blocksRef = useRef(blocks);
-  blocksRef.current = blocks;
+  useEffect(() => {
+    blocksRef.current = blocks;
+  }, [blocks]);
 
   const pastRef = useRef<ArticleBlock[][]>([]);
   const futureRef = useRef<ArticleBlock[][]>([]);
   const burstBeforeRef = useRef<ArticleBlock[] | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [, bumpHistory] = useState(0);
-  const bump = useCallback(() => {
-    bumpHistory((v) => v + 1);
-  }, [bumpHistory]);
+
+  const syncFlags = useCallback((nextBlocks: ArticleBlock[]) => {
+    const before = burstBeforeRef.current;
+    const canUndoNext =
+      pastRef.current.length > 0 || (before !== null && !blocksEqual(before, nextBlocks));
+    const canRedoNext = futureRef.current.length > 0;
+    setCanUndo(canUndoNext);
+    setCanRedo(canRedoNext);
+  }, []);
 
   const flushBurst = useCallback(() => {
     debounceRef.current = null;
     const before = burstBeforeRef.current;
-    burstBeforeRef.current = null;
     if (!before) return;
     const current = blocksRef.current;
     if (blocksEqual(before, current)) {
-      bump();
+      syncFlags(current);
       return;
     }
     pastRef.current = [...pastRef.current, before].slice(-MAX_HISTORY);
     futureRef.current = [];
-    bump();
-  }, [bump]);
+    burstBeforeRef.current = null;
+    syncFlags(current);
+  }, [syncFlags]);
 
   const setBlocks = useCallback(
     (next: ArticleBlock[] | ((prev: ArticleBlock[]) => ArticleBlock[])) => {
+      if (burstBeforeRef.current === null) {
+        burstBeforeRef.current = cloneBlocks(blocksRef.current);
+      }
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(flushBurst, DEBOUNCE_MS);
       setBlocksState((prev) => {
         const resolved =
           typeof next === "function" ? (next as (p: ArticleBlock[]) => ArticleBlock[])(prev) : next;
-        if (burstBeforeRef.current === null) burstBeforeRef.current = cloneBlocks(prev);
-        if (debounceRef.current) clearTimeout(debounceRef.current);
-        debounceRef.current = setTimeout(flushBurst, DEBOUNCE_MS);
+        queueMicrotask(() => syncFlags(resolved));
         return resolved;
       });
     },
-    [flushBurst],
+    [flushBurst, syncFlags],
   );
 
   const undo = useCallback(() => {
@@ -62,23 +75,30 @@ export function useArticleBlocksHistory(initialBlocks: ArticleBlock[]) {
       clearTimeout(debounceRef.current);
       debounceRef.current = null;
     }
+    const current = blocksRef.current;
     const beforeBurst = burstBeforeRef.current;
     burstBeforeRef.current = null;
 
-    setBlocksState((current) => {
-      if (beforeBurst !== null && !blocksEqual(beforeBurst, current)) {
-        futureRef.current = [...futureRef.current, cloneBlocks(current)];
-        bump();
-        return cloneBlocks(beforeBurst);
-      }
-      if (pastRef.current.length === 0) return current;
-      const prevSnap = pastRef.current[pastRef.current.length - 1]!;
-      pastRef.current = pastRef.current.slice(0, -1);
+    if (beforeBurst !== null && !blocksEqual(beforeBurst, current)) {
       futureRef.current = [...futureRef.current, cloneBlocks(current)];
-      bump();
-      return cloneBlocks(prevSnap);
-    });
-  }, [bump]);
+      const nextBlocks = cloneBlocks(beforeBurst);
+      setBlocksState(nextBlocks);
+      queueMicrotask(() => syncFlags(nextBlocks));
+      return;
+    }
+
+    if (pastRef.current.length === 0) {
+      syncFlags(current);
+      return;
+    }
+
+    const prevSnap = pastRef.current[pastRef.current.length - 1]!;
+    pastRef.current = pastRef.current.slice(0, -1);
+    futureRef.current = [...futureRef.current, cloneBlocks(current)];
+    const nextBlocks = cloneBlocks(prevSnap);
+    setBlocksState(nextBlocks);
+    queueMicrotask(() => syncFlags(nextBlocks));
+  }, [syncFlags]);
 
   const redo = useCallback(() => {
     if (debounceRef.current) {
@@ -86,21 +106,18 @@ export function useArticleBlocksHistory(initialBlocks: ArticleBlock[]) {
       debounceRef.current = null;
     }
     burstBeforeRef.current = null;
-    if (futureRef.current.length === 0) return;
-    setBlocksState((current) => {
-      const nextSnap = futureRef.current[futureRef.current.length - 1]!;
-      futureRef.current = futureRef.current.slice(0, -1);
-      pastRef.current = [...pastRef.current, cloneBlocks(current)].slice(-MAX_HISTORY);
-      bump();
-      return cloneBlocks(nextSnap);
-    });
-  }, [bump]);
-
-  const canUndo =
-    pastRef.current.length > 0 ||
-    (burstBeforeRef.current !== null && !blocksEqual(burstBeforeRef.current, blocks));
-
-  const canRedo = futureRef.current.length > 0;
+    if (futureRef.current.length === 0) {
+      syncFlags(blocksRef.current);
+      return;
+    }
+    const current = blocksRef.current;
+    const nextSnap = futureRef.current[futureRef.current.length - 1]!;
+    futureRef.current = futureRef.current.slice(0, -1);
+    pastRef.current = [...pastRef.current, cloneBlocks(current)].slice(-MAX_HISTORY);
+    const nextBlocks = cloneBlocks(nextSnap);
+    setBlocksState(nextBlocks);
+    queueMicrotask(() => syncFlags(nextBlocks));
+  }, [syncFlags]);
 
   return { blocks, setBlocks, undo, redo, canUndo, canRedo };
 }

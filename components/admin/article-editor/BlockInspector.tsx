@@ -1,5 +1,6 @@
 "use client";
 
+import Image, { type ImageLoader } from "next/image";
 import { useLayoutEffect, useRef } from "react";
 import type { ArticleBlock } from "@/lib/article-blocks/types";
 import { EditorImageUpload } from "@/components/admin/article-editor/EditorImageUpload";
@@ -55,6 +56,7 @@ export function BlockInspector({
   /** Dans le panneau latéral : pas de carte doublon, fond déjà défini. */
   embedded?: boolean;
 }) {
+  const passthroughLoader: ImageLoader = ({ src }) => src;
   const dark = theme === "dark";
 
   if (!block) {
@@ -237,8 +239,15 @@ export function BlockInspector({
                     : "flex gap-2 rounded-md border border-stone-100 p-2"
                 }
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={im.src} alt="" className="h-14 w-20 shrink-0 rounded object-cover" />
+                <Image
+                  loader={passthroughLoader}
+                  unoptimized
+                  src={im.src}
+                  alt={im.alt || ""}
+                  width={80}
+                  height={56}
+                  className="h-14 w-20 shrink-0 rounded object-cover"
+                />
                 <div className="min-w-0 flex-1 space-y-1">
                   <input
                     type="text"

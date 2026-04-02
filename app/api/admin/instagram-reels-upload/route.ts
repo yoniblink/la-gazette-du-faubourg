@@ -11,7 +11,6 @@ import {
   isAllowedInstagramReelPosterPath,
   isAllowedInstagramReelVideoPath,
   nextInstagramReelFolder,
-  sanitizeReelUploadBase,
 } from "@/lib/instagram-reels-storage";
 import { prisma } from "@/lib/prisma";
 
@@ -111,7 +110,6 @@ export async function POST(req: Request) {
     }
 
     const folder = nextInstagramReelFolder();
-    const base = sanitizeReelUploadBase(filename);
     const unique = randomBytes(6).toString("hex");
     const ext = path.extname(filename).toLowerCase() || (kind === "video" ? ".mp4" : ".jpg");
     const sub =

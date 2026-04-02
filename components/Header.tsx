@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { useCallback, useEffect, useId, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { site } from "@/lib/content/site";
 import { garamondNavItalic } from "@/lib/fonts/garamond-nav";
@@ -18,8 +18,7 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
   const navCategories = categories.filter((c) => c.slug !== "media-kit");
 
   const pathname = usePathname();
-  const [isVisible, setIsVisible] = useState(pathname !== "/");
-  const [mounted, setMounted] = useState(false);
+  const [homeVisible, setHomeVisible] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const reduceMotion = useReducedMotion();
   const menuId = useId();
@@ -27,13 +26,16 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
 
   const closeMenu = useCallback(() => setMenuOpen(false), []);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const canUseDOM = typeof document !== "undefined";
+  const isVisible = pathname !== "/" ? true : homeVisible;
 
   useEffect(() => {
-    closeMenu();
-  }, [pathname, closeMenu]);
+    if (!menuOpen) return;
+    if (pathname == null) return;
+    queueMicrotask(() => {
+      closeMenu();
+    });
+  }, [pathname, closeMenu, menuOpen]);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -54,21 +56,17 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
   }, [menuOpen, closeMenu]);
 
   useEffect(() => {
-    if (pathname !== "/") {
-      setIsVisible(true);
-      return;
-    }
+    if (pathname !== "/") return;
 
     /** Logo + liens du hero : le header fixe n’apparaît qu’une fois ce bloc quitté au scroll. */
     const anchor = document.getElementById("intro-primary-nav");
     if (!anchor) {
-      setIsVisible(true);
       return;
     }
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setIsVisible(!entry.isIntersecting);
+        setHomeVisible(!entry.isIntersecting);
       },
       { threshold: 0 },
     );
@@ -78,11 +76,15 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
   }, [pathname]);
 
   /** Cormorant Garamond italic (next/font) — les .ttf locaux du repo sont souvent absents, Safari ne fait pas tomber sur une typo correcte. */
-  const linkDesktopClass = [
+  const linkDesktopClass = useMemo(
+    () =>
+      [
     // Elementor (WP) nav: font-family "Garamond Italic", font-size 20px, font-weight 500.
     "font-garamond-italic",
     'relative inline-block shrink-0 whitespace-nowrap py-1 text-left text-[20px] font-medium leading-none text-[#111111] [font-synthesis:none] opacity-100 antialiased transition-opacity duration-300 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:origin-left after:scale-x-0 after:bg-[#111111]/40 after:transition-transform after:duration-300 after:ease-out hover:opacity-65 hover:after:scale-x-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0a0a0a]/20 focus-visible:after:scale-x-100',
-  ].join(" ");
+      ].join(" "),
+    [],
+  );
 
   const headerNode = (
     <header
@@ -153,6 +155,7 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
               height={120}
               className="hidden h-full w-full object-contain md:block"
               sizes="320px"
+              priority
             />
           </Link>
         </div>
@@ -197,7 +200,7 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
   );
 
   const mobileMenuPortal =
-    mounted ? (
+    canUseDOM ? (
       <AnimatePresence>
         {menuOpen ? (
           <>
@@ -298,7 +301,7 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
       </AnimatePresence>
     ) : null;
 
-  if (!mounted) return headerNode;
+  if (!canUseDOM) return headerNode;
   return (
     <>
       {createPortal(headerNode, document.body)}
