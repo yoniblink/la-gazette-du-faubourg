@@ -10,7 +10,9 @@ export default async function AdminMediaPage() {
       <h1 className="font-[family-name:var(--font-serif)] text-3xl font-light tracking-tight text-stone-900">
         Médiathèque
       </h1>
-      <p className="mt-2 text-sm text-stone-500">Téléversez et réutilisez des images sur le site</p>
+      <p className="mt-2 text-sm text-stone-500">
+        Téléversez et réutilisez des images et des vidéos sur le site
+      </p>
 
       <div className="mt-10">
         <MediaDropzone />
@@ -24,7 +26,13 @@ export default async function AdminMediaPage() {
           items.map((m) => (
             <MediaCard
               key={m.id}
-              item={{ id: m.id, url: m.url, filename: m.filename, alt: m.alt }}
+              item={{
+                id: m.id,
+                url: m.url,
+                filename: m.filename,
+                alt: m.alt,
+                mimeType: m.mimeType,
+              }}
             />
           ))
         )}

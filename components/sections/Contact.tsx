@@ -35,8 +35,8 @@ function MailCard({
   const href = `mailto:${email}`;
   return (
     <div className="flex flex-col border border-black/[0.08] bg-[#fafafa] p-8 max-[768px]:p-5 max-[1024px]:p-6">
-      <h3 className="font-[family-name:var(--font-serif)] text-xl font-light text-[#0a0a0a]">{title}</h3>
-      <p className="mt-3 flex-1 font-[family-name:var(--font-sans)] text-sm leading-relaxed text-[#5a5a5a]">
+      <h3 className="font-garamond-italic text-xl font-light text-[#0a0a0a]">{title}</h3>
+      <p className="mt-3 flex-1 font-garamond text-sm leading-relaxed text-[#5a5a5a]">
         {description}
       </p>
       <Link
@@ -56,18 +56,7 @@ export function Contact() {
   return (
     <section className="flex flex-1 flex-col scroll-mt-24 bg-white py-24 max-[768px]:py-16 max-[1024px]:py-20 md:py-32">
       <div className="mx-auto max-w-6xl px-6 max-[768px]:px-4 md:px-10">
-        <MotionDiv
-          variants={fadeUp}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: "-10% 0px" }}
-        >
-          <h2 className="font-[family-name:var(--font-serif)] text-3xl font-light text-[#0a0a0a] md:text-4xl">
-            Contact
-          </h2>
-        </MotionDiv>
-
-        <div className="mt-14 grid grid-cols-1 gap-10 min-[1025px]:grid-cols-3 min-[1025px]:gap-8">
+        <div className="grid grid-cols-1 gap-10 min-[1025px]:grid-cols-3 min-[1025px]:gap-8">
           <MotionDiv
             variants={fadeUp}
             initial="hidden"
@@ -75,10 +64,10 @@ export function Contact() {
             viewport={{ once: true, margin: "-10% 0px" }}
             className="flex flex-col border border-black/[0.08] bg-[#fafafa] p-8 max-[768px]:p-5 max-[1024px]:p-6"
           >
-            <h3 className="font-[family-name:var(--font-serif)] text-xl font-light text-[#0a0a0a]">
+            <h3 className="font-garamond-italic text-xl font-light text-[#0a0a0a]">
               Contact rédaction
             </h3>
-            <p className="mt-3 font-[family-name:var(--font-sans)] text-sm leading-relaxed text-[#5a5a5a]">
+            <p className="mt-3 font-garamond text-sm leading-relaxed text-[#5a5a5a]">
               Suggestions, sources et demandes éditoriales.
             </p>
             <p className="mt-2 font-[family-name:var(--font-sans)] text-xs text-[#8a8a8a]">

@@ -36,10 +36,10 @@ export default async function MediaKitPage() {
         </div>
 
         <div className="md:col-span-6 md:col-start-7">
-          <h1 className="font-[family-name:var(--font-serif)] text-[clamp(2rem,3.6vw,3.1rem)] font-light leading-[1.1] text-[#0a0a0a]">
+          <h1 className="font-garamond-italic text-[clamp(2rem,3.6vw,3.1rem)] font-light leading-[1.1] text-[#0a0a0a]">
             Le media-kit
           </h1>
-          <p className="mt-5 max-w-[52ch] font-[family-name:var(--font-sans)] text-[1.05rem] leading-relaxed text-[#2a2a2a]">
+          <p className="mt-5 max-w-[52ch] font-garamond text-[1.05rem] leading-relaxed text-[#2a2a2a]">
             Retrouvez la présentation de {site.name}, ses audiences et ses formats publicitaires.
             Téléchargez le document pour découvrir les opportunités de partenariat.
           </p>
@@ -50,7 +50,7 @@ export default async function MediaKitPage() {
               rel="noopener noreferrer"
               className="inline-flex min-h-[44px] items-center rounded-full border border-[#202126] px-6 py-3 font-[family-name:var(--font-sans)] text-sm font-medium tracking-[0.04em] text-[#202126] transition-colors hover:bg-[#202126] hover:text-white max-[768px]:w-full max-[768px]:justify-center max-[1024px]:px-5"
             >
-              Telecharger le media-kit
+              Télécharger le PDF
             </Link>
           </div>
         </div>

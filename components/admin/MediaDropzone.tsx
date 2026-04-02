@@ -1,10 +1,30 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { useDropzone } from "react-dropzone";
+import { useDropzone, type FileRejection } from "react-dropzone";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createClient } from "@/utils/supabase/client";
+
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+const MAX_VIDEO_BYTES = 120 * 1024 * 1024;
+
+function clientMime(file: File): string {
+  if (file.type && file.type !== "application/octet-stream") return file.type;
+  const n = file.name.toLowerCase();
+  if (n.endsWith(".mp4")) return "video/mp4";
+  if (n.endsWith(".webm")) return "video/webm";
+  if (n.endsWith(".mov")) return "video/quicktime";
+  if (n.endsWith(".png")) return "image/png";
+  if (n.endsWith(".webp")) return "image/webp";
+  if (n.endsWith(".gif")) return "image/gif";
+  if (n.endsWith(".jpg") || n.endsWith(".jpeg")) return "image/jpeg";
+  return file.type || "image/jpeg";
+}
+
+function isVideoMime(mime: string): boolean {
+  return mime.startsWith("video/");
+}
 
 type PrepareOk =
   | { mode: "local" }
@@ -27,7 +47,7 @@ export function MediaDropzone() {
             body: JSON.stringify({
               action: "prepare",
               filename: file.name,
-              contentType: file.type || "application/octet-stream",
+              contentType: clientMime(file),
               size: file.size,
             }),
           });
@@ -58,12 +78,12 @@ export function MediaDropzone() {
               toast.error(data.error ?? "Échec du téléversement");
               continue;
             }
-            toast.success("Image ajoutée.");
+            toast.success(isVideoMime(clientMime(file)) ? "Vidéo ajoutée." : "Image ajoutée.");
             continue;
           }
 
           const supabase = createClient();
-          const mime = file.type && file.type !== "" ? file.type : "image/jpeg";
+          const mime = clientMime(file);
           const { error: upErr } = await supabase.storage
             .from(prep.bucket)
             .uploadToSignedUrl(prep.path, prep.token, file, {
@@ -105,7 +125,7 @@ export function MediaDropzone() {
             continue;
           }
 
-          toast.success("Image ajoutée.");
+          toast.success(isVideoMime(mime) ? "Vidéo ajoutée." : "Image ajoutée.");
         } catch {
           toast.error("Erreur réseau");
         }
@@ -116,10 +136,42 @@ export function MediaDropzone() {
     [router],
   );
 
+  const onDropRejected = useCallback((rejections: FileRejection[]) => {
+    for (const r of rejections) {
+      const msg = r.errors.map((e) => e.message).join(" — ") || "Fichier refusé";
+      toast.error(msg);
+    }
+  }, []);
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: { "image/jpeg": [], "image/png": [], "image/webp": [], "image/gif": [] },
-    maxSize: 8 * 1024 * 1024,
+    onDropRejected,
+    accept: {
+      "image/jpeg": [],
+      "image/png": [],
+      "image/webp": [],
+      "image/gif": [],
+      "video/mp4": [],
+      "video/webm": [],
+      "video/quicktime": [],
+    },
+    maxSize: MAX_VIDEO_BYTES,
+    validator: (file) => {
+      const mime = clientMime(file);
+      const isImg = mime.startsWith("image/");
+      const isVid = mime.startsWith("video/");
+      if (!isImg && !isVid) {
+        return { code: "file-invalid-type", message: "Type non autorisé (images ou vidéo MP4, WebM, MOV)" };
+      }
+      const limit = isVid ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES;
+      if (file.size > limit) {
+        return {
+          code: "file-too-large",
+          message: isVid ? "Vidéo trop volumineuse (max 120 Mo)" : "Image trop volumineuse (max 8 Mo)",
+        };
+      }
+      return null;
+    },
     disabled: uploading,
   });
 
@@ -134,9 +186,13 @@ export function MediaDropzone() {
     >
       <input {...getInputProps()} />
       <p className="text-sm font-medium text-stone-700">
-        {isDragActive ? "Déposez les fichiers ici" : "Glissez-déposez des images, ou cliquez pour choisir"}
+        {isDragActive
+          ? "Déposez les fichiers ici"
+          : "Glissez-déposez des images ou vidéos, ou cliquez pour choisir"}
       </p>
-      <p className="mt-2 text-xs text-stone-500">JPEG, PNG, WebP, GIF — max 8 Mo</p>
+      <p className="mt-2 text-xs text-stone-500">
+        Images : JPEG, PNG, WebP, GIF — max 8 Mo · Vidéos : MP4, WebM, MOV — max 120 Mo
+      </p>
     </div>
   );
 }

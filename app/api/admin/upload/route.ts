@@ -10,18 +10,53 @@ import {
   hasSupabaseMediaStorageEnv,
 } from "@/lib/supabase-service";
 
-const MAX_BYTES = 8 * 1024 * 1024;
-const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+/** Vidéos courtes pour la médiathèque (envoi direct vers Supabase). */
+const MAX_VIDEO_BYTES = 120 * 1024 * 1024;
+
+const ALLOWED_IMAGES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+const ALLOWED_VIDEOS = new Set(["video/mp4", "video/webm", "video/quicktime"]);
+const ALLOWED = new Set<string>([...ALLOWED_IMAGES, ...ALLOWED_VIDEOS]);
+
+/** Si le navigateur envoie `application/octet-stream` ou une chaîne vide, on déduit du nom de fichier. */
+function resolveUploadMime(filename: string, contentType: string): string {
+  const raw = (contentType || "").trim().toLowerCase();
+  if (raw && raw !== "application/octet-stream") return contentType.trim();
+  const ext = path.extname(filename).toLowerCase();
+  const map: Record<string, string> = {
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".webp": "image/webp",
+    ".gif": "image/gif",
+    ".mp4": "video/mp4",
+    ".webm": "video/webm",
+    ".mov": "video/quicktime",
+  };
+  return map[ext] ?? (raw || "application/octet-stream");
+}
+
+function maxBytesForMime(mime: string): number {
+  return ALLOWED_VIDEOS.has(mime) ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES;
+}
 
 function isOnVercel(): boolean {
   return Boolean(process.env.VERCEL);
 }
 
 function sanitizeFilename(original: string, mimeType: string): { base: string; ext: string } {
-  const safe = original.replace(/[^\w.\-]+/g, "_") || "image";
-  const ext =
-    path.extname(safe) || (mimeType === "image/png" ? ".png" : mimeType === "image/webp" ? ".webp" : ".jpg");
-  const base = path.basename(safe, ext).slice(0, 80) || "image";
+  const safe = original.replace(/[^\w.\-]+/g, "_") || "file";
+  let ext = path.extname(safe).toLowerCase();
+  if (!ext) {
+    if (mimeType === "image/png") ext = ".png";
+    else if (mimeType === "image/webp") ext = ".webp";
+    else if (mimeType === "image/gif") ext = ".gif";
+    else if (mimeType === "video/webm") ext = ".webm";
+    else if (mimeType === "video/quicktime") ext = ".mov";
+    else if (mimeType === "video/mp4") ext = ".mp4";
+    else ext = ".jpg";
+  }
+  const base = (path.basename(safe, path.extname(safe)) || "file").slice(0, 80);
   return { base, ext };
 }
 
@@ -31,7 +66,7 @@ function isAllowedMediaStoragePath(storagePath: string): boolean {
   if (parts.length < 3) return false;
   if (parts[0] !== "admin-media") return false;
   if (!/^[a-f0-9]{16}$/.test(parts[1] ?? "")) return false;
-  return /\.(jpe?g|png|webp|gif)$/i.test(parts[parts.length - 1] ?? "");
+  return /\.(jpe?g|png|webp|gif|mp4|webm|mov)$/i.test(parts[parts.length - 1] ?? "");
 }
 
 function storageErrorHint(message: string | undefined, bucket: string): string {
@@ -61,16 +96,18 @@ async function handleJson(req: Request): Promise<NextResponse> {
     const filename = typeof json.filename === "string" ? json.filename : "";
     const contentType = typeof json.contentType === "string" ? json.contentType : "";
     const size = typeof json.size === "number" ? json.size : 0;
-    const mime = contentType || "application/octet-stream";
+    const mime = resolveUploadMime(filename, contentType);
+    const maxBytes = maxBytesForMime(mime);
 
     if (!filename || size <= 0) {
       return NextResponse.json({ error: "Fichier requis" }, { status: 400 });
     }
-    if (size > MAX_BYTES) {
-      return NextResponse.json({ error: "Fichier trop volumineux (max 8 Mo)" }, { status: 400 });
+    if (size > maxBytes) {
+      const hint = ALLOWED_VIDEOS.has(mime) ? "max 120 Mo pour les vidéos" : "max 8 Mo pour les images";
+      return NextResponse.json({ error: `Fichier trop volumineux (${hint})` }, { status: 400 });
     }
     if (!ALLOWED.has(mime)) {
-      return NextResponse.json({ error: "Type non autorisé" }, { status: 400 });
+      return NextResponse.json({ error: "Type non autorisé (images ou MP4, WebM, MOV)" }, { status: 400 });
     }
 
     if (!hasSupabaseMediaStorageEnv()) {
@@ -121,10 +158,14 @@ async function handleJson(req: Request): Promise<NextResponse> {
     const storagePath = typeof json.path === "string" ? json.path : "";
     const filename =
       typeof json.filename === "string" && json.filename.trim() ? json.filename.trim() : path.basename(storagePath);
-    const mimeType =
-      typeof json.mimeType === "string" && ALLOWED.has(json.mimeType)
-        ? json.mimeType
-        : "image/jpeg";
+    const rawMime = typeof json.mimeType === "string" ? json.mimeType : "";
+    let mimeType = resolveUploadMime(filename, rawMime);
+    if (!ALLOWED.has(mimeType)) {
+      mimeType = resolveUploadMime(path.basename(storagePath), "");
+    }
+    if (!ALLOWED.has(mimeType)) {
+      mimeType = "image/jpeg";
+    }
     const altRaw = json.alt;
     const alt = typeof altRaw === "string" && altRaw.trim() ? altRaw.trim() : null;
 
@@ -183,10 +224,12 @@ async function handleMultipart(req: Request): Promise<NextResponse> {
   if (!(file instanceof File) || file.size === 0) {
     return NextResponse.json({ error: "Fichier requis" }, { status: 400 });
   }
-  if (file.size > MAX_BYTES) {
-    return NextResponse.json({ error: "Fichier trop volumineux (max 8 Mo)" }, { status: 400 });
+  const mimeType = resolveUploadMime(file.name, file.type || "");
+  const maxBytes = maxBytesForMime(mimeType);
+  if (file.size > maxBytes) {
+    const hint = ALLOWED_VIDEOS.has(mimeType) ? "max 120 Mo pour les vidéos" : "max 8 Mo pour les images";
+    return NextResponse.json({ error: `Fichier trop volumineux (${hint})` }, { status: 400 });
   }
-  const mimeType = file.type || "application/octet-stream";
   if (!ALLOWED.has(mimeType)) {
     return NextResponse.json({ error: "Type non autorisé" }, { status: 400 });
   }

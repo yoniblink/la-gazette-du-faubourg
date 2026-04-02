@@ -3,8 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { garamondNavItalic } from "@/lib/fonts/garamond-nav";
-
 /** Paragraphe visible dans le hero (identique à la maquette : bloc principal seul avant le CTA). */
 const p1 =
   "Il existe à Paris un territoire à part. Un lieu où l’histoire dialogue avec la création, où les savoir-faire se transmettent et se réinventent, où chaque adresse raconte une certaine idée de l’élégance. Le Faubourg Saint-Honoré est de ceux-là. La Gazette du Faubourg s’inscrit dans cette singularité. Média de presse, à la fois imprimé et digital, elle propose un regard éditorial dédié à l’actualité, aux savoir-faire et à l’art de vivre du Faubourg Saint-Honoré. Voix officielle du Comité du Faubourg Saint-Honoré, elle accompagne et met en lumière ses membres, leurs maisons et les initiatives qui participent au rayonnement du quartier.";
@@ -30,8 +28,8 @@ const heroInlineNavLinks = [
 ];
 
 const heroNavLinkClass = [
-  garamondNavItalic.className,
-  "inline-block whitespace-nowrap px-[4px] py-[15px] text-[17px] font-medium italic leading-none text-black antialiased hover:opacity-80 md:px-[5px] md:text-[17px] lg:text-[18px] xl:text-[19px]",
+  "font-garamond-italic",
+  "inline-block whitespace-nowrap px-[4px] py-[15px] text-[17px] font-medium leading-none text-black antialiased hover:opacity-80 md:px-[5px] md:text-[17px] lg:text-[18px] xl:text-[19px]",
 ].join(" ");
 
 /** Corps de chapô : Garamond, justifié, interligne large type print (cf. maquette). */
@@ -171,7 +169,7 @@ export function Hero() {
                       aria-expanded={open}
                       aria-controls="hero-read-more-panel"
                       onClick={() => setOpen((v) => !v)}
-                      className={`${garamondNavItalic.className} border-0 bg-transparent p-0 text-left text-[18px] font-normal italic text-black antialiased [font-synthesis:none] hover:opacity-80 max-[768px]:min-h-[44px] max-[768px]:py-2`}
+                      className="font-garamond-italic border-0 bg-transparent p-0 text-left text-[18px] font-normal italic text-black antialiased [font-synthesis:none] hover:opacity-80 max-[768px]:min-h-[44px] max-[768px]:py-2"
                     >
                       {open ? (
                         <span>

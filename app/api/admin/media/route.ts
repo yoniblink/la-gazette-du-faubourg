@@ -13,7 +13,7 @@ export async function GET() {
   const items = await prisma.media.findMany({
     orderBy: { createdAt: "desc" },
     take: MAX_ITEMS,
-    select: { id: true, url: true, filename: true, alt: true },
+    select: { id: true, url: true, filename: true, alt: true, mimeType: true },
   });
 
   return NextResponse.json({ items });

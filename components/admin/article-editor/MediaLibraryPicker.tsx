@@ -11,6 +11,10 @@ function displayUrl(url: string): string {
   return `${window.location.origin}${url.startsWith("/") ? "" : "/"}${url}`;
 }
 
+function isVideoMime(mime: string | null | undefined): boolean {
+  return Boolean(mime && mime.startsWith("video/"));
+}
+
 export function MediaLibraryPicker({
   open,
   onClose,
@@ -90,7 +94,7 @@ export function MediaLibraryPicker({
             <div className="py-12 text-center">
               <p className="text-sm text-stone-600">Aucun média pour le moment.</p>
               <p className="mt-2 text-xs text-stone-500">
-                Téléversez des images depuis{" "}
+                Téléversez des médias depuis{" "}
                 <Link
                   href="/admin/media"
                   className="font-medium text-rose-700 underline-offset-2 hover:underline"
@@ -113,14 +117,25 @@ export function MediaLibraryPicker({
                     className="group w-full overflow-hidden rounded-xl border border-stone-200 bg-stone-50 text-left shadow-sm transition-[border-color,box-shadow] hover:border-rose-300 hover:shadow-md"
                   >
                     <div className="relative aspect-square bg-stone-100">
-                      <Image
-                        src={displayUrl(m.url)}
-                        alt={m.alt ?? m.filename}
-                        fill
-                        sizes="(max-width: 768px) 50vw, 25vw"
-                        className="object-cover"
-                        unoptimized
-                      />
+                      {isVideoMime(m.mimeType) ? (
+                        <video
+                          src={displayUrl(m.url)}
+                          className="absolute inset-0 h-full w-full object-cover"
+                          muted
+                          playsInline
+                          preload="metadata"
+                          aria-label={m.alt ?? m.filename}
+                        />
+                      ) : (
+                        <Image
+                          src={displayUrl(m.url)}
+                          alt={m.alt ?? m.filename}
+                          fill
+                          sizes="(max-width: 768px) 50vw, 25vw"
+                          className="object-cover"
+                          unoptimized
+                        />
+                      )}
                     </div>
                     <p className="truncate px-2 py-2 font-mono text-[9px] text-stone-500" title={m.filename}>
                       {m.filename}

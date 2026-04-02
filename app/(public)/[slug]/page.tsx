@@ -13,6 +13,23 @@ const LA_REVUE_SLUG = "la-revue";
 const ACTUALITE_DB_SLUG = "actualite";
 const ACTUALITES_PUBLIC_SLUG = "actualites";
 
+/** Coupe éditoriale : nom du palais / « A Rosewood Hotel » (branding filiale). */
+const HOTEL_CRILLON_LIST_SLUG = "hotel-de-crillon-a-rosewood-hotel";
+
+function rubriqueListingTitleContent(slug: string, title: string) {
+  const m = title.match(/^(.+?)\s+([Aa]\s+Rosewood\s+Hotel)$/);
+  if (slug === HOTEL_CRILLON_LIST_SLUG && m) {
+    return (
+      <>
+        {m[1]}
+        <br />
+        {m[2]}
+      </>
+    );
+  }
+  return title;
+}
+
 type Props = { params: Promise<{ slug: string }> };
 
 export const dynamicParams = true;
@@ -114,7 +131,7 @@ export default async function RubriquePage({ params }: Props) {
                         className="w-max max-w-full text-left text-[34px] font-normal italic leading-tight tracking-tight text-[#0a0a0a] max-[768px]:w-full max-[768px]:text-balance lg:text-[48px] lg:leading-[1.12]"
                         style={{ fontFamily: "Griffiths, serif" }}
                       >
-                        {a.title}
+                        {rubriqueListingTitleContent(a.slug, a.title)}
                       </h3>
                       {a.excerpt ? (
                         <p

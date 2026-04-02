@@ -9,7 +9,13 @@ export type MediaCardItem = {
   url: string;
   filename: string;
   alt: string | null;
+  /** Présent quand le média vient de la DB (médiathèque). */
+  mimeType?: string | null;
 };
+
+function isVideoMime(mime: string | null | undefined): boolean {
+  return Boolean(mime && mime.startsWith("video/"));
+}
 
 export function MediaCard({ item }: { item: MediaCardItem }) {
   function copyUrl() {
@@ -23,16 +29,29 @@ export function MediaCard({ item }: { item: MediaCardItem }) {
     toast.success("URL copiée.");
   }
 
+  const video = isVideoMime(item.mimeType);
+
   return (
     <li className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm">
       <div className="relative aspect-square bg-stone-100">
-        <Image
-          src={item.url}
-          alt={item.alt ?? item.filename}
-          fill
-          className="object-cover"
-          sizes="(max-width:768px) 50vw, 200px"
-        />
+        {video ? (
+          <video
+            src={item.url}
+            className="absolute inset-0 h-full w-full object-cover"
+            muted
+            playsInline
+            preload="metadata"
+            aria-label={item.alt ?? item.filename}
+          />
+        ) : (
+          <Image
+            src={item.url}
+            alt={item.alt ?? item.filename}
+            fill
+            className="object-cover"
+            sizes="(max-width:768px) 50vw, 200px"
+          />
+        )}
       </div>
       <div className="space-y-2 p-3">
         <p className="truncate font-mono text-[10px] text-stone-500" title={item.url}>

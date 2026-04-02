@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { site } from "@/lib/content/site";
@@ -7,25 +8,6 @@ import { garamondNavItalic } from "@/lib/fonts/garamond-nav";
 import { fadeUp } from "@/lib/motion";
 import type { InstagramReelPublic } from "@/lib/data/instagram-reels";
 import { InstagramReelsStack } from "@/components/sections/InstagramReelsStack";
-
-function InstagramGlyph({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.15}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <rect x="3.5" y="3.5" width="17" height="17" rx="5" />
-      <circle cx="12" cy="12" r="4.25" />
-      <circle cx="17.25" cy="6.75" r="0.9" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
 
 export function InstagramStripContent({ reels }: { reels: InstagramReelPublic[] }) {
   return (
@@ -50,7 +32,13 @@ export function InstagramStripContent({ reels }: { reels: InstagramReelPublic[] 
             rel="noopener noreferrer"
             className="group flex min-h-[44px] shrink-0 items-center gap-4 border border-black/[0.1] bg-white px-8 py-5 transition-[border-color,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-black/[0.22] hover:shadow-[0_20px_50px_-24px_rgba(10,10,10,0.18)] max-[768px]:w-full max-[768px]:max-w-md max-[768px]:justify-center max-[1024px]:px-6"
           >
-            <InstagramGlyph className="h-7 w-7 text-[#0a0a0a] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]" />
+            <Image
+              src={site.faviconSrc}
+              alt=""
+              width={32}
+              height={32}
+              className="h-7 w-7 object-contain transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]"
+            />
             <div className="text-left">
               <p className="font-[family-name:var(--font-sans)] text-[10px] uppercase tracking-[0.28em] text-[#7a7a7a]">
                 {site.instagramLabel}
@@ -61,7 +49,7 @@ export function InstagramStripContent({ reels }: { reels: InstagramReelPublic[] 
                   "mt-1 text-left text-[17px] font-medium italic leading-none text-black antialiased transition-opacity group-hover:opacity-80 md:text-[17px] lg:text-[18px] xl:text-[19px]",
                 ].join(" ")}
               >
-                Suivre la Gazette
+                Suivez la Gazette du Faubourg
               </p>
             </div>
             <span className="ml-2 text-[#0a0a0a] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0.5">
