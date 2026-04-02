@@ -262,6 +262,136 @@ body {
   max-width: 100%;
 }
 
+/* Même cible visuelle que :fullscreen quand l’API est indisponible (ex. Safari iOS sur un div). */
+.flipbook-premium-scene.flipbook-premium-scene--pseudo-fs {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  box-sizing: border-box;
+  width: 100vw;
+  width: 100dvw;
+  height: 100vh;
+  height: 100dvh;
+  max-width: none !important;
+  margin: 0;
+  overflow: hidden;
+  padding: 0 !important;
+  background: #000;
+}
+
+.flipbook-premium-scene.flipbook-premium-scene--pseudo-fs .flipbook-premium-stage {
+  height: 100%;
+  min-height: 0;
+}
+
+.flipbook-premium-scene.flipbook-premium-scene--pseudo-fs .flipbook-premium-tilt {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Timeline desktop sous le flipbook : piste fine + curseur rond (cf. ref. lecteur). */
+.flipbook-desktop-timeline input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 16px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.flipbook-desktop-timeline input[type="range"]:focus {
+  outline: none;
+}
+
+.flipbook-desktop-timeline input[type="range"]:focus-visible {
+  outline: 2px solid rgba(10, 10, 10, 0.2);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.flipbook-desktop-timeline input[type="range"]::-webkit-slider-runnable-track {
+  height: 2px;
+  background: rgba(10, 10, 10, 0.12);
+  border-radius: 9999px;
+}
+
+.flipbook-desktop-timeline input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -6px;
+  border-radius: 9999px;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(10, 10, 10, 0.18), 0 1px 3px rgba(10, 10, 10, 0.12);
+  transition: box-shadow 0.15s ease;
+}
+
+.flipbook-desktop-timeline input[type="range"]:hover::-webkit-slider-thumb {
+  box-shadow: 0 0 0 1px rgba(10, 10, 10, 0.28), 0 2px 6px rgba(10, 10, 10, 0.12);
+}
+
+.flipbook-desktop-timeline input[type="range"]::-moz-range-track {
+  height: 2px;
+  background: rgba(10, 10, 10, 0.12);
+  border-radius: 9999px;
+}
+
+.flipbook-desktop-timeline input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  box-sizing: border-box;
+  border: 1px solid rgba(10, 10, 10, 0.22);
+  border-radius: 9999px;
+  background: #fff;
+  cursor: pointer;
+}
+
+/* Timeline en plein écran (fond noir / pseudo-fs / :fullscreen) — piste et curseur plus visibles. */
+.flipbook-desktop-timeline--fullscreen input[type="range"] {
+  height: 22px;
+}
+
+.flipbook-desktop-timeline--fullscreen input[type="range"]:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.45);
+  outline-offset: 6px;
+}
+
+.flipbook-desktop-timeline--fullscreen input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.flipbook-desktop-timeline--fullscreen input[type="range"]::-webkit-slider-thumb {
+  width: 20px;
+  height: 20px;
+  margin-top: -8px;
+  background: #fff;
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.5),
+    0 2px 10px rgba(0, 0, 0, 0.45);
+}
+
+.flipbook-desktop-timeline--fullscreen input[type="range"]:hover::-webkit-slider-thumb {
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.7),
+    0 3px 14px rgba(0, 0, 0, 0.5);
+}
+
+.flipbook-desktop-timeline--fullscreen input[type="range"]::-moz-range-track {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.flipbook-desktop-timeline--fullscreen input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.65);
+  background: #fff;
+}
+
 .flipbook-premium-scene::before {
   content: none;
 }

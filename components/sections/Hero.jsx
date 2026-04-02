@@ -107,11 +107,11 @@ export function Hero() {
                 />
               </Link>
 
-              <nav aria-label="Navigation Hero" className="mt-2 w-full max-[768px]:mt-4 md:mt-3 lg:mt-4 lg:flex lg:justify-center">
-                <ul className="flex max-md:flex-wrap max-md:gap-y-2 max-md:justify-center md:flex-nowrap md:justify-center md:gap-x-1 md:pb-0 lg:gap-x-1.5 xl:gap-x-2">
+              <nav aria-label="Navigation Hero" className="mt-2 w-full max-[768px]:mt-1.5 md:mt-3 lg:mt-4 lg:flex lg:justify-center">
+                <ul className="flex max-md:flex-wrap max-md:gap-y-0 max-md:justify-center md:flex-nowrap md:justify-center md:gap-x-1 md:pb-0 lg:gap-x-1.5 xl:gap-x-2">
                   {heroInlineNavLinks.map((link) => (
-                    <li key={link.href} className="shrink-0">
-                      <Link href={link.href} className={`${heroNavLinkClass} max-[768px]:flex max-[768px]:min-h-[44px] max-[768px]:items-center max-[768px]:justify-center max-[768px]:whitespace-normal max-[768px]:px-2 max-[768px]:py-3 max-[768px]:text-center max-[768px]:leading-snug`}>
+                    <li key={link.href} className="max-md:leading-none shrink-0">
+                      <Link href={link.href} className={`${heroNavLinkClass} max-[768px]:flex max-[768px]:min-h-[40px] max-[768px]:items-center max-[768px]:justify-center max-[768px]:whitespace-normal max-[768px]:px-1.5 max-[768px]:py-0 max-[768px]:text-center max-[768px]:leading-[1.1]`}>
                         {link.label}
                       </Link>
                     </li>

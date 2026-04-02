@@ -1,16 +1,22 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   useCallback,
   useEffect,
+  useId,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
   type ComponentType,
+  type MouseEvent,
 } from "react";
 import { FlipbookPageImage } from "@/components/flipbook/FlipbookPageImage";
+import { site } from "@/lib/content/site";
 import { useFlipbookLinkPreload } from "@/hooks/useFlipbookLinkPreload";
 import { useFlipbookLoadedPages } from "@/hooks/useFlipbookLoadedPages";
 import { useFlipbookPreload } from "@/hooks/useFlipbookPreload";
@@ -89,6 +95,42 @@ function computeFullscreenSpreadStretchCaps(
   return { maxW, maxH };
 }
 
+function isOurElementNativeFullscreen(el: Element): boolean {
+  const doc = document as Document & { webkitFullscreenElement?: Element | null };
+  const fs = document.fullscreenElement ?? doc.webkitFullscreenElement;
+  return fs === el;
+}
+
+/** iOS Safari et certains mobile WebKit refusent souvent le plein écran sur un div — on vérifie après coup. */
+async function tryEnterNativeFullscreen(el: HTMLElement): Promise<boolean> {
+  const h = el as HTMLElement & {
+    requestFullscreen?: () => Promise<void>;
+    webkitRequestFullscreen?: () => void;
+    webkitRequestFullScreen?: () => void;
+    mozRequestFullScreen?: () => void;
+    msRequestFullscreen?: () => void;
+  };
+
+  const run = async (fn?: () => void | Promise<void>) => {
+    if (!fn) return false;
+    try {
+      await Promise.resolve(fn());
+      await new Promise<void>((r) => requestAnimationFrame(() => r()));
+      await new Promise<void>((r) => requestAnimationFrame(() => r()));
+      return isOurElementNativeFullscreen(el);
+    } catch {
+      return false;
+    }
+  };
+
+  if (await run(() => h.requestFullscreen?.())) return true;
+  if (await run(() => h.webkitRequestFullscreen?.())) return true;
+  if (await run(() => h.webkitRequestFullScreen?.())) return true;
+  if (await run(() => h.mozRequestFullScreen?.())) return true;
+  if (await run(() => h.msRequestFullscreen?.())) return true;
+  return false;
+}
+
 function bookShiftRatioFromFlip(flip: PageFlipRuntime, reduceMotion: boolean): number {
   const pageIdx = flip.getCurrentPageIndex();
   if (reduceMotion) return pageIdx > 0 ? 1 : 0;
@@ -153,6 +195,9 @@ export function HomeFlipbookViewer({
   const [currentPage, setCurrentPage] = useState(0);
   const [sceneFlipping, setSceneFlipping] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  /** Repli lorsque l’API Fullscreen n’existe pas ou est refusée (souvent iPhone / Safari mobile). */
+  const [pseudoFullscreen, setPseudoFullscreen] = useState(false);
+  const pseudoFsRef = useRef(false);
   const flipbookRef = useRef<unknown>(null);
   const sceneRootRef = useRef<HTMLDivElement | null>(null);
   const bookShiftRef = useRef<HTMLDivElement>(null);
@@ -169,7 +214,18 @@ export function HomeFlipbookViewer({
     if (!mounted) return;
     const syncFs = () => {
       const doc = document as Document & { webkitFullscreenElement?: Element | null };
-      setIsFullscreen(Boolean(document.fullscreenElement ?? doc.webkitFullscreenElement));
+      const native = Boolean(document.fullscreenElement ?? doc.webkitFullscreenElement);
+      if (native) {
+        pseudoFsRef.current = false;
+        setPseudoFullscreen(false);
+        setIsFullscreen(true);
+        return;
+      }
+      if (pseudoFsRef.current) {
+        setIsFullscreen(true);
+        return;
+      }
+      setIsFullscreen(false);
     };
     document.addEventListener("fullscreenchange", syncFs);
     document.addEventListener("webkitfullscreenchange", syncFs);
@@ -180,6 +236,26 @@ export function HomeFlipbookViewer({
     };
   }, [mounted]);
 
+  useEffect(() => {
+    if (!pseudoFullscreen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        pseudoFsRef.current = false;
+        setPseudoFullscreen(false);
+        setIsFullscreen(false);
+        document.body.style.overflow = "";
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [pseudoFullscreen]);
+
+  useEffect(() => {
+    return () => {
+      if (pseudoFsRef.current) document.body.style.overflow = "";
+    };
+  }, []);
+
   /** Incrémenté sur `resize` en plein écran pour recalculer les caps sans setState synchrone dans un effet (eslint react-hooks/set-state-in-effect). */
   const [fullscreenResizeGeneration, setFullscreenResizeGeneration] = useState(0);
 
@@ -187,7 +263,11 @@ export function HomeFlipbookViewer({
     if (!isFullscreen) return;
     const onResize = () => setFullscreenResizeGeneration((n) => n + 1);
     window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
+    window.visualViewport?.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      window.visualViewport?.removeEventListener("resize", onResize);
+    };
   }, [isFullscreen]);
 
   const stretchCaps = useMemo((): FlipbookStretchCaps => {
@@ -205,6 +285,8 @@ export function HomeFlipbookViewer({
     return () => cancelAnimationFrame(id);
   }, [mounted, isFullscreen, stretchCaps.maxW, stretchCaps.maxH]);
 
+  const router = useRouter();
+
   const toggleFullscreen = useCallback(async () => {
     const el = sceneRootRef.current;
     if (!el) return;
@@ -212,20 +294,52 @@ export function HomeFlipbookViewer({
       webkitFullscreenElement?: Element | null;
       webkitExitFullscreen?: () => Promise<void>;
     };
-    try {
-      if (document.fullscreenElement ?? doc.webkitFullscreenElement) {
+    const inNative = Boolean(document.fullscreenElement ?? doc.webkitFullscreenElement);
+
+    if (inNative) {
+      try {
         if (document.exitFullscreen) await document.exitFullscreen();
         else if (doc.webkitExitFullscreen) await doc.webkitExitFullscreen();
-      } else {
-        const req =
-          el.requestFullscreen?.bind(el) ??
-          (el as HTMLElement & { webkitRequestFullscreen?: () => void }).webkitRequestFullscreen?.bind(el);
-        if (req) await Promise.resolve(req());
+      } catch {
+        /* ignore */
+      }
+      return;
+    }
+
+    if (pseudoFsRef.current) {
+      pseudoFsRef.current = false;
+      setPseudoFullscreen(false);
+      setIsFullscreen(false);
+      document.body.style.overflow = "";
+      return;
+    }
+
+    try {
+      const ok = await tryEnterNativeFullscreen(el);
+      if (ok) {
+        pseudoFsRef.current = false;
+        setPseudoFullscreen(false);
+        setIsFullscreen(true);
+        return;
       }
     } catch {
-      // Certaines compatibilités navigateurs bloquent la demande sans contexte adéquat.
+      /* fall back */
     }
+
+    pseudoFsRef.current = true;
+    setPseudoFullscreen(true);
+    setIsFullscreen(true);
+    document.body.style.overflow = "hidden";
   }, []);
+
+  const exitFullscreenGoHome = useCallback(
+    async (e: MouseEvent<HTMLAnchorElement>) => {
+      e.preventDefault();
+      await toggleFullscreen();
+      router.push("/");
+    },
+    [toggleFullscreen, router],
+  );
 
   useFlipbookPreload(pageUrls, currentPage);
   useFlipbookLinkPreload(pageUrls, 3);
@@ -329,6 +443,65 @@ export function HomeFlipbookViewer({
     api?.flipNext?.();
   }, []);
 
+  const goToSpreadIndex = useCallback(
+    (idx: number) => {
+      const n = pageUrls.length;
+      if (n <= 1) return;
+      const clamped = Math.max(0, Math.min(n - 1, Math.round(idx)));
+      const refValue = flipbookRef.current as
+        | {
+            pageFlip?: () => {
+              flip?: (page: number, corner?: string) => void;
+              getCurrentPageIndex?: () => number;
+            };
+          }
+        | null;
+      const api = refValue?.pageFlip?.();
+      if (!api?.flip) return;
+      const now = api.getCurrentPageIndex?.() ?? currentPageRef.current;
+      if (clamped === now) return;
+      api.flip(clamped, "top");
+    },
+    [pageUrls.length],
+  );
+
+  /** Pendant le drag de la timeline : saut direct (show) pour suivre le curseur en temps réel. */
+  const scrubToSpreadIndex = useCallback(
+    (idx: number) => {
+      const n = pageUrls.length;
+      if (n <= 1) return;
+      const clamped = Math.max(0, Math.min(n - 1, Math.round(idx)));
+      const refValue = flipbookRef.current as
+        | {
+            pageFlip?: () => {
+              turnToPage?: (page: number) => void;
+              getCurrentPageIndex?: () => number;
+              update?: () => void;
+            };
+          }
+        | null;
+      const api = refValue?.pageFlip?.();
+      if (!api?.turnToPage) return;
+      const now = api.getCurrentPageIndex?.() ?? currentPageRef.current;
+      if (clamped === now) return;
+      api.turnToPage(clamped);
+      currentPageRef.current = clamped;
+      setCurrentPage(clamped);
+      requestAnimationFrame(() => {
+        refValue?.pageFlip?.()?.update?.();
+      });
+    },
+    [pageUrls.length],
+  );
+
+  const timelineRangeId = useId();
+  const [timelineDragging, setTimelineDragging] = useState(false);
+  const [timelinePreviewIndex, setTimelinePreviewIndex] = useState(0);
+
+  useEffect(() => {
+    if (!timelineDragging) setTimelinePreviewIndex(currentPage);
+  }, [currentPage, timelineDragging]);
+
   const w = Math.max(120, Math.round(pageW));
   const h = Math.max(160, Math.round(pageH));
   const imageSizes = isFullscreen
@@ -351,7 +524,8 @@ export function HomeFlipbookViewer({
 
   const sceneClass =
     `flipbook-premium-scene mx-auto w-full max-w-[min(100%,1360px)] px-0 pb-14 pt-2 max-[1024px]:px-3 max-[768px]:px-4 md:pb-20 md:pt-4` +
-    (sceneFlipping ? " flipbook-premium-scene--flipping" : "");
+    (sceneFlipping ? " flipbook-premium-scene--flipping" : "") +
+    (pseudoFullscreen ? " flipbook-premium-scene--pseudo-fs" : "");
 
   const canGoPrev = currentPage > 0;
   const canGoNext = currentPage < pageUrls.length - 1;
@@ -360,18 +534,21 @@ export function HomeFlipbookViewer({
   return (
     <div ref={sceneRootRef} className={`${sceneClass} relative`}>
       {isFullscreen ? (
-        <button
-          type="button"
-          aria-label="Quitter le plein écran"
-          className="absolute left-[max(0.75rem,env(safe-area-inset-left))] top-[max(0.5rem,env(safe-area-inset-top))] z-[45] flex min-h-[44px] items-center rounded-md border border-white/25 bg-white/[0.08] px-4 py-2 font-[family-name:var(--font-sans)] text-sm font-medium tracking-wide text-white shadow-sm backdrop-blur-sm transition-colors hover:border-white/40 hover:bg-white/[0.14] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40 active:opacity-90"
-          onClick={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            void toggleFullscreen();
-          }}
+        <Link
+          href="/"
+          aria-label={`${site.name} — accueil (quitter le plein écran)`}
+          className="absolute left-[max(0.75rem,env(safe-area-inset-left))] top-[max(0.5rem,env(safe-area-inset-top))] z-[45] block max-w-[min(20rem,62vw)] p-1 outline-none transition-opacity hover:opacity-90 focus-visible:rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[6px] focus-visible:outline-white/45"
+          onClick={exitFullscreenGoHome}
         >
-          Retour
-        </button>
+          <Image
+            src={site.navbarLogoMobileSrc}
+            alt=""
+            width={360}
+            height={120}
+            className="h-14 w-auto max-h-16 min-[1024px]:h-16 min-[1024px]:max-h-[4.5rem] object-contain object-left brightness-0 invert drop-shadow-[0_2px_14px_rgba(0,0,0,0.55)]"
+            sizes="(max-width: 768px) 62vw, 280px"
+          />
+        </Link>
       ) : null}
       <div className="flipbook-premium-stage flex w-full flex-col items-center">
         <div
@@ -543,8 +720,132 @@ export function HomeFlipbookViewer({
           ) : null}
         </div>
 
+        {showNav ? (
+          <div
+            className={
+              `flipbook-desktop-timeline relative z-[42] mx-auto hidden w-full max-w-[min(100%,56rem)] items-center px-2 min-[1024px]:flex min-[1024px]:px-4 ` +
+              (isFullscreen
+                ? "flipbook-desktop-timeline--fullscreen mt-auto max-w-[min(100%,42rem)] shrink-0 gap-8 rounded-2xl border border-white/22 bg-black/55 px-5 py-4 shadow-[0_12px_40px_rgba(0,0,0,0.5)] backdrop-blur-md pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-4"
+                : "mt-7 gap-6 min-[1024px]:mt-8")
+            }
+            data-flipbook-desktop-timeline
+          >
+            <p
+              className={
+                `shrink-0 tabular-nums font-medium tracking-tight ` +
+                (isFullscreen ? "text-[15px] text-white/95" : "text-[13px] text-[#0a0a0a]/55")
+              }
+            >
+              <span className="sr-only">Double page </span>
+              {(timelineDragging ? timelinePreviewIndex : currentPage) + 1}
+              <span
+                className={`mx-1 ${isFullscreen ? "text-white/35" : "text-[#0a0a0a]/25"}`}
+                aria-hidden
+              >
+                /
+              </span>
+              {pageUrls.length}
+            </p>
+            <div className={`min-w-0 flex-1 ${isFullscreen ? "pt-1" : "pt-0.5"}`}>
+              <label htmlFor={timelineRangeId} className="sr-only">
+                Aller à une double page du magazine
+              </label>
+              <input
+                id={timelineRangeId}
+                type="range"
+                min={0}
+                max={pageUrls.length - 1}
+                step={1}
+                value={timelineDragging ? timelinePreviewIndex : currentPage}
+                aria-valuemin={0}
+                aria-valuemax={Math.max(0, pageUrls.length - 1)}
+                aria-valuenow={timelineDragging ? timelinePreviewIndex : currentPage}
+                aria-valuetext={`Double page ${(timelineDragging ? timelinePreviewIndex : currentPage) + 1} sur ${pageUrls.length}`}
+                onPointerDown={() => setTimelineDragging(true)}
+                onPointerUp={(e) => {
+                  const el = e.currentTarget;
+                  const v = Number(el.value);
+                  setTimelineDragging(false);
+                  scrubToSpreadIndex(v);
+                }}
+                onPointerCancel={() => {
+                  setTimelineDragging(false);
+                }}
+                onChange={(e) => {
+                  const v = Number(e.target.value);
+                  if (timelineDragging) {
+                    setTimelinePreviewIndex(v);
+                    scrubToSpreadIndex(v);
+                  } else {
+                    goToSpreadIndex(v);
+                  }
+                }}
+              />
+            </div>
+            {isFullscreen ? (
+              <button
+                type="button"
+                aria-label="Quitter le plein écran"
+                data-flipbook-fs-trigger
+                className="inline-flex h-12 w-12 min-h-[48px] min-w-[48px] shrink-0 items-center justify-center rounded-xl border-2 border-white/40 bg-white/15 text-white shadow-[0_4px_20px_rgba(0,0,0,0.4)] backdrop-blur-sm transition-colors hover:border-white/55 hover:bg-white/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/50 active:opacity-90"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  void toggleFullscreen();
+                }}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden={true}
+                  className="h-6 w-6 shrink-0 text-current"
+                >
+                  <path
+                    d="M18 6L6 18M6 6l12 12"
+                    stroke="currentColor"
+                    strokeWidth="2.25"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            ) : (
+              <button
+                type="button"
+                aria-label="Passer en plein écran"
+                data-flipbook-fs-trigger
+                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-black/[0.1] bg-white/90 text-[#3a3a3a] shadow-[0_1px_3px_rgba(0,0,0,0.06)] backdrop-blur-sm transition-colors hover:border-black/18 hover:bg-white hover:text-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#aea896]/35 active:opacity-90"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  void toggleFullscreen();
+                }}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden={true}
+                  className="h-5 w-5 shrink-0 text-current"
+                >
+                  <path
+                    d="M9 3H3v6M15 3h6v6M9 21H3v-6M15 21h6v-6"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    transform="rotate(180 12 12)"
+                  />
+                </svg>
+              </button>
+            )}
+          </div>
+        ) : null}
+
         {!isFullscreen ? (
-          <div className="mt-5 flex w-full max-w-full justify-center px-2 md:mt-6" data-flipbook-fs-trigger>
+          <div
+            className="mt-5 flex w-full max-w-full justify-center px-2 min-[1024px]:hidden md:mt-6"
+            data-flipbook-fs-trigger-mobile
+          >
             <button
               type="button"
               aria-label="Passer en plein écran"
