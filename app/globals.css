@@ -238,17 +238,28 @@ body {
 }
 
 /* Fullscreen (magazine / revue) : demandé sur `.flipbook-premium-scene`. */
-.flipbook-premium-scene:fullscreen {
+.flipbook-premium-scene:fullscreen,
+.flipbook-premium-scene:-webkit-full-screen {
   width: 100vw;
   height: 100vh;
   max-width: none !important;
   overflow: hidden;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
+  padding: 0 !important;
 }
 
-.flipbook-premium-scene:fullscreen .flipbook-premium-stage {
+.flipbook-premium-scene:fullscreen .flipbook-premium-stage,
+.flipbook-premium-scene:-webkit-full-screen .flipbook-premium-stage {
   height: 100%;
+  min-height: 0;
+}
+
+/* Centrage vertical + zone utile maximale pour le bloc livre + flèches rapprochées */
+.flipbook-premium-scene:fullscreen .flipbook-premium-tilt,
+.flipbook-premium-scene:-webkit-full-screen .flipbook-premium-tilt {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  max-width: 100%;
 }
 
 .flipbook-premium-scene::before {

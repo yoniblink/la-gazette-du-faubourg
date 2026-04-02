@@ -1,7 +1,14 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useRef, useState, type ComponentType } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ComponentType,
+} from "react";
 import { FlipbookPageImage } from "@/components/flipbook/FlipbookPageImage";
 import { useFlipbookLinkPreload } from "@/hooks/useFlipbookLinkPreload";
 import { useFlipbookLoadedPages } from "@/hooks/useFlipbookLoadedPages";
@@ -53,6 +60,27 @@ type PageFlipRuntime = {
     getState: () => string;
   };
 };
+
+type FlipbookStretchCaps = { maxW: number; maxH: number };
+
+const FLIPBOOK_STRETCH_MAX_NORMAL: FlipbookStretchCaps = { maxW: 680, maxH: 1100 };
+
+function computeFullscreenSpreadStretchCaps(pageW: number, pageH: number): FlipbookStretchCaps {
+  if (typeof window === "undefined") return { maxW: 680, maxH: 1100 };
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  /** Réserve pour les deux flèches + léger jeu (groupe serré au centre). */
+  const navAndGutter = 112;
+  const padV = 52;
+  const availW = Math.max(280, vw - navAndGutter);
+  const availH = Math.max(360, vh - padV);
+  const pw = Math.max(120, pageW);
+  const ph = Math.max(160, pageH);
+  const scale = Math.min(availW / (2 * pw), availH / ph);
+  const maxW = Math.max(280, Math.min(3200, Math.floor(pw * scale)));
+  const maxH = Math.max(380, Math.min(3600, Math.floor(ph * scale)));
+  return { maxW, maxH };
+}
 
 function bookShiftRatioFromFlip(flip: PageFlipRuntime, reduceMotion: boolean): number {
   const pageIdx = flip.getCurrentPageIndex();
@@ -132,22 +160,58 @@ export function HomeFlipbookViewer({
 
   useEffect(() => {
     if (!mounted) return;
-    const onFullscreenChange = () => {
-      setIsFullscreen(Boolean(document.fullscreenElement));
+    const syncFs = () => {
+      const doc = document as Document & { webkitFullscreenElement?: Element | null };
+      setIsFullscreen(Boolean(document.fullscreenElement ?? doc.webkitFullscreenElement));
     };
-    document.addEventListener("fullscreenchange", onFullscreenChange);
-    onFullscreenChange();
-    return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
+    document.addEventListener("fullscreenchange", syncFs);
+    document.addEventListener("webkitfullscreenchange", syncFs);
+    syncFs();
+    return () => {
+      document.removeEventListener("fullscreenchange", syncFs);
+      document.removeEventListener("webkitfullscreenchange", syncFs);
+    };
   }, [mounted]);
+
+  const [stretchCaps, setStretchCaps] = useState<FlipbookStretchCaps>(FLIPBOOK_STRETCH_MAX_NORMAL);
+
+  useLayoutEffect(() => {
+    if (!isFullscreen) {
+      setStretchCaps(FLIPBOOK_STRETCH_MAX_NORMAL);
+      return;
+    }
+    const apply = () => setStretchCaps(computeFullscreenSpreadStretchCaps(pageW, pageH));
+    apply();
+    window.addEventListener("resize", apply);
+    return () => window.removeEventListener("resize", apply);
+  }, [isFullscreen, pageW, pageH]);
+
+  /** Après redimensionnement plein écran / stretchCaps, StPageFlip doit remesurer ou il reste bloqué sur minWidth×minHeight (portrait). */
+  useLayoutEffect(() => {
+    if (!mounted || !isFullscreen) return;
+    const id = requestAnimationFrame(() => {
+      const refValue = flipbookRef.current as { pageFlip?: () => { update?: () => void } } | null;
+      refValue?.pageFlip?.()?.update?.();
+    });
+    return () => cancelAnimationFrame(id);
+  }, [mounted, isFullscreen, stretchCaps.maxW, stretchCaps.maxH]);
 
   const toggleFullscreen = useCallback(async () => {
     const el = sceneRootRef.current;
     if (!el) return;
+    const doc = document as Document & {
+      webkitFullscreenElement?: Element | null;
+      webkitExitFullscreen?: () => Promise<void>;
+    };
     try {
-      if (document.fullscreenElement) {
-        await document.exitFullscreen();
+      if (document.fullscreenElement ?? doc.webkitFullscreenElement) {
+        if (document.exitFullscreen) await document.exitFullscreen();
+        else if (doc.webkitExitFullscreen) await doc.webkitExitFullscreen();
       } else {
-        await el.requestFullscreen();
+        const req =
+          el.requestFullscreen?.bind(el) ??
+          (el as HTMLElement & { webkitRequestFullscreen?: () => void }).webkitRequestFullscreen?.bind(el);
+        if (req) await Promise.resolve(req());
       }
     } catch {
       // Certaines compatibilités navigateurs bloquent la demande sans contexte adéquat.
@@ -258,13 +322,23 @@ export function HomeFlipbookViewer({
 
   const w = Math.max(120, Math.round(pageW));
   const h = Math.max(160, Math.round(pageH));
-  const sizes = "(max-width: 768px) 95vw, 680px";
+  const imageSizes = isFullscreen
+    ? `${Math.min(3200, Math.round(stretchCaps.maxW * 2 + 160))}px`
+    : "(max-width: 768px) 95vw, 680px";
 
   if (!mounted) {
     return <FlipbookPremiumPlaceholder pageH={pageH} />;
   }
 
   if (!HTMLFlipBook) return null;
+
+  /** Évite que le parent flex soit mesuré trop étroit → StPageFlip bascule en portrait + 280×380. */
+  const fullscreenBookBoxStyle = isFullscreen
+    ? {
+        minWidth: Math.min(stretchCaps.maxW * 2 + 56, window.innerWidth - 32),
+        minHeight: stretchCaps.maxH,
+      }
+    : undefined;
 
   const sceneClass =
     `flipbook-premium-scene mx-auto w-full max-w-[min(100%,1360px)] px-0 pb-14 pt-2 max-[1024px]:px-3 max-[768px]:px-4 md:pb-20 md:pt-4` +
@@ -276,45 +350,32 @@ export function HomeFlipbookViewer({
 
   return (
     <div ref={sceneRootRef} className={`${sceneClass} relative`}>
-      <button
-        type="button"
-        aria-label={isFullscreen ? "Quitter le plein écran" : "Passer en plein écran"}
-        aria-pressed={isFullscreen}
-        className={`${publicExternalNavButtonClass} absolute right-2 top-2 hidden md:flex md:right-4 md:top-4`}
-        onClick={(e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          void toggleFullscreen();
-        }}
-      >
-        {isFullscreen ? (
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden className="relative h-5 w-5">
-            <path
-              d="M9 3H3v6M15 3h6v6M9 21H3v-6M15 21h6v-6"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        ) : (
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden className="relative h-5 w-5">
-            <path
-              d="M9 3H3v6M15 3h6v6M9 21H3v-6M15 21h6v-6"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              transform="rotate(180 12 12)"
-            />
-          </svg>
-        )}
-      </button>
+      {isFullscreen ? (
+        <button
+          type="button"
+          aria-label="Quitter le plein écran"
+          className="absolute left-[max(0.75rem,env(safe-area-inset-left))] top-[max(0.5rem,env(safe-area-inset-top))] z-[45] flex min-h-[44px] items-center rounded-md border border-white/25 bg-white/[0.08] px-4 py-2 font-[family-name:var(--font-sans)] text-sm font-medium tracking-wide text-white shadow-sm backdrop-blur-sm transition-colors hover:border-white/40 hover:bg-white/[0.14] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40 active:opacity-90"
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            void toggleFullscreen();
+          }}
+        >
+          Retour
+        </button>
+      ) : null}
       <div className="flipbook-premium-stage flex w-full flex-col items-center">
         <div
-          className={`flipbook-premium-tilt relative flex w-full min-w-0 max-w-full items-center justify-center ${showNav ? "gap-1.5 sm:gap-3 md:gap-4 lg:gap-5" : ""}`}
+          className={
+            `flipbook-premium-tilt relative flex w-full min-w-0 max-w-full items-center justify-center ` +
+            (isFullscreen
+              ? "min-h-0 flex-1"
+              : showNav
+                ? "gap-1.5 sm:gap-3 md:gap-4 lg:gap-5"
+                : "")
+          }
         >
-          {showNav ? (
+          {showNav && !isFullscreen ? (
             <div className="flex shrink-0 justify-center">
               {canGoPrev ? (
                 <button
@@ -336,7 +397,13 @@ export function HomeFlipbookViewer({
 
           <div
             ref={bookShiftRef}
-            className={`relative flex min-w-0 max-w-full justify-center will-change-[transform] ${showNav ? "flex-1" : "w-full"}`}
+            style={fullscreenBookBoxStyle}
+            className={
+              `relative flex justify-center will-change-[transform] ` +
+              (isFullscreen
+                ? "max-w-full shrink-0"
+                : `min-w-0 ${showNav ? "max-w-full flex-1" : "w-full"}`)
+            }
           >
           <HTMLFlipBook
             ref={flipbookRef as never}
@@ -344,9 +411,9 @@ export function HomeFlipbookViewer({
             height={pageH}
             size="stretch"
             minWidth={280}
-            maxWidth={680}
+            maxWidth={stretchCaps.maxW}
             minHeight={380}
-            maxHeight={1100}
+            maxHeight={stretchCaps.maxH}
             showCover
             drawShadow={false}
             maxShadowOpacity={0}
@@ -390,7 +457,7 @@ export function HomeFlipbookViewer({
                       currentPage={currentPage}
                       eagerRadius={2}
                       priorityCount={3}
-                      sizes={sizes}
+                      sizes={imageSizes}
                       onLoadComplete={markLoaded}
                     />
                   </div>
@@ -400,11 +467,8 @@ export function HomeFlipbookViewer({
           </HTMLFlipBook>
           </div>
 
-          {showNav ? (
-            <div
-              ref={rightNavShiftRef}
-              className="flex shrink-0 justify-center will-change-transform"
-            >
+          {showNav && !isFullscreen ? (
+            <div ref={rightNavShiftRef} className="flex shrink-0 justify-center will-change-transform">
               {canGoNext ? (
                 <button
                   type="button"
@@ -422,7 +486,87 @@ export function HomeFlipbookViewer({
               )}
             </div>
           ) : null}
+
+          {showNav && isFullscreen ? (
+            <>
+              <div className="pointer-events-auto absolute left-[max(0.5rem,env(safe-area-inset-left))] top-1/2 z-[40] -translate-y-1/2">
+                {canGoPrev ? (
+                  <button
+                    type="button"
+                    aria-label="Page précédente"
+                    className={
+                      publicExternalNavButtonClass + " !text-white/85 hover:!text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
+                    }
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      goPrev();
+                    }}
+                  >
+                    <NavChevronIcon direction="left" className="relative h-5 w-5 md:h-[22px] md:w-[22px]" />
+                  </button>
+                ) : (
+                  <span className={publicExternalNavSlotClass} aria-hidden />
+                )}
+              </div>
+              <div
+                ref={rightNavShiftRef}
+                className="pointer-events-auto absolute right-[max(0.5rem,env(safe-area-inset-right))] top-1/2 z-[40] -translate-y-1/2 will-change-transform"
+              >
+                {canGoNext ? (
+                  <button
+                    type="button"
+                    aria-label="Page suivante"
+                    className={
+                      publicExternalNavButtonClass + " !text-white/85 hover:!text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
+                    }
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      goNext();
+                    }}
+                  >
+                    <NavChevronIcon direction="right" className="relative h-5 w-5 md:h-[22px] md:w-[22px]" />
+                  </button>
+                ) : (
+                  <span className={publicExternalNavSlotClass} aria-hidden />
+                )}
+              </div>
+            </>
+          ) : null}
         </div>
+
+        {!isFullscreen ? (
+          <div className="mt-5 flex w-full max-w-full justify-center px-2 md:mt-6" data-flipbook-fs-trigger>
+            <button
+              type="button"
+              aria-label="Passer en plein écran"
+              className="inline-flex min-h-[44px] items-center gap-2 rounded-md border border-black/[0.1] bg-white/85 px-4 py-2.5 text-[#3a3a3a] shadow-[0_1px_3px_rgba(0,0,0,0.06)] backdrop-blur-sm transition-colors hover:border-black/18 hover:bg-white hover:text-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#aea896]/35 active:opacity-90"
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                void toggleFullscreen();
+              }}
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden={true}
+                className="relative h-[18px] w-[18px] shrink-0 text-current md:h-5 md:w-5"
+              >
+                <path
+                  d="M9 3H3v6M15 3h6v6M9 21H3v-6M15 21h6v-6"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  transform="rotate(180 12 12)"
+                />
+              </svg>
+              <span className="font-[family-name:var(--font-sans)] text-sm font-medium tracking-wide">
+                Plein écran
+              </span>
+            </button>
+          </div>
+        ) : null}
 
         <div className="flipbook-premium-contact shrink-0" aria-hidden />
       </div>
