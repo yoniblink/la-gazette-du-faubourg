@@ -388,11 +388,19 @@ body {
   display: block;
 }
 
-/* Aligné sur .article-tiptap-split__media (desktop). */
+/* Même mesure que le corps de texte (60 %), centré. */
 @media (min-width: 768px) {
   .article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-lead-media {
-    max-width: 46%;
+    max-width: 60%;
     width: 100%;
+    margin-inline: auto;
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 767px) {
+  .article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-lead-media {
+    max-width: 60%;
     margin-inline: auto;
     box-sizing: border-box;
   }
@@ -416,6 +424,29 @@ body {
   max-width: 100%;
   min-width: 0;
   box-sizing: border-box;
+}
+
+/*
+ * Structure Elementor : paire(s) d’images = même largeur que la colonne texte (60 %), centrée.
+ */
+@media (min-width: 768px) {
+  .article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-pair:not(.article-tiptap-pair--stack) {
+    max-width: 60%;
+    margin-inline: auto;
+    align-items: stretch;
+  }
+
+  .article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-pair.article-tiptap-pair--stack {
+    max-width: 60%;
+    margin-inline: auto;
+  }
+}
+
+@media (max-width: 767px) {
+  .article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-pair {
+    max-width: 60%;
+    margin-inline: auto;
+  }
 }
 
 /* Uniquement la 2e paire (`.article-tiptap-pair--stack`, posée par applyElementorArticleLayout). */
@@ -557,11 +588,11 @@ body {
   }
 }
 
-/* Image standalone après un bloc split : même largeur que la colonne split__media + espace */
+/* Image standalone après un bloc split : alignée sur la colonne texte (60 %). */
 .article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-split + .article-tiptap-img-zoom-wrap,
 .article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-split + figure,
 .article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-split + .article-tiptap-figure {
-  max-width: 46% !important;
+  max-width: 60% !important;
   margin-top: 60px !important;
   margin-left: auto !important;
   margin-right: auto !important;
@@ -569,6 +600,35 @@ body {
 
 .article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-lead-media + .article-tiptap-split {
   margin-top: 0;
+}
+
+/* Visuels pleine largeur de root : même mesure et centrage que les paragraphes (60 %). */
+.article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-img-zoom-wrap,
+.article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-figure,
+.article-tiptap-html.article-tiptap-elementor-structure > figure,
+.article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-gallery {
+  max-width: 60% !important;
+  margin-inline: auto;
+  box-sizing: border-box;
+}
+
+.article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-pair-carousel {
+  max-width: 60%;
+  margin-inline: auto;
+  box-sizing: border-box;
+}
+
+.article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-split-carousel {
+  max-width: 60%;
+  margin-inline: auto;
+  box-sizing: border-box;
+}
+
+.article-tiptap-html.article-tiptap-elementor-structure > img {
+  max-width: 60%;
+  margin-inline: auto;
+  display: block;
+  box-sizing: border-box;
 }
 
 .article-tiptap-split {
@@ -589,17 +649,41 @@ body {
     row-gap: 30px;
   }
 
-  /* Colonnes resserrées (image plus étroite, texte proportionnel). */
   .article-tiptap-split__media {
-    flex: 0 1 46%;
-    max-width: 46%;
+    flex: 0 1 40%;
+    max-width: 40%;
     min-width: 0;
   }
 
   .article-tiptap-split__copy {
-    flex: 0 1 56%;
-    max-width: 56%;
+    flex: 0 1 60%;
+    max-width: 60%;
     min-width: 0;
+  }
+
+  /*
+   * Elementor : image puis texte en pile, même largeur max que les paragraphes (60 %).
+   */
+  .article-tiptap-html.article-tiptap-elementor-structure .article-tiptap-split {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .article-tiptap-html.article-tiptap-elementor-structure .article-tiptap-split__media,
+  .article-tiptap-html.article-tiptap-elementor-structure .article-tiptap-split__copy {
+    flex: 0 1 auto;
+    max-width: 60%;
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .article-tiptap-html.article-tiptap-elementor-structure .article-tiptap-split__media,
+  .article-tiptap-html.article-tiptap-elementor-structure .article-tiptap-split__copy {
+    max-width: 60%;
+    margin-inline: auto;
   }
 }
 
@@ -958,7 +1042,10 @@ body {
 
 .article-tiptap-html p {
   /* Comme l’éditeur Elementor : pas de marge basse entre paragraphes (l’air vient du line-height). */
-  margin: 0;
+  margin-block: 0;
+  margin-inline: auto;
+  max-width: 60%;
+  box-sizing: border-box;
   font-family: Garamond, ui-serif, Georgia, serif;
   font-size: 18px;
   font-weight: 400;
@@ -973,6 +1060,18 @@ body {
   word-break: normal;
   hyphens: manual;
   color: #000;
+}
+
+/* Colonne texte du split : pleine largeur de la colonne (déjà 60 % de l’article). */
+.article-tiptap-split__copy p {
+  max-width: 100%;
+  width: 100%;
+  margin-inline: 0;
+}
+
+.article-tiptap-html blockquote p {
+  max-width: 100%;
+  margin-inline: 0;
 }
 
 @media (max-width: 1024px) {
@@ -1314,6 +1413,8 @@ body {
 }
 
 .article-tiptap-magazine-column .article-magazine-cta p {
+  max-width: 100%;
+  margin-inline: 0;
   text-align: left !important;
   line-height: 1.5 !important;
   font-size: 1.0625rem !important;
