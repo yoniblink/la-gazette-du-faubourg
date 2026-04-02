@@ -1,6 +1,5 @@
 import { generateHTML } from "@tiptap/html";
 import type { JSONContent } from "@tiptap/core";
-import { ArticleSplitCarousels } from "@/components/ArticleSplitCarousels";
 import { applyMagazineColumnEnhancements } from "@/lib/article-html-magazine-column";
 import { applyElementorArticleLayout } from "@/lib/article-html-elementor-layout";
 import { getTiptapExtensions } from "@/lib/tiptap/extensions";
@@ -36,7 +35,6 @@ export function ArticleBody({
         data-article-layout={isMagazine ? "magazine-column" : "elementor-post"}
         dangerouslySetInnerHTML={{ __html: html }}
       />
-      {!isMagazine ? <ArticleSplitCarousels /> : null}
     </>
   );
 }

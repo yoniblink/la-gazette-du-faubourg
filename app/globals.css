@@ -388,6 +388,16 @@ body {
   display: block;
 }
 
+/* Aligné sur .article-tiptap-split__media (desktop). */
+@media (min-width: 768px) {
+  .article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-lead-media {
+    max-width: 46%;
+    width: 100%;
+    margin-inline: auto;
+    box-sizing: border-box;
+  }
+}
+
 .article-tiptap-html.article-tiptap-elementor-structure > * + .article-tiptap-split {
   margin-top: 30px;
 }
@@ -415,33 +425,6 @@ body {
   align-items: stretch;
   row-gap: 30px;
   column-gap: 0;
-}
-
-/* Largeur totale = colonne .article-tiptap-split__copy (60% du contenu, cf. split ≥768px). */
-@media (min-width: 768px) {
-  .article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-lead-media {
-    max-width: 60%;
-    width: 100%;
-    margin-inline: auto;
-    box-sizing: border-box;
-  }
-
-  .article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-pair {
-    max-width: 60%;
-    margin-inline: auto;
-  }
-
-  .article-tiptap-html.article-tiptap-elementor-structure > p {
-    max-width: 60%;
-    margin-inline: auto;
-  }
-
-  .article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-split-carousel {
-    max-width: 60% !important;
-    width: 100%;
-    margin-inline: auto;
-    box-sizing: border-box;
-  }
 }
 
 /* 50% − moitié du gap : tient dans la largeur utile comme deux colonnes côte à côte */
@@ -574,11 +557,11 @@ body {
   }
 }
 
-/* Image standalone après un bloc split : même largeur que la colonne split__media (60%) + espace */
+/* Image standalone après un bloc split : même largeur que la colonne split__media + espace */
 .article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-split + .article-tiptap-img-zoom-wrap,
 .article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-split + figure,
 .article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-split + .article-tiptap-figure {
-  max-width: 60% !important;
+  max-width: 46% !important;
   margin-top: 60px !important;
   margin-left: auto !important;
   margin-right: auto !important;
@@ -606,11 +589,16 @@ body {
     row-gap: 30px;
   }
 
-  /* Export Elementor : --width:60% sur colonnes image / texte (min-width:768px) */
-  .article-tiptap-split__media,
+  /* Colonnes resserrées (image plus étroite, texte proportionnel). */
+  .article-tiptap-split__media {
+    flex: 0 1 46%;
+    max-width: 46%;
+    min-width: 0;
+  }
+
   .article-tiptap-split__copy {
-    flex: 0 1 60%;
-    max-width: 60%;
+    flex: 0 1 56%;
+    max-width: 56%;
     min-width: 0;
   }
 }
@@ -748,7 +736,7 @@ body {
 }
 
 /*
- * Largeur des slides : --carousel-slide-w est posée par ArticleSplitCarousels (clientWidth − padding,
+ * Largeur des slides : --carousel-slide-w (js) si carrousel présent ; layout serveur sans carrousel désormais.
  * / 3 colonnes) pour éviter qu’une 4e montre ne dépasse à cause des arrondis cqi.
  */
 .article-tiptap-split-carousel .article-tiptap-split--carousel-slide {
@@ -1123,7 +1111,7 @@ body {
 .article-tiptap-magazine-column .article-magazine-triple-row > .article-tiptap-img-zoom-wrap,
 .article-tiptap-magazine-column .article-magazine-triple-row > .article-tiptap-figure .article-tiptap-img-zoom-wrap {
   aspect-ratio: 1;
-  background: #f4f4f2;
+  background: transparent;
 }
 
 .article-tiptap-magazine-column .article-magazine-triple-row .article-tiptap-img-zoom-wrap img,
@@ -1160,7 +1148,7 @@ body {
 .article-tiptap-magazine-column .article-tiptap-gallery:has(> :nth-child(3):last-child) .article-tiptap-img-zoom-wrap {
   aspect-ratio: 1;
   margin: 0 !important;
-  background: #f4f4f2;
+  background: transparent;
 }
 
 .article-tiptap-magazine-column .article-tiptap-gallery:has(> :nth-child(3):last-child) img {
