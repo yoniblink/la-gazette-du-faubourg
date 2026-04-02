@@ -5,6 +5,7 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   type ComponentType,
@@ -65,7 +66,13 @@ type FlipbookStretchCaps = { maxW: number; maxH: number };
 
 const FLIPBOOK_STRETCH_MAX_NORMAL: FlipbookStretchCaps = { maxW: 680, maxH: 1100 };
 
-function computeFullscreenSpreadStretchCaps(pageW: number, pageH: number): FlipbookStretchCaps {
+function computeFullscreenSpreadStretchCaps(
+  pageW: number,
+  pageH: number,
+  /** Signature de recalcul (resize plein écran) — non utilisé dans le calcul. */
+  _resizeGeneration?: number,
+): FlipbookStretchCaps {
+  void _resizeGeneration;
   if (typeof window === "undefined") return { maxW: 680, maxH: 1100 };
   const vw = window.innerWidth;
   const vh = window.innerHeight;
@@ -173,18 +180,20 @@ export function HomeFlipbookViewer({
     };
   }, [mounted]);
 
-  const [stretchCaps, setStretchCaps] = useState<FlipbookStretchCaps>(FLIPBOOK_STRETCH_MAX_NORMAL);
+  /** Incrémenté sur `resize` en plein écran pour recalculer les caps sans setState synchrone dans un effet (eslint react-hooks/set-state-in-effect). */
+  const [fullscreenResizeGeneration, setFullscreenResizeGeneration] = useState(0);
 
-  useLayoutEffect(() => {
-    if (!isFullscreen) {
-      setStretchCaps(FLIPBOOK_STRETCH_MAX_NORMAL);
-      return;
-    }
-    const apply = () => setStretchCaps(computeFullscreenSpreadStretchCaps(pageW, pageH));
-    apply();
-    window.addEventListener("resize", apply);
-    return () => window.removeEventListener("resize", apply);
-  }, [isFullscreen, pageW, pageH]);
+  useEffect(() => {
+    if (!isFullscreen) return;
+    const onResize = () => setFullscreenResizeGeneration((n) => n + 1);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [isFullscreen]);
+
+  const stretchCaps = useMemo((): FlipbookStretchCaps => {
+    if (!isFullscreen) return FLIPBOOK_STRETCH_MAX_NORMAL;
+    return computeFullscreenSpreadStretchCaps(pageW, pageH, fullscreenResizeGeneration);
+  }, [isFullscreen, pageW, pageH, fullscreenResizeGeneration]);
 
   /** Après redimensionnement plein écran / stretchCaps, StPageFlip doit remesurer ou il reste bloqué sur minWidth×minHeight (portrait). */
   useLayoutEffect(() => {
