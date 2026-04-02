@@ -29,32 +29,43 @@ export function ArticleTiptapSurface({
 
   useLayoutEffect(() => {
     const el = rootRef.current;
-    if (!el || layoutVariant !== "default") return;
-    const icons = {
-      prevSvg: pairCarouselNavSvg.prev,
-      nextSvg: pairCarouselNavSvg.next,
-    };
+    if (!el) return;
+
     const cleanups: (() => void)[] = [];
-    if (splitCarousel) {
-      cleanups.push(
-        mountArticleSplitCarousels(el, icons, {
-          skipLeadingSplits: splitCarouselSkipLeading,
-          excludeSplitsWithHeadingInCopy: splitCarouselExcludeHeadingInCopy,
-        }),
-      );
+    if (layoutVariant === "default") {
+      const icons = {
+        prevSvg: pairCarouselNavSvg.prev,
+        nextSvg: pairCarouselNavSvg.next,
+      };
+      if (splitCarousel) {
+        cleanups.push(
+          mountArticleSplitCarousels(el, icons, {
+            skipLeadingSplits: splitCarouselSkipLeading,
+            excludeSplitsWithHeadingInCopy: splitCarouselExcludeHeadingInCopy,
+          }),
+        );
+      }
+      if (pairCarousel) cleanups.push(mountArticlePairCarousels(el, icons));
     }
-    if (pairCarousel) cleanups.push(mountArticlePairCarousels(el, icons));
+
+    /** Première image = visuel titre : pas de lightbox / curseur zoom (après mutation DOM carrousels). */
+    const first = el.querySelector("img");
+    if (first) {
+      first.setAttribute("data-no-zoom", "true");
+      first.removeAttribute("data-zoomable");
+    }
+
     if (cleanups.length === 0) return;
     return () => {
       for (const c of cleanups) c();
     };
   }, [
     html,
+    layoutVariant,
     pairCarousel,
     splitCarousel,
     splitCarouselSkipLeading,
     splitCarouselExcludeHeadingInCopy,
-    layoutVariant,
   ]);
 
   const isMagazine = layoutVariant === "magazine-column";

@@ -1279,6 +1279,10 @@ body {
   cursor: zoom-in;
 }
 
+.article-tiptap-html img[data-no-zoom="true"] {
+  cursor: default;
+}
+
 img:not([data-no-zoom="true"]) {
   -webkit-tap-highlight-color: transparent;
 }
