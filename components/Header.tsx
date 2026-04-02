@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { useCallback, useEffect, useId, useMemo, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { site } from "@/lib/content/site";
 import { garamondNavItalic } from "@/lib/fonts/garamond-nav";
@@ -28,14 +28,19 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
 
   const canUseDOM = typeof document !== "undefined";
   const isVisible = pathname !== "/" ? true : homeVisible;
+  const prevPathnameRef = useRef<string | null>(null);
 
+  /** Fermer le menu seulement après un changement de route, pas à l’ouverture (évite close immédiat si `menuOpen` était dans les deps). */
   useEffect(() => {
-    if (!menuOpen) return;
     if (pathname == null) return;
-    queueMicrotask(() => {
-      closeMenu();
-    });
-  }, [pathname, closeMenu, menuOpen]);
+    const prev = prevPathnameRef.current;
+    prevPathnameRef.current = pathname;
+    if (prev !== null && prev !== pathname) {
+      queueMicrotask(() => {
+        setMenuOpen(false);
+      });
+    }
+  }, [pathname]);
 
   useEffect(() => {
     if (!menuOpen) return;
