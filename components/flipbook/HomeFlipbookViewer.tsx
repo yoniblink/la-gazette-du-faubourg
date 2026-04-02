@@ -498,10 +498,6 @@ export function HomeFlipbookViewer({
   const [timelineDragging, setTimelineDragging] = useState(false);
   const [timelinePreviewIndex, setTimelinePreviewIndex] = useState(0);
 
-  useEffect(() => {
-    if (!timelineDragging) setTimelinePreviewIndex(currentPage);
-  }, [currentPage, timelineDragging]);
-
   const w = Math.max(120, Math.round(pageW));
   const h = Math.max(160, Math.round(pageH));
   const imageSizes = isFullscreen
@@ -761,7 +757,10 @@ export function HomeFlipbookViewer({
                 aria-valuemax={Math.max(0, pageUrls.length - 1)}
                 aria-valuenow={timelineDragging ? timelinePreviewIndex : currentPage}
                 aria-valuetext={`Double page ${(timelineDragging ? timelinePreviewIndex : currentPage) + 1} sur ${pageUrls.length}`}
-                onPointerDown={() => setTimelineDragging(true)}
+                onPointerDown={() => {
+                  setTimelinePreviewIndex(currentPage);
+                  setTimelineDragging(true);
+                }}
                 onPointerUp={(e) => {
                   const el = e.currentTarget;
                   const v = Number(el.value);
