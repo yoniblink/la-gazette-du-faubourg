@@ -51,7 +51,7 @@ function patchArticleFields<T extends Record<string, unknown>>(row: T): Partial<
   const data: Partial<T> = {};
   if (typeof row.slug === "string") {
     const nextSlug = fixMaisonCarilaSlug(row.slug);
-    if (nextSlug) (data as { slug: string }).slug = nextSlug;
+    if (nextSlug) (data as unknown as Record<string, string>).slug = nextSlug;
   }
   const strKeys = [
     "title",
@@ -70,7 +70,7 @@ function patchArticleFields<T extends Record<string, unknown>>(row: T): Partial<
   }
   const nextContent = walkJson(row.content);
   if (JSON.stringify(nextContent) !== JSON.stringify(row.content)) {
-    (data as { content: unknown }).content = nextContent as T["content"];
+    (data as unknown as Record<string, unknown>).content = nextContent;
   }
   return data;
 }

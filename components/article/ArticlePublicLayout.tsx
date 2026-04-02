@@ -10,6 +10,8 @@ export type ArticleInlineEditProps = {
   onRequestCoverSettings?: () => void;
 };
 
+export type ArticleSurfaceVariant = "default" | "magazine-column";
+
 export type ArticlePublicLayoutProps = {
   categorySlug: string;
   categoryTitle: string;
@@ -23,6 +25,8 @@ export type ArticlePublicLayoutProps = {
   coverObjectPosition: string;
   sourceUrl?: string;
   children: React.ReactNode;
+  /** Colonne étroite, fond blanc (articles « magazine »). */
+  articleSurface?: ArticleSurfaceVariant;
   /** Édition sur la page : mêmes styles que le site, champs modifiables au clavier. */
   inlineEdit?: ArticleInlineEditProps;
 };
@@ -43,6 +47,7 @@ export function ArticlePublicLayout({
   coverObjectPosition,
   sourceUrl: _sourceUrl,
   children,
+  articleSurface = "default",
   inlineEdit,
 }: ArticlePublicLayoutProps) {
   const showCover = coverImageUrl.trim().length > 0;
@@ -53,9 +58,15 @@ export function ArticlePublicLayout({
     ? "pb-12 pt-6 md:pb-16 md:pt-8"
     : "pb-24 pt-20 md:pb-32 md:pt-28";
 
+  const isMagazine = articleSurface === "magazine-column" && !inlineEdit;
+  const mainBg = isMagazine ? "bg-white" : "bg-[#fafafa]";
+  const articleMax = isMagazine
+    ? "max-w-[42rem] px-5 md:px-6"
+    : "max-w-[1140px] px-5 md:px-8 lg:px-10";
+
   return (
-    <main className={`flex flex-1 flex-col bg-[#fafafa] ${mainPad}`}>
-      <article className="mx-auto w-full max-w-[1140px] px-5 md:px-8 lg:px-10">
+    <main className={`flex flex-1 flex-col ${mainBg} ${mainPad}`}>
+      <article className={`mx-auto w-full ${articleMax}`}>
         <h1 className="sr-only">{title}</h1>
 
         {showCoverBlock ? (

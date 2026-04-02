@@ -5,6 +5,7 @@ import { getPublishedArticleBySlugs } from "@/lib/data/articles";
 import { ArticleBody } from "@/components/ArticleBody";
 import { ArticlePublicLayout } from "@/components/article/ArticlePublicLayout";
 import { site } from "@/lib/content/site";
+import { isMagazineColumnArticle } from "@/lib/article-layout-variants";
 
 type Props = { params: Promise<{ slug: string; articleSlug: string }> };
 
@@ -36,6 +37,7 @@ export default async function RubriqueArticlePage({ params }: Props) {
   if (!rubrique || !article) notFound();
 
   const sourceUrl = article.sourceUrl?.trim();
+  const magazineColumn = isMagazineColumnArticle(articleSlug);
 
   return (
     <ArticlePublicLayout
@@ -50,8 +52,12 @@ export default async function RubriqueArticlePage({ params }: Props) {
       coverImageAlt={article.coverImageAlt}
       coverObjectPosition={article.coverObjectPosition}
       sourceUrl={sourceUrl}
+      articleSurface={magazineColumn ? "magazine-column" : "default"}
     >
-      <ArticleBody content={article.content as object} />
+      <ArticleBody
+        content={article.content as object}
+        layoutVariant={magazineColumn ? "magazine-column" : "default"}
+      />
     </ArticlePublicLayout>
   );
 }

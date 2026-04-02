@@ -702,3 +702,222 @@ body {
   border: none;
   border-top: 1px solid rgba(10, 10, 10, 0.1);
 }
+
+/* Variante « magazine » : colonne étroite, blocs offre avec filet doré (titres = mêmes styles .article-tiptap-html) */
+
+.article-tiptap-magazine-column > figure:first-child,
+.article-tiptap-magazine-column > .article-tiptap-figure:first-child,
+.article-tiptap-magazine-column > .article-tiptap-img-zoom-wrap:first-child {
+  margin-top: 0 !important;
+}
+
+/* Même largeur que la colonne pour tous les visuels (surcharge data-width / styles inline) */
+.article-tiptap-magazine-column .article-tiptap-img-zoom-wrap {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0;
+  box-sizing: border-box;
+  border-radius: 0 !important;
+}
+
+.article-tiptap-magazine-column .article-tiptap-figure {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.article-tiptap-magazine-column .article-tiptap-figure .article-tiptap-img-zoom-wrap {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.article-tiptap-magazine-column .article-tiptap-img-zoom-wrap img {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  display: block !important;
+  object-fit: contain;
+  object-position: center;
+}
+
+.article-tiptap-magazine-column p img {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+}
+
+.article-tiptap-magazine-column .article-tiptap-figure:not(:has(.article-tiptap-img-zoom-wrap)) {
+  border-radius: 0 !important;
+}
+
+/* Trois images côte à côte (blocs TipTap consécutifs regroupés en .article-magazine-triple-row) */
+.article-tiptap-magazine-column .article-magazine-triple-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  width: 100%;
+  margin: 1.75rem 0;
+  align-items: stretch;
+}
+
+@media (max-width: 639px) {
+  .article-tiptap-magazine-column .article-magazine-triple-row {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+.article-tiptap-magazine-column .article-magazine-triple-row > .article-tiptap-img-zoom-wrap,
+.article-tiptap-magazine-column .article-magazine-triple-row > .article-tiptap-figure {
+  margin: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0;
+}
+
+.article-tiptap-magazine-column .article-magazine-triple-row > .article-tiptap-figure {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.article-tiptap-magazine-column .article-magazine-triple-row > .article-tiptap-img-zoom-wrap,
+.article-tiptap-magazine-column .article-magazine-triple-row > .article-tiptap-figure .article-tiptap-img-zoom-wrap {
+  aspect-ratio: 1;
+  background: #f4f4f2;
+}
+
+.article-tiptap-magazine-column .article-magazine-triple-row .article-tiptap-img-zoom-wrap img,
+.article-tiptap-magazine-column .article-magazine-triple-row .article-tiptap-figure img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain;
+  object-position: center;
+}
+
+/* Galerie TipTap à exactement 3 vignettes : même grille 3 colonnes */
+.article-tiptap-magazine-column .article-tiptap-gallery:has(> :nth-child(3):last-child) {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 0.75rem !important;
+  margin-top: 1.75rem !important;
+  margin-bottom: 1.75rem !important;
+  align-items: stretch;
+}
+
+@media (max-width: 639px) {
+  .article-tiptap-magazine-column .article-tiptap-gallery:has(> :nth-child(3):last-child) {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.article-tiptap-magazine-column .article-tiptap-gallery:has(> :nth-child(3):last-child) > .article-tiptap-figure {
+  margin: 0 !important;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.article-tiptap-magazine-column .article-tiptap-gallery:has(> :nth-child(3):last-child) .article-tiptap-img-zoom-wrap {
+  aspect-ratio: 1;
+  margin: 0 !important;
+  background: #f4f4f2;
+}
+
+.article-tiptap-magazine-column .article-tiptap-gallery:has(> :nth-child(3):last-child) img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain;
+  object-position: center;
+}
+
+/* Air entre un visuel et le titre qui suit (variante magazine) — bas du média + haut du titre */
+.article-tiptap-magazine-column figure:has(+ :is(h1, h2, h3)),
+.article-tiptap-magazine-column .article-tiptap-img-zoom-wrap:has(+ :is(h1, h2, h3)) {
+  margin-bottom: 2.25rem !important;
+}
+
+.article-tiptap-magazine-column figure + :is(h1, h2, h3),
+.article-tiptap-magazine-column .article-tiptap-img-zoom-wrap + :is(h1, h2, h3) {
+  margin-top: 2rem !important;
+}
+
+@media (min-width: 768px) {
+  .article-tiptap-magazine-column figure:has(+ :is(h1, h2, h3)),
+  .article-tiptap-magazine-column .article-tiptap-img-zoom-wrap:has(+ :is(h1, h2, h3)) {
+    margin-bottom: 2.75rem !important;
+  }
+
+  .article-tiptap-magazine-column figure + :is(h1, h2, h3),
+  .article-tiptap-magazine-column .article-tiptap-img-zoom-wrap + :is(h1, h2, h3) {
+    margin-top: 2.5rem !important;
+  }
+}
+
+.article-tiptap-magazine-column p {
+  line-height: 1.42 !important;
+  text-align: justify !important;
+}
+
+/* Espace sous un paragraphe quand une image suit directement */
+.article-tiptap-magazine-column p:has(+ .article-tiptap-img-zoom-wrap),
+.article-tiptap-magazine-column p:has(+ figure),
+.article-tiptap-magazine-column p:has(+ .article-tiptap-figure) {
+  margin-bottom: 2rem !important;
+}
+
+@media (min-width: 768px) {
+  .article-tiptap-magazine-column p:has(+ .article-tiptap-img-zoom-wrap),
+  .article-tiptap-magazine-column p:has(+ figure),
+  .article-tiptap-magazine-column p:has(+ .article-tiptap-figure) {
+    margin-bottom: 2.5rem !important;
+  }
+}
+
+.article-tiptap-magazine-column .article-magazine-cta {
+  margin: 2.5rem 0;
+}
+
+.article-tiptap-magazine-column .article-magazine-cta__rule {
+  width: 45%;
+  max-width: 14rem;
+  min-width: 6rem;
+  height: 1px;
+  background: linear-gradient(90deg, #bca76a 0%, #d4c090 100%);
+  margin-bottom: 1.25rem;
+}
+
+.article-tiptap-magazine-column .article-magazine-cta p {
+  text-align: left !important;
+  line-height: 1.5 !important;
+  font-size: 1.0625rem !important;
+}
+
+.article-tiptap-magazine-column .article-magazine-cta p + p {
+  margin-top: 0.55rem;
+}
+
+/* Titres : léger tracking type « une de magazine » (Haarlem Deco inchangée) */
+.article-tiptap-magazine-column :is(h1, h2, h3) {
+  letter-spacing: 0.06em;
+}
+
+.article-tiptap-magazine-column .article-magazine-cta strong {
+  font-weight: 600;
+  font-family: Garamond, ui-serif, Georgia, serif;
+}
+
+.article-tiptap-magazine-column .article-magazine-cta__accent {
+  text-decoration: underline;
+  text-decoration-color: rgba(28, 25, 23, 0.45);
+  text-underline-offset: 3px;
+}
+
+.article-tiptap-magazine-column .article-tiptap-figure:not(:has(.article-tiptap-img-zoom-wrap)) img {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+}
+
+.article-tiptap-magazine-column img {
+  border-radius: 0 !important;
+}
