@@ -458,6 +458,11 @@ body {
   margin-top: 10px !important;
 }
 
+/* Titres après du corps de texte : plus d’air qu’un seul 10px (paragraphes sans marge). */
+.article-tiptap-split__copy > :is(h1, h2, h3):not(:first-child) {
+  margin-top: 36px !important;
+}
+
 @media (max-width: 767px) {
   .article-tiptap-split__media img {
     max-width: 400px;

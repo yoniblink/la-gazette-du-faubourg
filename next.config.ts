@@ -4,6 +4,11 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["sharp", "unzipper"],
   async redirects() {
     return [
+      {
+        source: "/rencontres/3-questions-a-john-nollet-directeur-artistique-maison-carila",
+        destination: "/rencontres/3-questions-a-john-nollet-directeur-artistique-maison-carlita",
+        permanent: true,
+      },
       { source: "/rubrique/rencontre", destination: "/rencontres", permanent: true },
       { source: "/rubrique/:slug", destination: "/:slug", permanent: true },
       { source: "/categorie/:slug", destination: "/:slug", permanent: true },
