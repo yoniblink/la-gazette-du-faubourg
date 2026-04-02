@@ -21,14 +21,14 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.lagazettedufaubourg.fr"),
   title: {
-    default: site.officialTitle,
+    default: site.browserTabTitle,
     template: `%s | ${site.name}`,
   },
   description: site.officialTitle,
   icons: {
-    icon: site.navbarLogoSrc,
-    shortcut: site.navbarLogoSrc,
-    apple: site.navbarLogoSrc,
+    icon: [{ url: site.faviconSrc, sizes: "32x32", type: "image/webp" }],
+    shortcut: site.faviconSrc,
+    apple: site.appleTouchIconSrc,
   },
   openGraph: {
     title: site.name,

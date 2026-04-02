@@ -5,6 +5,16 @@ export const site = {
   navbarLogoMobileSrc: "/logo-comite-faubourg.png",
   name: "La Gazette du Faubourg",
   officialTitle: "La Voix Officielle du Comité du Faubourg Saint-Honoré",
+  /**
+   * Titre de l’onglet du navigateur (page d’accueil / défaut).
+   * Tiret demi-cadratin (U+2013) comme sur la maquette WordPress.
+   */
+  browserTabTitle:
+    "Gazette du Faubourg – La Voix Officielle du Comité du Faubourg Saint-Honoré",
+  /** Favicon carré (extrait du site WordPress / médias). */
+  faviconSrc: "/favicon-32.webp",
+  /** Icône « Ajouter à l’écran d’accueil » (WebP 180). */
+  appleTouchIconSrc: "/apple-touch-icon.webp",
   url: "https://www.lagazettedufaubourg.fr",
   tagline: "La voix officielle du Comité du Faubourg Saint-Honoré",
   description:
