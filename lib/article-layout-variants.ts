@@ -1,5 +1,5 @@
-/** Articles publics avec mise en page « colonne magazine » (pleine largeur empilée, filets, etc.). */
-const MAGAZINE_COLUMN_SLUGS = new Set(["hotel-de-crillon-a-rosewood-hotel"]);
+/** Articles publics avec mise en page « colonne magazine » (pleine largeur empilée, filets, etc.) — opt-in par slug. */
+const MAGAZINE_COLUMN_SLUGS = new Set<string>([]);
 
 /** Suites de `.article-tiptap-pair` consécutifs (y compris `--stack`) → carrousel horizontal. */
 const PAIR_CAROUSEL_SLUGS = new Set(["dior-fall-2026"]);
