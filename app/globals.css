@@ -544,6 +544,7 @@ body {
  * Pas sur .article-tiptap-lead-media (titres / visuels souvent à conserver tels quels).
  */
 .article-tiptap-html.article-tiptap-elementor-structure .article-tiptap-pair .article-tiptap-img-zoom-wrap:not(.article-tiptap-img-no-blend) img,
+.article-tiptap-html.article-tiptap-elementor-structure .article-tiptap-pair-carousel__slide--flat .article-tiptap-img-zoom-wrap:not(.article-tiptap-img-no-blend) img,
 .article-tiptap-html.article-tiptap-elementor-structure .article-tiptap-split__media .article-tiptap-img-zoom-wrap:not(.article-tiptap-img-no-blend) img,
 .article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-img-zoom-wrap:not(.article-tiptap-img-no-blend) img {
   mix-blend-mode: multiply;
@@ -612,9 +613,11 @@ body {
   box-sizing: border-box;
 }
 
+/* Bande images = 60 % (viewport seul) ; flèches hors de ce bloc, sur la ligne. */
 .article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-pair-carousel {
-  max-width: 60%;
-  margin-inline: auto;
+  width: 100%;
+  max-width: 100%;
+  margin-inline: 0;
   box-sizing: border-box;
 }
 
@@ -735,74 +738,48 @@ body {
   }
 }
 
-/* ——— Carrousel paires d’images (opt-in JS) : une slide = une .article-tiptap-pair (duo ou pile --stack) ——— */
+/* ——— Carrousel paires (opt-in JS) : une slide = une image ; 2 images visibles dans le viewport ——— */
 .article-tiptap-pair-carousel {
   position: relative;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(8px, 1.5vw, 16px);
   width: 100%;
   max-width: 100%;
   min-width: 0;
   margin: 30px 0;
   box-sizing: border-box;
+  padding-inline: 0;
 }
 
-.article-tiptap-pair-carousel__btn {
-  position: absolute;
-  top: 50%;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  margin: 0;
-  border: none;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.88);
-  color: rgba(55, 55, 55, 0.92);
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.08);
-  transform: translateY(-50%);
-  cursor: pointer;
-  line-height: 0;
-  transition:
-    opacity 0.15s ease,
-    background 0.15s ease;
-}
-
-.article-tiptap-pair-carousel__btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 1);
-}
-
+/*
+ * Boutons : styles = `publicExternalNavButtonClass` (Tailwind), identiques flipbook Accueil.
+ * Seul l’état désactivé reste ici (pas sur le composant partagé).
+ */
 .article-tiptap-pair-carousel__btn:disabled {
   opacity: 0.22;
   cursor: default;
 }
 
-.article-tiptap-pair-carousel__btn--prev {
-  left: clamp(2px, 1.2vw, 14px);
-}
-
-.article-tiptap-pair-carousel__btn--next {
-  right: clamp(2px, 1.2vw, 14px);
-}
-
-.article-tiptap-pair-carousel__btn svg {
-  width: 22px;
-  height: 22px;
-}
-
 .article-tiptap-pair-carousel__viewport {
-  width: 100%;
-  max-width: 100%;
+  --pair-carousel-gap: clamp(12px, 1.8vw, 22px);
+  /* Deux slides + un gap = 100cqi (scrollport sans padding sur ce nœud). */
+  --pair-slide-w: calc((100cqi - var(--pair-carousel-gap)) / 2);
+  flex: 0 0 60%;
+  width: 60%;
+  max-width: 60%;
   min-width: 0;
   overflow-x: auto;
-  /* Pile verticale (stack) : ne pas rogner la hauteur des slides. */
   overflow-y: visible;
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
+  scroll-padding-inline: 0;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  padding-inline: clamp(40px, 5vw, 52px);
+  padding-inline: 0;
   box-sizing: border-box;
   container-type: inline-size;
   container-name: pair-carousel;
@@ -816,22 +793,99 @@ body {
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
-  align-items: flex-start;
-  gap: clamp(16px, 2vw, 24px);
+  align-items: stretch;
+  gap: var(--pair-carousel-gap);
 }
 
-.article-tiptap-pair-carousel__track > .article-tiptap-pair {
+.article-tiptap-pair-carousel__track > .article-tiptap-pair-carousel__slide--flat {
   margin-top: 0 !important;
   margin-bottom: 0 !important;
 }
 
-.article-tiptap-pair-carousel__slide {
-  flex: 0 0 100cqw;
-  width: 100cqw;
-  max-width: 100cqw;
-  min-width: 0;
+/* Exactement 2 slides visibles dans le scrollport (50 % − demi-gap chacune). */
+.article-tiptap-pair-carousel__slide--flat {
+  flex: 0 0 var(--pair-slide-w);
+  width: var(--pair-slide-w);
+  max-width: var(--pair-slide-w);
+  flex-shrink: 0;
+  min-height: 0;
   scroll-snap-align: start;
+  scroll-snap-stop: always;
   box-sizing: border-box;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+}
+
+.article-tiptap-pair-carousel__slide--flat > .article-tiptap-img-zoom-wrap,
+.article-tiptap-pair-carousel__slide--flat > figure,
+.article-tiptap-pair-carousel__slide--flat > .article-tiptap-figure {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  max-width: 100% !important;
+  margin: 0 !important;
+}
+
+.article-tiptap-pair-carousel__slide--flat > .article-tiptap-img-zoom-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.article-tiptap-pair-carousel__slide--flat > figure,
+.article-tiptap-pair-carousel__slide--flat > .article-tiptap-figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.article-tiptap-pair-carousel__slide--flat > figure .article-tiptap-img-zoom-wrap,
+.article-tiptap-pair-carousel__slide--flat > .article-tiptap-figure .article-tiptap-img-zoom-wrap {
+  width: 100%;
+  max-width: 100% !important;
+}
+
+@media (min-width: 768px) {
+  .article-tiptap-pair-carousel__slide--flat > .article-tiptap-img-zoom-wrap img,
+  .article-tiptap-pair-carousel__slide--flat > figure img,
+  .article-tiptap-pair-carousel__slide--flat > .article-tiptap-figure img {
+    display: block;
+    width: auto !important;
+    height: auto !important;
+    max-width: 100% !important;
+    max-height: min(92dvh, 980px) !important;
+    min-width: 0;
+    object-fit: contain;
+    object-position: center;
+  }
+}
+
+@media (max-width: 767px) {
+  .article-tiptap-pair-carousel {
+    gap: clamp(6px, 2vw, 12px);
+  }
+
+  .article-tiptap-pair-carousel__viewport {
+    flex: 1 1 60%;
+    width: 60%;
+    max-width: min(60%, calc(100% - 104px));
+    min-width: 0;
+  }
+
+  .article-tiptap-pair-carousel__slide--flat > .article-tiptap-img-zoom-wrap img,
+  .article-tiptap-pair-carousel__slide--flat > figure img,
+  .article-tiptap-pair-carousel__slide--flat > .article-tiptap-figure img {
+    display: block;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    min-width: 0;
+    object-fit: contain;
+  }
 }
 
 /* ——— Carrousel : runs de plusieurs .article-tiptap-split consécutifs ——— */

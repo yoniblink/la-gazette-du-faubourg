@@ -1,12 +1,10 @@
 "use client";
 
 import { useLayoutEffect, useRef } from "react";
+import { pairCarouselNavSvg } from "@/components/icons/NavChevronIcon";
 import { mountArticlePairCarousels } from "@/lib/article-pair-carousel-dom";
 
 type ArticleLayoutVariant = "default" | "magazine-column";
-
-const PREV_SVG = `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><path d="M15.5 5.5L8 12L15.5 18.5" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-const NEXT_SVG = `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><path d="M8.5 5.5L16 12L8.5 18.5" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
 type Props = {
   html: string;
@@ -20,7 +18,10 @@ export function ArticleTiptapSurface({ html, layoutVariant, pairCarousel = false
   useLayoutEffect(() => {
     const el = rootRef.current;
     if (!el || !pairCarousel || layoutVariant !== "default") return;
-    return mountArticlePairCarousels(el, { prevSvg: PREV_SVG, nextSvg: NEXT_SVG });
+    return mountArticlePairCarousels(el, {
+      prevSvg: pairCarouselNavSvg.prev,
+      nextSvg: pairCarouselNavSvg.next,
+    });
   }, [html, pairCarousel, layoutVariant]);
 
   const isMagazine = layoutVariant === "magazine-column";

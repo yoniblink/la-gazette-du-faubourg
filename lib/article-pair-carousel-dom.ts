@@ -1,7 +1,10 @@
 /**
  * Regroupe les `.article-tiptap-pair` consécutifs (y compris `article-tiptap-pair--stack`)
- * en un carrousel horizontal : une slide = une paire (deux images en ligne ou en pile).
+ * en carrousel horizontal : chaque image = une slide ; le viewport affiche **deux** images
+ * d’affilée (preview côte à côte, défilement image par image).
  */
+
+import { publicExternalNavButtonClass } from "@/components/icons/NavChevronIcon";
 
 export type MountPairCarouselIcons = {
   prevSvg: string;
@@ -94,13 +97,13 @@ function buildCarouselShell(icons: MountPairCarouselIcons): {
 
   const prev = document.createElement("button");
   prev.type = "button";
-  prev.className = "article-tiptap-pair-carousel__btn article-tiptap-pair-carousel__btn--prev";
+  prev.className = `article-tiptap-pair-carousel__btn ${publicExternalNavButtonClass}`;
   prev.setAttribute("aria-label", "Voir les images précédentes");
   prev.innerHTML = icons.prevSvg;
 
   const next = document.createElement("button");
   next.type = "button";
-  next.className = "article-tiptap-pair-carousel__btn article-tiptap-pair-carousel__btn--next";
+  next.className = `article-tiptap-pair-carousel__btn ${publicExternalNavButtonClass}`;
   next.setAttribute("aria-label", "Voir les images suivantes");
   next.innerHTML = icons.nextSvg;
 
@@ -118,6 +121,17 @@ function buildCarouselShell(icons: MountPairCarouselIcons): {
   return { root, track, viewport, prev, next };
 }
 
+function flattenPairIntoSlides(track: HTMLElement, pair: HTMLElement): void {
+  const cells = Array.from(pair.children).filter((n): n is HTMLElement => n instanceof HTMLElement);
+  for (const cell of cells) {
+    const slide = document.createElement("div");
+    slide.className = "article-tiptap-pair-carousel__slide article-tiptap-pair-carousel__slide--flat";
+    slide.appendChild(cell);
+    track.appendChild(slide);
+  }
+  pair.remove();
+}
+
 function finalizeCarousel(
   track: HTMLElement,
   run: HTMLElement[],
@@ -126,8 +140,7 @@ function finalizeCarousel(
   next: HTMLButtonElement,
 ): () => void {
   for (const pair of run) {
-    pair.classList.add("article-tiptap-pair-carousel__slide");
-    track.appendChild(pair);
+    flattenPairIntoSlides(track, pair);
   }
   return wireCarousel(viewport, prev, next);
 }
