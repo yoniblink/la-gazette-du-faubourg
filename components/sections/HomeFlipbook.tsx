@@ -88,7 +88,7 @@ export function HomeFlipbook({
         className={
           embedded
             ? "mx-auto w-full min-w-0 max-w-6xl px-6 max-[768px]:px-4 md:px-10"
-            : "mx-auto max-w-6xl px-6 max-[768px]:px-4 md:px-10"
+            : "mx-auto w-full max-w-6xl px-6 max-[768px]:px-5 md:px-10"
         }
       >
         {!embedded ? (

@@ -75,9 +75,9 @@ function bookShiftRatioFromFlip(flip: PageFlipRuntime, reduceMotion: boolean): n
 function FlipbookPremiumPlaceholder({ pageH }: { pageH: number }) {
   const minH = Math.max(380, Math.min(pageH * 1.2, 1100));
   return (
-    <div className="flipbook-premium-scene mx-auto w-full max-w-[min(100%,1360px)] px-0 pb-14 pt-2 max-[1024px]:px-2 max-[768px]:px-3 md:pb-20 md:pt-4">
-      <div className="flipbook-premium-stage flex flex-col items-stretch">
-        <div className="flipbook-premium-tilt relative flex w-full min-w-0 justify-center">
+    <div className="flipbook-premium-scene mx-auto w-full max-w-[min(100%,1360px)] px-0 pb-14 pt-2 max-[1024px]:px-3 max-[768px]:px-4 md:pb-20 md:pt-4">
+      <div className="flipbook-premium-stage flex w-full flex-col items-center">
+        <div className="flipbook-premium-tilt relative flex w-full min-w-0 max-w-full justify-center">
           <div className="relative w-full min-w-0 max-w-full translate-x-0">
             <div
               className="flipbook-premium-root mx-auto w-full rounded-[3px] bg-stone-200/40 animate-pulse motion-reduce:animate-none"
@@ -267,7 +267,7 @@ export function HomeFlipbookViewer({
   if (!HTMLFlipBook) return null;
 
   const sceneClass =
-    `flipbook-premium-scene mx-auto w-full max-w-[min(100%,1360px)] px-0 pb-14 pt-2 max-[1024px]:px-2 max-[768px]:px-3 md:pb-20 md:pt-4` +
+    `flipbook-premium-scene mx-auto w-full max-w-[min(100%,1360px)] px-0 pb-14 pt-2 max-[1024px]:px-3 max-[768px]:px-4 md:pb-20 md:pt-4` +
     (sceneFlipping ? " flipbook-premium-scene--flipping" : "");
 
   const canGoPrev = currentPage > 0;
@@ -280,7 +280,7 @@ export function HomeFlipbookViewer({
         type="button"
         aria-label={isFullscreen ? "Quitter le plein écran" : "Passer en plein écran"}
         aria-pressed={isFullscreen}
-        className={`${publicExternalNavButtonClass} absolute right-2 top-2 md:right-4 md:top-4`}
+        className={`${publicExternalNavButtonClass} absolute right-2 top-2 hidden md:flex md:right-4 md:top-4`}
         onClick={(e) => {
           e.stopPropagation();
           e.preventDefault();
@@ -310,9 +310,9 @@ export function HomeFlipbookViewer({
           </svg>
         )}
       </button>
-      <div className="flipbook-premium-stage flex flex-col items-stretch">
+      <div className="flipbook-premium-stage flex w-full flex-col items-center">
         <div
-          className={`flipbook-premium-tilt relative flex w-full min-w-0 items-center ${showNav ? "gap-2 sm:gap-3 md:gap-4 lg:gap-5" : "justify-center"}`}
+          className={`flipbook-premium-tilt relative flex w-full min-w-0 max-w-full items-center justify-center ${showNav ? "gap-1.5 sm:gap-3 md:gap-4 lg:gap-5" : ""}`}
         >
           {showNav ? (
             <div className="flex shrink-0 justify-center">
@@ -336,7 +336,7 @@ export function HomeFlipbookViewer({
 
           <div
             ref={bookShiftRef}
-            className={`relative min-w-0 max-w-full will-change-[transform] ${showNav ? "flex-1" : "w-full"}`}
+            className={`relative flex min-w-0 max-w-full justify-center will-change-[transform] ${showNav ? "flex-1" : "w-full"}`}
           >
           <HTMLFlipBook
             ref={flipbookRef as never}

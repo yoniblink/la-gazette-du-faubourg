@@ -1,4 +1,4 @@
-import { ZoomableImage } from "@/components/ui/ZoomableImage";
+import Image from "next/image";
 import type { Metadata } from "next";
 import { site } from "@/lib/content/site";
 
@@ -40,13 +40,15 @@ export default function QuiSommesNousPage() {
       <section className="mx-auto grid max-w-6xl grid-cols-1 gap-12 px-6 max-[768px]:gap-8 max-[768px]:px-4 md:grid-cols-12 md:items-center md:gap-16 md:px-10">
         <div className="md:col-span-7">
           <div className="relative mx-auto aspect-[3/4] w-full max-w-[520px] md:mx-0 md:max-w-full">
-            <ZoomableImage
+            <Image
               src="/qui-sommes-nous-illustration-transparent.png"
               alt="La Gazette du Faubourg Media — illustration"
               fill
               priority
+              data-no-zoom="true"
               className="object-contain object-center"
               sizes="(max-width: 768px) 92vw, (max-width: 1024px) 55vw, 672px"
+              draggable={false}
             />
           </div>
         </div>
