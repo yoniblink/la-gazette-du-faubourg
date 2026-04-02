@@ -20,8 +20,8 @@ export const metadata: Metadata = {
 export default async function MediaKitPage() {
   const mediaKitUrl = (await getMediaKitPdfUrl()) ?? site.mediaKitUrl;
   return (
-    <main className="flex flex-1 flex-col bg-[#f8f8f8] pb-24 pt-20 md:pb-28 md:pt-28">
-      <section className="mx-auto grid max-w-6xl grid-cols-1 gap-12 px-6 md:grid-cols-12 md:items-center md:gap-16 md:px-10">
+    <main className="flex flex-1 flex-col bg-[#f8f8f8] pb-24 pt-20 max-[768px]:pb-16 max-[768px]:pt-[4.5rem] max-[1024px]:pb-20 md:pb-28 md:pt-28">
+      <section className="mx-auto grid max-w-6xl grid-cols-1 gap-12 px-6 max-[768px]:gap-8 max-[768px]:px-4 md:grid-cols-12 md:items-center md:gap-16 md:px-10">
         <div className="md:col-span-5">
           <div className="relative mx-auto aspect-[4/5] w-full max-w-[470px]">
             <Image
@@ -48,7 +48,7 @@ export default async function MediaKitPage() {
               href={mediaKitUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center rounded-full border border-[#202126] px-6 py-3 font-[family-name:var(--font-sans)] text-sm font-medium tracking-[0.04em] text-[#202126] transition-colors hover:bg-[#202126] hover:text-white"
+              className="inline-flex min-h-[44px] items-center rounded-full border border-[#202126] px-6 py-3 font-[family-name:var(--font-sans)] text-sm font-medium tracking-[0.04em] text-[#202126] transition-colors hover:bg-[#202126] hover:text-white max-[768px]:w-full max-[768px]:justify-center max-[1024px]:px-5"
             >
               Telecharger le media-kit
             </Link>

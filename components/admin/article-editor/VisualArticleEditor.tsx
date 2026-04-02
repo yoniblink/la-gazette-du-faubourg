@@ -262,7 +262,7 @@ export function VisualArticleEditor({
       style={{ minHeight: `calc(100dvh - ${EDITOR_BAR_TOP})` }}
     >
       <aside
-        className={`fixed bottom-0 left-0 z-30 flex w-[min(100vw-1rem,320px)] min-w-[280px] max-w-[320px] flex-col border-r border-stone-200 bg-white shadow-xl shadow-black/10 transition-transform duration-300 ease-out ${
+        className={`fixed bottom-0 left-0 z-30 flex w-[min(100vw-1rem,320px)] min-w-[min(280px,100vw-1rem)] max-w-[min(320px,100vw-0.5rem)] flex-col border-r border-stone-200 bg-white shadow-xl shadow-black/10 transition-transform duration-300 ease-out max-[768px]:min-w-0 ${
           leftPanelOpen ? "translate-x-0 pointer-events-auto" : "-translate-x-full pointer-events-none"
         }`}
         style={{ top: EDITOR_BAR_TOP }}

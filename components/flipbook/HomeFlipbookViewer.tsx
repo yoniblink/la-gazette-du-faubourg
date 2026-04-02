@@ -75,7 +75,7 @@ function bookShiftRatioFromFlip(flip: PageFlipRuntime, reduceMotion: boolean): n
 function FlipbookPremiumPlaceholder({ pageH }: { pageH: number }) {
   const minH = Math.max(380, Math.min(pageH * 1.2, 1100));
   return (
-    <div className="flipbook-premium-scene mx-auto w-full max-w-[min(100%,1360px)] px-0 pb-14 pt-2 md:pb-20 md:pt-4">
+    <div className="flipbook-premium-scene mx-auto w-full max-w-[min(100%,1360px)] px-0 pb-14 pt-2 max-[1024px]:px-2 max-[768px]:px-3 md:pb-20 md:pt-4">
       <div className="flipbook-premium-stage flex flex-col items-stretch">
         <div className="flipbook-premium-tilt relative flex w-full min-w-0 justify-center">
           <div className="relative w-full min-w-0 max-w-full translate-x-0">
@@ -267,7 +267,7 @@ export function HomeFlipbookViewer({
   if (!HTMLFlipBook) return null;
 
   const sceneClass =
-    `flipbook-premium-scene mx-auto w-full max-w-[min(100%,1360px)] px-0 pb-14 pt-2 md:pb-20 md:pt-4` +
+    `flipbook-premium-scene mx-auto w-full max-w-[min(100%,1360px)] px-0 pb-14 pt-2 max-[1024px]:px-2 max-[768px]:px-3 md:pb-20 md:pt-4` +
     (sceneFlipping ? " flipbook-premium-scene--flipping" : "");
 
   const canGoPrev = currentPage > 0;

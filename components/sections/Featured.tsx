@@ -10,16 +10,16 @@ export type { FeaturedItem };
 
 export function Featured({ items }: { items: FeaturedItem[] }) {
   return (
-    <section id="actualite" className="scroll-mt-24 bg-white py-24 md:py-32">
+    <section id="actualite" className="scroll-mt-24 bg-white py-24 max-[768px]:py-16 max-[1024px]:py-20 md:py-32">
       <SectionHeading
         className="text-center"
         title="L’actualité du Faubourg ..."
         titlePresetNone
-        titleClassName="mx-auto w-max max-w-full text-center text-[34px] font-normal italic leading-tight tracking-tight text-black lg:text-[48px] lg:leading-[1.12]"
+        titleClassName="mx-auto w-max max-w-full text-center text-[34px] font-normal italic leading-tight tracking-tight text-black max-[768px]:w-full max-[768px]:text-balance lg:text-[48px] lg:leading-[1.12]"
         titleStyle={{ fontFamily: "Griffiths, serif" }}
       />
       {items.length === 0 ? (
-        <p className="mx-auto mt-14 max-w-6xl px-6 text-center text-sm text-[#7a7a7a] md:px-10">
+        <p className="mx-auto mt-14 max-w-6xl px-6 text-center text-sm text-[#7a7a7a] max-[768px]:px-4 md:px-10">
           Les prochains articles paraîtront ici.
         </p>
       ) : (
@@ -28,7 +28,7 @@ export function Featured({ items }: { items: FeaturedItem[] }) {
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, margin: "-10% 0px" }}
-          className="mx-auto mt-12 max-w-6xl px-6 md:mt-16 md:px-10"
+          className="mx-auto mt-12 max-w-6xl px-6 max-[768px]:px-4 md:mt-16 md:px-10"
         >
           <EditorialCarousel items={items} />
         </MotionDiv>

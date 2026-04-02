@@ -80,15 +80,15 @@ export function HomeFlipbook({
       id="flipbook"
       className={
         embedded
-          ? "scroll-mt-24 bg-transparent py-12 md:py-16"
-          : "scroll-mt-24 border-y border-black/[0.06] bg-transparent py-20 md:py-28"
+          ? "scroll-mt-24 bg-transparent py-12 max-[768px]:py-8 md:py-16"
+          : "scroll-mt-24 border-y border-black/[0.06] bg-transparent py-20 max-[768px]:py-14 max-[1024px]:py-16 md:py-28"
       }
     >
       <div
         className={
           embedded
-            ? "mx-auto w-full min-w-0 max-w-6xl px-6 md:px-10"
-            : "mx-auto max-w-6xl px-6 md:px-10"
+            ? "mx-auto w-full min-w-0 max-w-6xl px-6 max-[768px]:px-4 md:px-10"
+            : "mx-auto max-w-6xl px-6 max-[768px]:px-4 md:px-10"
         }
       >
         {!embedded ? (
@@ -100,7 +100,7 @@ export function HomeFlipbook({
             className="text-center"
           >
             <h2
-              className="mx-auto w-max max-w-full text-center text-[34px] font-normal italic leading-tight tracking-tight text-black lg:text-[48px] lg:leading-[1.12]"
+              className="mx-auto w-max max-w-full text-center text-[34px] font-normal italic leading-tight tracking-tight text-black max-[768px]:w-full max-[768px]:text-balance max-[1024px]:px-1 lg:text-[48px] lg:leading-[1.12]"
               style={{ fontFamily: "Griffiths, serif" }}
             >
               Découvrez La Gazette du Faubourg en format papier.

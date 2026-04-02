@@ -35,7 +35,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
             key={item.href}
             href={item.href}
             onClick={onNavigate}
-            className={`block rounded-lg px-3 py-2 text-sm transition-colors ${
+            className={`block rounded-lg px-3 py-2 text-sm transition-colors max-[768px]:flex max-[768px]:min-h-[44px] max-[768px]:items-center ${
               active
                 ? "bg-stone-900 text-white"
                 : "text-stone-600 hover:bg-stone-100 hover:text-stone-900"
@@ -96,7 +96,7 @@ export function AdminShell({
           <button
             type="button"
             onClick={() => signOut({ callbackUrl: "/admin/login" })}
-            className="mt-2 w-full rounded-lg px-3 py-2 text-left text-sm text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-800"
+            className="mt-2 min-h-[44px] w-full rounded-lg px-3 py-2 text-left text-sm text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-800"
           >
             Déconnexion
           </button>
@@ -110,7 +110,7 @@ export function AdminShell({
             aria-expanded={open}
             aria-label="Menu"
             onClick={() => setOpen((o) => !o)}
-            className="rounded-lg p-2 text-stone-700 hover:bg-stone-100"
+            className="rounded-lg p-2 text-stone-700 hover:bg-stone-100 max-[768px]:min-h-[44px] max-[768px]:min-w-[44px] max-[768px]:p-3"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
@@ -125,13 +125,13 @@ export function AdminShell({
             <button
               type="button"
               onClick={() => signOut({ callbackUrl: "/admin/login" })}
-              className="mt-4 w-full rounded-lg py-2 text-left text-sm text-stone-500"
+              className="mt-4 min-h-[44px] w-full rounded-lg py-2 text-left text-sm text-stone-500"
             >
               Déconnexion
             </button>
           </div>
         ) : null}
-        <main className="flex-1 px-4 py-8 md:px-10 md:py-12">{children}</main>
+        <main className="flex-1 px-4 py-8 max-[768px]:px-3 max-[768px]:py-6 max-[1024px]:px-6 md:px-10 md:py-12">{children}</main>
       </div>
     </div>
   );

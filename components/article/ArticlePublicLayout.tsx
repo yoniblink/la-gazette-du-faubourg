@@ -51,14 +51,14 @@ export function ArticlePublicLayout(props: ArticlePublicLayoutProps) {
   const showCoverBlock = Boolean(inlineEdit);
 
   const mainPad = inlineEdit
-    ? "pb-12 pt-6 md:pb-16 md:pt-8"
-    : "pb-24 pt-20 md:pb-32 md:pt-28";
+    ? "pb-12 pt-6 max-[768px]:pb-10 max-[768px]:pt-5 md:pb-16 md:pt-8"
+    : "pb-24 pt-20 max-[768px]:pb-16 max-[768px]:pt-[4.5rem] max-[1024px]:pb-20 max-[1024px]:pt-24 md:pb-32 md:pt-28";
 
   const isMagazine = articleSurface === "magazine-column" && !inlineEdit;
   const mainBg = isMagazine ? "bg-white" : "bg-[#fafafa]";
   const articleMax = isMagazine
-    ? "max-w-[42rem] px-5 md:px-6"
-    : "max-w-[1140px] px-5 md:px-8 lg:px-10";
+    ? "max-w-[42rem] px-5 max-[768px]:px-4 md:px-6"
+    : "max-w-[1140px] px-5 max-[768px]:px-4 md:px-8 lg:px-10";
 
   return (
     <main className={`flex flex-1 flex-col ${mainBg} ${mainPad}`}>
@@ -105,10 +105,10 @@ export function ArticlePublicLayout(props: ArticlePublicLayoutProps) {
         {children}
 
         {inlineEdit ? null : (
-          <footer className="mt-16 border-t border-black/[0.08] pt-10">
+          <footer className="mt-16 border-t border-black/[0.08] pt-10 max-[768px]:mt-12 max-[768px]:pt-8">
             <Link
               href={`/${categorySlug}`}
-              className="mt-6 inline-flex font-[family-name:var(--font-sans)] text-[11px] font-medium uppercase tracking-[0.22em] text-[#0a0a0a] transition-opacity hover:opacity-60"
+              className="mt-6 inline-flex min-h-[44px] items-center font-[family-name:var(--font-sans)] text-[11px] font-medium uppercase tracking-[0.22em] text-[#0a0a0a] transition-opacity hover:opacity-60 max-[768px]:mt-4 max-[768px]:py-2"
             >
               ← Retour à {categoryTitle}
             </Link>

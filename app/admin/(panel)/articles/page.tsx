@@ -25,7 +25,7 @@ export default async function AdminArticlesPage({ searchParams }: Props) {
             href="/admin/articles/new"
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-lg bg-stone-900 px-4 py-2.5 text-[11px] font-medium uppercase tracking-wider text-white hover:opacity-90"
+            className="inline-flex min-h-[44px] items-center justify-center rounded-lg bg-stone-900 px-4 py-2.5 text-[11px] font-medium uppercase tracking-wider text-white hover:opacity-90 max-[768px]:w-full min-[769px]:w-auto"
           >
             Nouvel article
           </Link>
@@ -104,13 +104,13 @@ export default async function AdminArticlesPage({ searchParams }: Props) {
           href={`/admin/articles/new?rubrique=${encodeURIComponent(category.slug)}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="rounded-lg bg-stone-900 px-4 py-2.5 text-[11px] font-medium uppercase tracking-wider text-white hover:opacity-90"
+          className="inline-flex min-h-[44px] items-center justify-center rounded-lg bg-stone-900 px-4 py-2.5 text-[11px] font-medium uppercase tracking-wider text-white hover:opacity-90 max-[768px]:w-full min-[769px]:w-auto"
         >
           Nouvel article
         </Link>
       </div>
 
-      <div className="mt-10 overflow-x-auto rounded-xl border border-stone-200 bg-white">
+      <div className="mt-10 overflow-x-auto rounded-xl border border-stone-200 bg-white max-[768px]:-mx-1">
         <table className="w-full min-w-[520px] text-left text-sm">
           <thead className="border-b border-stone-200 bg-stone-50 text-[11px] font-medium uppercase tracking-wider text-stone-500">
             <tr>

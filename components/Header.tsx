@@ -95,7 +95,7 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
       <div className="relative mx-auto flex h-20 w-full max-w-[100rem] items-center justify-between gap-x-4 px-4 md:grid md:h-24 md:grid-cols-[auto_minmax(0,1fr)] md:items-center md:gap-x-3 md:px-6 lg:gap-x-5 lg:px-8 xl:gap-x-6 xl:px-10">
         <button
           type="button"
-          className="relative z-10 flex h-10 w-10 shrink-0 flex-col items-center justify-center rounded-sm border border-[#0a0a0a]/10 bg-transparent text-[#0a0a0a] transition-[border-color,background-color] hover:border-[#0a0a0a]/22 hover:bg-[#0a0a0a]/[0.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0a0a0a]/25 md:hidden"
+          className="relative z-10 flex h-10 w-10 max-[768px]:h-11 max-[768px]:min-h-[44px] max-[768px]:min-w-[44px] max-[768px]:w-11 shrink-0 flex-col items-center justify-center rounded-sm border border-[#0a0a0a]/10 bg-transparent text-[#0a0a0a] transition-[border-color,background-color] hover:border-[#0a0a0a]/22 hover:bg-[#0a0a0a]/[0.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0a0a0a]/25 md:hidden"
           aria-expanded={menuOpen}
           aria-controls={menuId}
           aria-haspopup="dialog"
@@ -145,7 +145,7 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
               width={360}
               height={120}
               className="h-full w-full object-contain object-center md:hidden"
-              sizes="(max-width:767px) 280px, 1px"
+              sizes="(max-width:768px) 280px, 1px"
               priority
             />
             <Image
@@ -160,7 +160,7 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
           </Link>
         </div>
 
-        <div className="h-10 w-10 shrink-0 md:hidden" aria-hidden />
+        <div className="h-10 w-10 max-[768px]:h-11 max-[768px]:w-11 shrink-0 md:hidden" aria-hidden />
 
         <nav
           aria-label="Navigation principale"
@@ -234,7 +234,7 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
                 </p>
                 <button
                   type="button"
-                  className="font-[family-name:var(--font-sans)] text-[9px] font-medium uppercase tracking-[0.2em] text-[#0a0a0a]/55 transition-colors hover:text-[#0a0a0a]"
+                  className="inline-flex min-h-[44px] items-center px-2 font-[family-name:var(--font-sans)] text-[9px] font-medium uppercase tracking-[0.2em] text-[#0a0a0a]/55 transition-colors hover:text-[#0a0a0a] max-[768px]:min-w-[44px] max-[768px]:justify-center"
                   onClick={closeMenu}
                 >
                   Fermer

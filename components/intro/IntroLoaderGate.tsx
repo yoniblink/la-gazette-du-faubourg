@@ -182,7 +182,7 @@ function MagazineIntroOverlay({
   return (
     <motion.div
       role="presentation"
-      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#fafafa] px-6 ${exiting ? "pointer-events-none" : ""}`}
+      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#fafafa] px-6 max-[1024px]:px-5 max-[768px]:px-4 ${exiting ? "pointer-events-none" : ""}`}
       initial={{ opacity: 0 }}
       animate={
         exiting
@@ -205,7 +205,7 @@ function MagazineIntroOverlay({
     >
       <div className="flex max-w-[min(90vw,42rem)] flex-col items-center text-center">
         <motion.div
-          className="relative h-[110px] w-[min(90vw,520px)]"
+          className="relative h-[110px] w-[min(90vw,520px)] max-[768px]:h-[92px] max-[1024px]:w-[min(92vw,480px)]"
           initial={{ opacity: 0, y: 12, filter: "blur(10px)" }}
           animate={
             showLogo && !exiting

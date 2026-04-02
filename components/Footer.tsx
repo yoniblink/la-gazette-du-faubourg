@@ -31,7 +31,7 @@ function FooterSocialLink({
       target="_blank"
       rel="noopener noreferrer"
       aria-label={label}
-      className="flex size-9 shrink-0 items-center justify-center text-white transition-colors hover:text-[#CED0C3] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40"
+      className="flex size-9 shrink-0 items-center justify-center text-white transition-colors hover:text-[#CED0C3] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40 max-[768px]:size-11 max-[768px]:min-h-[44px] max-[768px]:min-w-[44px]"
     >
       {children}
     </Link>
@@ -53,7 +53,7 @@ export function Footer({ categories }: { categories: FooterCategory[] }) {
       className="text-white"
       style={{ backgroundColor: FOOTER_BG }}
     >
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-[30px] px-6 pb-[20px] pt-[50px] md:px-10 lg:gap-[30px] lg:pb-[67px] lg:pt-[70px] xl:pt-[100px]">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-[30px] px-6 pb-[20px] pt-[50px] max-[768px]:gap-6 max-[768px]:px-4 max-[768px]:pb-4 max-[768px]:pt-10 md:px-10 lg:gap-[30px] lg:pb-[67px] lg:pt-[70px] xl:pt-[100px]">
         <div className="pb-5 lg:pb-5">
           <Link
             href="/"
@@ -87,7 +87,7 @@ export function Footer({ categories }: { categories: FooterCategory[] }) {
               <li className="py-[3px]">
                 <a
                   href={`mailto:${site.emailRedaction}`}
-                  className="text-[15px] font-normal uppercase text-white transition-colors hover:text-[#CED0C3] max-lg:text-[13px]"
+                  className="text-[15px] font-normal uppercase text-white transition-colors hover:text-[#CED0C3] max-lg:text-[13px] max-[768px]:flex max-[768px]:min-h-[44px] max-[768px]:items-center"
                 >
                   Contact rédaction
                 </a>
@@ -95,7 +95,7 @@ export function Footer({ categories }: { categories: FooterCategory[] }) {
               <li className="py-[3px]">
                 <a
                   href={`mailto:${site.emailAnnonceurs}`}
-                  className="text-[15px] font-normal uppercase text-white transition-colors hover:text-[#CED0C3] max-lg:text-[13px]"
+                  className="text-[15px] font-normal uppercase text-white transition-colors hover:text-[#CED0C3] max-lg:text-[13px] max-[768px]:flex max-[768px]:min-h-[44px] max-[768px]:items-center"
                 >
                   Contact annonceurs
                 </a>
@@ -103,7 +103,7 @@ export function Footer({ categories }: { categories: FooterCategory[] }) {
               <li className="py-[3px]">
                 <a
                   href={`mailto:${site.emailPartenariats}`}
-                  className="text-[15px] font-normal uppercase text-white transition-colors hover:text-[#CED0C3] max-lg:text-[13px]"
+                  className="text-[15px] font-normal uppercase text-white transition-colors hover:text-[#CED0C3] max-lg:text-[13px] max-[768px]:flex max-[768px]:min-h-[44px] max-[768px]:items-center"
                 >
                   Contact partenariats
                 </a>
@@ -111,7 +111,7 @@ export function Footer({ categories }: { categories: FooterCategory[] }) {
               <li className="py-[3px]">
                 <Link
                   href="/qui-sommes-nous"
-                  className="text-[15px] font-normal uppercase text-white transition-colors hover:text-[#CED0C3] max-lg:text-[13px]"
+                  className="text-[15px] font-normal uppercase text-white transition-colors hover:text-[#CED0C3] max-lg:text-[13px] max-[768px]:flex max-[768px]:min-h-[44px] max-[768px]:items-center"
                 >
                   Qui sommes nous
                 </Link>
@@ -133,7 +133,7 @@ export function Footer({ categories }: { categories: FooterCategory[] }) {
                   <li key={r.slug} className="py-[3px]">
                     <Link
                       href={publicRubriqueHref(r.slug)}
-                      className="text-[15px] font-normal leading-[1.2] text-white transition-colors hover:text-[#CED0C3] max-lg:text-[13px]"
+                      className="text-[15px] font-normal leading-[1.2] text-white transition-colors hover:text-[#CED0C3] max-lg:text-[13px] max-[768px]:flex max-[768px]:min-h-[44px] max-[768px]:items-center"
                     >
                       {r.slug === "actualite" ? "Actualités" : r.title}
                     </Link>
@@ -145,7 +145,7 @@ export function Footer({ categories }: { categories: FooterCategory[] }) {
                   <li key={r.slug} className="py-[3px]">
                     <Link
                       href={publicRubriqueHref(r.slug)}
-                      className="text-[15px] font-normal leading-[1.2] text-white transition-colors hover:text-[#CED0C3] max-lg:text-[13px]"
+                      className="text-[15px] font-normal leading-[1.2] text-white transition-colors hover:text-[#CED0C3] max-lg:text-[13px] max-[768px]:flex max-[768px]:min-h-[44px] max-[768px]:items-center"
                     >
                       {r.title}
                     </Link>
@@ -168,7 +168,7 @@ export function Footer({ categories }: { categories: FooterCategory[] }) {
                 <li className="py-[3px]">
                   <Link
                     href={publicRubriqueHref(laRevue.slug)}
-                    className="text-[15px] font-normal leading-[1.2] text-white transition-colors hover:text-[#CED0C3] max-lg:text-[13px]"
+                    className="text-[15px] font-normal leading-[1.2] text-white transition-colors hover:text-[#CED0C3] max-lg:text-[13px] max-[768px]:flex max-[768px]:min-h-[44px] max-[768px]:items-center"
                   >
                     {laRevue.title}
                   </Link>
@@ -177,7 +177,7 @@ export function Footer({ categories }: { categories: FooterCategory[] }) {
               <li className="py-[3px]">
                 <Link
                   href="/le-media-kit"
-                  className="text-[15px] font-normal leading-[1.2] text-white transition-colors hover:text-[#CED0C3] max-lg:text-[13px]"
+                  className="text-[15px] font-normal leading-[1.2] text-white transition-colors hover:text-[#CED0C3] max-lg:text-[13px] max-[768px]:flex max-[768px]:min-h-[44px] max-[768px]:items-center"
                 >
                   Le Media-kit
                 </Link>
@@ -189,7 +189,7 @@ export function Footer({ categories }: { categories: FooterCategory[] }) {
           <div className="lg:col-span-2">
             <div className="grid w-max max-w-full gap-y-3">
               <h4
-                className={`${headingSerifClass} mb-0 whitespace-nowrap pb-0`}
+                className={`${headingSerifClass} mb-0 whitespace-nowrap pb-0 max-[768px]:whitespace-normal max-[768px]:text-balance`}
                 style={{ fontFamily: '"Garamond Italic", Garamond, ui-serif, Georgia, serif' }}
               >
                 Rejoignez-nous

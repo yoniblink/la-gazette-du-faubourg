@@ -55,7 +55,7 @@ function StoryMediaToolbar({
           e.stopPropagation();
           onToggleMute();
         }}
-        className="rounded-md p-1.5 text-white transition-opacity hover:opacity-90"
+        className="rounded-md p-1.5 text-white transition-opacity hover:opacity-90 max-[768px]:flex max-[768px]:min-h-[44px] max-[768px]:min-w-[44px] max-[768px]:items-center max-[768px]:justify-center"
         aria-label={muted ? "Activer le son" : "Couper le son"}
       >
         {muted ? (
@@ -84,7 +84,7 @@ function StoryMediaToolbar({
           e.stopPropagation();
           onTogglePlay();
         }}
-        className="rounded-md p-1.5 text-white transition-opacity hover:opacity-90"
+        className="rounded-md p-1.5 text-white transition-opacity hover:opacity-90 max-[768px]:flex max-[768px]:min-h-[44px] max-[768px]:min-w-[44px] max-[768px]:items-center max-[768px]:justify-center"
         aria-label={playing ? "Pause" : "Lecture"}
       >
         {playing ? (
@@ -470,7 +470,7 @@ export function InstagramReelsStack({ reels }: { reels: InstagramReelPublic[] })
 
       <div className="md:hidden">
         <div
-          className="-mx-6 flex snap-x snap-mandatory gap-8 overflow-x-auto scroll-smooth scroll-pb-4 px-6 pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="-mx-6 flex snap-x snap-mandatory gap-8 overflow-x-auto scroll-smooth scroll-pb-4 px-6 pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden max-[768px]:-mx-4 max-[768px]:gap-6 max-[768px]:px-4 max-[768px]:scroll-pl-4 max-[768px]:scroll-pr-4"
           role="region"
           aria-label="Vidéos Instagram"
         >

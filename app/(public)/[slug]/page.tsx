@@ -51,10 +51,10 @@ export default async function RubriquePage({ params }: Props) {
     isLaRevue && hasDatabaseUrl() ? await getHomeFlipbookManifest() : null;
 
   return (
-    <main className="flex flex-1 flex-col bg-white pt-20 pb-24 md:pt-24 md:pb-32">
-      <header className="w-full bg-black px-4 py-14 md:px-6 md:py-20">
+    <main className="flex flex-1 flex-col bg-white pt-20 pb-24 max-[768px]:pb-16 max-[768px]:pt-[4.5rem] max-[1024px]:pb-20 md:pt-24 md:pb-32">
+      <header className="w-full bg-black px-4 py-14 max-[768px]:px-3 max-[768px]:py-10 md:px-6 md:py-20">
         <h1
-          className="mx-auto w-max max-w-full text-center text-[34px] font-normal italic leading-tight tracking-tight text-white lg:text-[48px] lg:leading-[1.12]"
+          className="mx-auto w-max max-w-full text-center text-[34px] font-normal italic leading-tight tracking-tight text-white max-[768px]:w-full max-[768px]:text-balance lg:text-[48px] lg:leading-[1.12]"
           style={{ fontFamily: "Griffiths, serif" }}
         >
           {rubriqueTitle}
@@ -69,7 +69,7 @@ export default async function RubriquePage({ params }: Props) {
       ) : null}
       {articles.length > 0 ? (
         <article
-          className={`mx-auto min-w-0 max-w-6xl px-6 pb-0 md:px-10 ${
+          className={`mx-auto min-w-0 max-w-6xl px-6 pb-0 max-[768px]:px-4 md:px-10 ${
             isLaRevue && flipbookPdfUrl ? "pt-0" : "pt-12 md:pt-16"
           }`}
         >
@@ -111,20 +111,20 @@ export default async function RubriquePage({ params }: Props) {
                     </div>
                     <div className="flex min-w-0 flex-col justify-center md:col-span-6 lg:col-span-5">
                       <h3
-                        className="w-max max-w-full text-left text-[34px] font-normal italic leading-tight tracking-tight text-[#0a0a0a] lg:text-[48px] lg:leading-[1.12]"
+                        className="w-max max-w-full text-left text-[34px] font-normal italic leading-tight tracking-tight text-[#0a0a0a] max-[768px]:w-full max-[768px]:text-balance lg:text-[48px] lg:leading-[1.12]"
                         style={{ fontFamily: "Griffiths, serif" }}
                       >
                         {a.title}
                       </h3>
                       {a.excerpt ? (
                         <p
-                          className="mb-0 mt-5 max-w-xl min-h-[8.5rem] overflow-hidden text-justify text-[18px] font-normal leading-[1.6] text-pretty text-[#0a0a0a] max-[767px]:leading-[1.55] max-[1024px]:text-[17px] max-[1024px]:leading-[1.58] lg:min-h-[9rem] line-clamp-5"
+                          className="mb-0 mt-5 max-w-xl min-h-[8.5rem] overflow-hidden text-justify text-[18px] font-normal leading-[1.6] text-pretty text-[#0a0a0a] max-[768px]:leading-[1.55] max-[1024px]:text-[17px] max-[1024px]:leading-[1.58] lg:min-h-[9rem] line-clamp-5"
                           style={{ fontFamily: "Garamond, serif", letterSpacing: "-0.2px" }}
                         >
                           {a.excerpt}
                         </p>
                       ) : null}
-                      <span className="mt-6 inline-flex w-fit font-[family-name:var(--font-sans)] text-[11px] font-medium uppercase tracking-[0.2em] text-[#0a0a0a] underline decoration-black/20 underline-offset-[6px]">
+                      <span className="mt-6 inline-flex min-h-[44px] w-fit items-center font-[family-name:var(--font-sans)] text-[11px] font-medium uppercase tracking-[0.2em] text-[#0a0a0a] underline decoration-black/20 underline-offset-[6px] max-[768px]:py-2">
                         Lire la suite
                       </span>
                     </div>

@@ -91,21 +91,21 @@ export function Hero() {
     <section id="intro" className="scroll-mt-24 bg-white text-black">
       <div className="mx-auto w-full max-w-[1400px]">
         <div
-          className="flex w-full flex-col max-[767px]:px-[10px] max-[1024px]:pb-[50px] max-[1024px]:pt-0 px-4 md:px-10 lg:grid lg:grid-cols-[minmax(0,9fr)_minmax(0,11fr)] lg:grid-rows-[auto_auto] lg:items-center lg:gap-x-10 lg:gap-y-0 xl:gap-x-14 lg:pb-16 lg:pt-16 xl:pt-20"
+          className="flex w-full flex-col max-[768px]:px-[10px] max-[1024px]:pb-[50px] max-[1024px]:pt-0 px-4 md:px-10 lg:grid lg:grid-cols-[minmax(0,9fr)_minmax(0,11fr)] lg:grid-rows-[auto_auto] lg:items-center lg:gap-x-10 lg:gap-y-0 xl:gap-x-14 lg:pb-16 lg:pt-16 xl:pt-20"
         >
             {/* Logo + menu : rangée 1 colonne 1 en desktop ; premier bloc en mobile. */}
             <div
               id="intro-primary-nav"
-              className="flex min-w-0 flex-col items-stretch text-left max-[767px]:-mt-6 max-[1024px]:-mt-10 lg:col-start-1 lg:row-start-1 lg:items-center lg:text-center lg:-mt-16 xl:-mt-20"
+              className="flex min-w-0 flex-col items-stretch text-left max-[768px]:-mt-6 max-[1024px]:-mt-10 lg:col-start-1 lg:row-start-1 lg:items-center lg:text-center lg:-mt-16 xl:-mt-20"
             >
-              <Link href="/" className="inline-block max-[767px]:w-full lg:mx-auto">
+              <Link href="/" className="inline-block max-[768px]:w-full lg:mx-auto">
                 <Image
                   src="/la-gazette-du-faubourg-logo.png"
                   alt="La Gazette du Faubourg"
                   width={1200}
                   height={337}
-                  className="h-auto w-[min(100%,460px)] max-w-full max-[767px]:w-full xl:w-[480px]"
-                  sizes="(max-width: 767px) 100vw, (max-width: 1024px) 90vw, 480px"
+                  className="h-auto w-[min(100%,460px)] max-w-full max-[768px]:w-full xl:w-[480px]"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 90vw, 480px"
                   priority
                 />
               </Link>
@@ -114,7 +114,7 @@ export function Hero() {
                 <ul className="flex max-md:flex-wrap max-md:gap-y-2 max-md:justify-center md:flex-nowrap md:justify-center md:gap-x-1 md:pb-0 lg:gap-x-1.5 xl:gap-x-2">
                   {heroInlineNavLinks.map((link) => (
                     <li key={link.href} className="shrink-0">
-                      <Link href={link.href} className={heroNavLinkClass}>
+                      <Link href={link.href} className={`${heroNavLinkClass} max-[768px]:flex max-[768px]:min-h-[44px] max-[768px]:items-center max-[768px]:justify-center max-[768px]:whitespace-normal max-[768px]:px-2 max-[768px]:py-3 max-[768px]:text-center max-[768px]:leading-snug`}>
                         {link.label}
                       </Link>
                     </li>
@@ -125,7 +125,7 @@ export function Hero() {
 
             {/* Illustration : colonne 2, deux rangées en desktop ; placée entre menu et texte en mobile. */}
             <div
-              className="flex min-h-0 min-w-0 flex-col justify-center max-[1024px]:mb-[-40px] max-[767px]:mb-[-80px] lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:justify-center lg:pr-4 xl:pr-8"
+              className="flex min-h-0 min-w-0 flex-col justify-center max-[1024px]:mb-[-40px] max-[768px]:mb-[-80px] lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:justify-center lg:pr-4 xl:pr-8"
             >
               <div className="w-full text-center lg:flex lg:justify-end lg:text-right">
                 <ZoomableImage
@@ -134,7 +134,7 @@ export function Hero() {
                   width={1096}
                   height={1200}
                   className="ml-auto mr-auto inline-block h-[600px] w-auto max-w-full object-contain object-center max-[1024px]:h-[760px] lg:mr-0 lg:h-[min(92vh,1200px)] lg:w-auto lg:max-w-[min(100%,980px)] lg:translate-x-8 lg:translate-y-4 lg:object-right xl:max-w-[min(100%,1100px)] xl:translate-x-12 xl:translate-y-5"
-                  sizes="(max-width: 767px) 100vw, (max-width: 1024px) 92vw, 58vw"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 92vw, 58vw"
                   priority
                 />
               </div>
@@ -142,19 +142,19 @@ export function Hero() {
 
             {/* Chapô + CTA : rangée 2 colonne 1 en desktop ; dernier bloc en mobile après l’image. */}
             <div
-              className="flex min-h-0 min-w-0 flex-col justify-center max-[767px]:pb-[50px] max-[767px]:pt-0 max-[1024px]:pb-[50px] max-[1024px]:pt-0 lg:col-start-1 lg:row-start-2 lg:items-center lg:-mt-28 lg:pt-0 xl:-mt-32"
+              className="flex min-h-0 min-w-0 flex-col justify-center max-[768px]:pb-[50px] max-[768px]:pt-0 max-[1024px]:pb-[50px] max-[1024px]:pt-0 lg:col-start-1 lg:row-start-2 lg:items-center lg:-mt-28 lg:pt-0 xl:-mt-32"
             >
-              <div className="mx-auto w-full max-w-full max-[767px]:mb-[10px]">
+              <div className="mx-auto w-full max-w-full max-[768px]:mb-[10px]">
                 <h1
                   ref={chapoTitleRef}
-                  className="mx-auto mb-8 w-max max-w-full text-center text-[34px] font-normal italic leading-tight tracking-tight text-black lg:mb-10 lg:text-[48px] lg:leading-[1.12]"
+                  className="mx-auto mb-8 w-max max-w-full text-center text-[34px] font-normal italic leading-tight tracking-tight text-black max-[768px]:w-full max-[768px]:text-balance lg:mb-10 lg:text-[48px] lg:leading-[1.12]"
                   style={{ fontFamily: "Griffiths, serif" }}
                 >
                   Découvrez la Gazette du Faubourg
                 </h1>
 
                 <div
-                  className="mx-auto text-justify text-[18px] font-normal leading-[1.6] text-black text-pretty max-[767px]:leading-[1.55] max-[1024px]:text-[17px] max-[1024px]:leading-[1.58]"
+                  className="mx-auto text-justify text-[18px] font-normal leading-[1.6] text-black text-pretty max-[768px]:leading-[1.55] max-[1024px]:text-[17px] max-[1024px]:leading-[1.58]"
                   style={{
                     ...bodyStyle,
                     width: chapoCopyWidthPx != null ? `${chapoCopyWidthPx}px` : "100%",
@@ -170,7 +170,7 @@ export function Hero() {
                       aria-expanded={open}
                       aria-controls="hero-read-more-panel"
                       onClick={() => setOpen((v) => !v)}
-                      className={`${garamondNavItalic.className} border-0 bg-transparent p-0 text-left text-[18px] font-normal italic text-black antialiased [font-synthesis:none] hover:opacity-80`}
+                      className={`${garamondNavItalic.className} border-0 bg-transparent p-0 text-left text-[18px] font-normal italic text-black antialiased [font-synthesis:none] hover:opacity-80 max-[768px]:min-h-[44px] max-[768px]:py-2`}
                     >
                       {open ? (
                         <span>

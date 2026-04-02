@@ -68,7 +68,7 @@ export function EditorialCarousel({ items }: Props) {
       role="region"
       aria-roledescription="carrousel"
       aria-label="Articles à la une"
-      className="relative flex w-full items-center gap-1.5 sm:gap-2 md:gap-4 lg:gap-5"
+      className="relative flex w-full min-w-0 items-center gap-1.5 sm:gap-2 md:gap-4 lg:gap-5 max-[768px]:gap-1"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
@@ -137,13 +137,13 @@ export function EditorialCarousel({ items }: Props) {
               {active.rubrique}
             </p>
             <h3
-              className="mx-auto mt-2.5 w-max max-w-full text-center text-[24px] font-normal italic leading-tight tracking-tight text-black sm:mt-3 sm:text-[26px] md:text-[28px] lg:text-[34px] lg:leading-[1.12]"
+              className="mx-auto mt-2.5 w-max max-w-full text-center text-[24px] font-normal italic leading-tight tracking-tight text-black max-[768px]:w-full max-[768px]:text-balance sm:mt-3 sm:text-[26px] md:text-[28px] lg:text-[34px] lg:leading-[1.12]"
               style={{ fontFamily: "Griffiths, serif" }}
             >
               {editorialCarouselTitleLines(active.title)}
             </h3>
             <p
-              className="mb-0 mt-4 line-clamp-4 overflow-hidden text-justify text-[18px] font-normal leading-[1.6] text-black text-pretty max-[767px]:leading-[1.55] max-[1024px]:text-[17px] max-[1024px]:leading-[1.58] md:mt-5"
+              className="mb-0 mt-4 line-clamp-4 overflow-hidden text-justify text-[18px] font-normal leading-[1.6] text-black text-pretty max-[768px]:leading-[1.55] max-[1024px]:text-[17px] max-[1024px]:leading-[1.58] md:mt-5"
               style={{ fontFamily: "Garamond, serif", letterSpacing: "-0.2px" }}
             >
               {active.excerpt}

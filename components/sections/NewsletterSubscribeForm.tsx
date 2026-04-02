@@ -18,7 +18,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="mt-10 block w-full border border-[#0a0a0a] bg-[#0a0a0a] px-8 py-4 font-[family-name:var(--font-sans)] text-[11px] font-medium uppercase tracking-[0.28em] text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+      className="mt-10 block min-h-[44px] w-full border border-[#0a0a0a] bg-[#0a0a0a] px-8 py-4 font-[family-name:var(--font-sans)] text-[11px] font-medium uppercase tracking-[0.28em] text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 max-[768px]:px-6"
     >
       {pending ? "Envoi…" : "Valider"}
     </button>
@@ -99,7 +99,7 @@ export function NewsletterSubscribeForm() {
             autoComplete="email"
             required
             placeholder="Adresse e-mail"
-            className="box-border block w-full border border-black/[0.18] bg-white px-4 py-3.5 font-[family-name:var(--font-sans)] text-[15px] text-[#0a0a0a] placeholder:text-[#9a9a9a] outline-none transition-[border-color,box-shadow] focus:border-[#0a0a0a]/55 focus:ring-1 focus:ring-[#0a0a0a]/15"
+            className="box-border block min-h-[44px] w-full border border-black/[0.18] bg-white px-4 py-3.5 font-[family-name:var(--font-sans)] text-[15px] text-[#0a0a0a] placeholder:text-[#9a9a9a] outline-none transition-[border-color,box-shadow] focus:border-[#0a0a0a]/55 focus:ring-1 focus:ring-[#0a0a0a]/15 max-[768px]:text-base"
           />
 
           <div className="mt-8 flex gap-3">
@@ -109,7 +109,7 @@ export function NewsletterSubscribeForm() {
               type="checkbox"
               value="on"
               required
-              className="mt-1 h-4 w-4 shrink-0 rounded-sm border-black/25 text-[#0a0a0a] focus:ring-[#0a0a0a]/25"
+              className="mt-1 size-5 shrink-0 rounded-sm border-black/25 text-[#0a0a0a] focus:ring-[#0a0a0a]/25 max-[768px]:mt-0.5 max-[768px]:size-[22px]"
             />
             <label
               htmlFor="newsletter-consent"

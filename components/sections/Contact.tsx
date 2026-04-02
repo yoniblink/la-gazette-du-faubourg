@@ -14,7 +14,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="mt-4 w-full border border-[#0a0a0a] bg-[#0a0a0a] px-6 py-3.5 font-[family-name:var(--font-sans)] text-[11px] font-medium uppercase tracking-[0.28em] text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+      className="mt-4 min-h-[44px] w-full border border-[#0a0a0a] bg-[#0a0a0a] px-6 py-3.5 font-[family-name:var(--font-sans)] text-[11px] font-medium uppercase tracking-[0.28em] text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 max-[768px]:px-4"
     >
       {pending ? "Envoi…" : "Envoyer"}
     </button>
@@ -34,14 +34,14 @@ function MailCard({
 }) {
   const href = `mailto:${email}`;
   return (
-    <div className="flex flex-col border border-black/[0.08] bg-[#fafafa] p-8">
+    <div className="flex flex-col border border-black/[0.08] bg-[#fafafa] p-8 max-[768px]:p-5 max-[1024px]:p-6">
       <h3 className="font-[family-name:var(--font-serif)] text-xl font-light text-[#0a0a0a]">{title}</h3>
       <p className="mt-3 flex-1 font-[family-name:var(--font-sans)] text-sm leading-relaxed text-[#5a5a5a]">
         {description}
       </p>
       <Link
         href={href}
-        className="mt-6 inline-flex items-center gap-2 font-[family-name:var(--font-sans)] text-[11px] font-medium uppercase tracking-[0.2em] text-[#0a0a0a] transition-opacity hover:opacity-60"
+        className="mt-6 inline-flex min-h-[44px] items-center gap-2 font-[family-name:var(--font-sans)] text-[11px] font-medium uppercase tracking-[0.2em] text-[#0a0a0a] transition-opacity hover:opacity-60 max-[768px]:py-2"
       >
         Écrire
         <span aria-hidden>↗</span>
@@ -54,8 +54,8 @@ export function Contact() {
   const [state, formAction] = useActionState(submitContact, initial);
 
   return (
-    <section className="flex flex-1 flex-col scroll-mt-24 bg-white py-24 md:py-32">
-      <div className="mx-auto max-w-6xl px-6 md:px-10">
+    <section className="flex flex-1 flex-col scroll-mt-24 bg-white py-24 max-[768px]:py-16 max-[1024px]:py-20 md:py-32">
+      <div className="mx-auto max-w-6xl px-6 max-[768px]:px-4 md:px-10">
         <MotionDiv
           variants={fadeUp}
           initial="hidden"
@@ -67,13 +67,13 @@ export function Contact() {
           </h2>
         </MotionDiv>
 
-        <div className="mt-14 grid gap-10 md:grid-cols-3 md:gap-8">
+        <div className="mt-14 grid grid-cols-1 gap-10 min-[1025px]:grid-cols-3 min-[1025px]:gap-8">
           <MotionDiv
             variants={fadeUp}
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, margin: "-10% 0px" }}
-            className="flex flex-col border border-black/[0.08] bg-[#fafafa] p-8"
+            className="flex flex-col border border-black/[0.08] bg-[#fafafa] p-8 max-[768px]:p-5 max-[1024px]:p-6"
           >
             <h3 className="font-[family-name:var(--font-serif)] text-xl font-light text-[#0a0a0a]">
               Contact rédaction
@@ -108,7 +108,7 @@ export function Contact() {
                   type="text"
                   required
                   autoComplete="name"
-                  className="mt-2 w-full border border-black/[0.12] bg-white px-4 py-3 font-[family-name:var(--font-sans)] text-sm text-[#0a0a0a] outline-none transition-[border-color,box-shadow] focus:border-[#0a0a0a]/35 focus:ring-2 focus:ring-[#0a0a0a]/10"
+                  className="mt-2 min-h-[44px] w-full border border-black/[0.12] bg-white px-4 py-3 font-[family-name:var(--font-sans)] text-sm text-[#0a0a0a] outline-none transition-[border-color,box-shadow] focus:border-[#0a0a0a]/35 focus:ring-2 focus:ring-[#0a0a0a]/10 max-[768px]:text-base"
                 />
               </div>
               <div>
@@ -124,7 +124,7 @@ export function Contact() {
                   type="email"
                   required
                   autoComplete="email"
-                  className="mt-2 w-full border border-black/[0.12] bg-white px-4 py-3 font-[family-name:var(--font-sans)] text-sm text-[#0a0a0a] outline-none transition-[border-color,box-shadow] focus:border-[#0a0a0a]/35 focus:ring-2 focus:ring-[#0a0a0a]/10"
+                  className="mt-2 min-h-[44px] w-full border border-black/[0.12] bg-white px-4 py-3 font-[family-name:var(--font-sans)] text-sm text-[#0a0a0a] outline-none transition-[border-color,box-shadow] focus:border-[#0a0a0a]/35 focus:ring-2 focus:ring-[#0a0a0a]/10 max-[768px]:text-base"
                 />
               </div>
               <div>

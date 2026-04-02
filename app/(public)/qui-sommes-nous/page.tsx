@@ -36,8 +36,8 @@ const members = [
 
 export default function QuiSommesNousPage() {
   return (
-    <main className="flex flex-1 flex-col bg-[#f8f8f8] pb-24 pt-20 md:pb-28 md:pt-28">
-      <section className="mx-auto grid max-w-6xl grid-cols-1 gap-12 px-6 md:grid-cols-12 md:items-center md:gap-16 md:px-10">
+    <main className="flex flex-1 flex-col bg-[#f8f8f8] pb-24 pt-20 max-[768px]:pb-16 max-[768px]:pt-[4.5rem] max-[1024px]:pb-20 md:pb-28 md:pt-28">
+      <section className="mx-auto grid max-w-6xl grid-cols-1 gap-12 px-6 max-[768px]:gap-8 max-[768px]:px-4 md:grid-cols-12 md:items-center md:gap-16 md:px-10">
         <div className="md:col-span-7">
           <div className="relative mx-auto aspect-[3/4] w-full max-w-[520px] md:mx-0 md:max-w-full">
             <ZoomableImage
