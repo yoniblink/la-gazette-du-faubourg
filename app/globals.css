@@ -435,6 +435,13 @@ body {
     max-width: 60%;
     margin-inline: auto;
   }
+
+  .article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-split-carousel {
+    max-width: 60% !important;
+    width: 100%;
+    margin-inline: auto;
+    box-sizing: border-box;
+  }
 }
 
 /* 50% − moitié du gap : tient dans la largeur utile comme deux colonnes côte à côte */
@@ -654,6 +661,144 @@ body {
     margin-left: auto;
     margin-right: auto;
   }
+}
+
+/* ——— Carrousel : runs de plusieurs .article-tiptap-split consécutifs ——— */
+.article-tiptap-split-carousel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin: 30px 0;
+  box-sizing: border-box;
+}
+
+.article-tiptap-split-carousel__btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem 0.35rem;
+  margin: 0;
+  border: none;
+  background: transparent;
+  color: rgba(125, 125, 125, 0.85);
+  cursor: pointer;
+  line-height: 0;
+  transition: color 0.15s ease, opacity 0.15s ease;
+}
+
+.article-tiptap-split-carousel__btn--prev {
+  left: 0;
+}
+
+.article-tiptap-split-carousel__btn--next {
+  right: 0;
+}
+
+.article-tiptap-split-carousel__btn:hover:not(:disabled) {
+  color: rgba(70, 70, 70, 0.95);
+}
+
+.article-tiptap-split-carousel__btn:disabled {
+  opacity: 0.2;
+  cursor: default;
+}
+
+.article-tiptap-split-carousel__icon {
+  display: block;
+}
+
+.article-tiptap-split-carousel__viewport {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin-inline: auto;
+  padding-inline: 2rem;
+  box-sizing: border-box;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 2px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  container-type: inline-size;
+  container-name: split-carousel;
+}
+
+.article-tiptap-split-carousel__viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.article-tiptap-split-carousel__track {
+  --carousel-gap: clamp(16px, 2vw, 24px);
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: var(--carousel-gap);
+  padding-block: 4px;
+}
+
+/*
+ * Largeur des slides : --carousel-slide-w est posée par ArticleSplitCarousels (clientWidth − padding,
+ * / 3 colonnes) pour éviter qu’une 4e montre ne dépasse à cause des arrondis cqi.
+ */
+.article-tiptap-split-carousel .article-tiptap-split--carousel-slide {
+  flex: 0 0 var(--carousel-slide-w, calc((100cqi - 2 * var(--carousel-gap)) / 3));
+  width: var(--carousel-slide-w, auto);
+  max-width: var(--carousel-slide-w, calc((100cqi - 2 * var(--carousel-gap)) / 3));
+  min-width: 0;
+  overflow-x: hidden;
+  scroll-snap-align: start;
+  box-sizing: border-box;
+}
+
+.article-tiptap-split-carousel--one-col .article-tiptap-split--carousel-slide {
+  scroll-snap-align: center;
+}
+
+.article-tiptap-split-carousel .article-tiptap-split--carousel-slide.article-tiptap-split {
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start;
+  gap: 10px !important;
+  margin: 0 !important;
+  width: auto;
+  min-width: 0;
+}
+
+.article-tiptap-split-carousel .article-tiptap-split--carousel-slide * {
+  mix-blend-mode: normal;
+}
+
+.article-tiptap-split-carousel .article-tiptap-split--carousel-slide .article-tiptap-split__media,
+.article-tiptap-split-carousel .article-tiptap-split--carousel-slide .article-tiptap-split__copy {
+  flex: none !important;
+  max-width: 100% !important;
+  width: 100%;
+}
+
+.article-tiptap-split-carousel .article-tiptap-split--carousel-slide .article-tiptap-split__copy {
+  text-align: center;
+}
+
+.article-tiptap-split-carousel .article-tiptap-split--carousel-slide .article-tiptap-split__copy p {
+  text-align: center;
+  text-align-last: center;
+}
+
+.article-tiptap-split-carousel .article-tiptap-split--carousel-slide .article-tiptap-split__copy p + p {
+  font-style: italic;
+  font-size: 0.95em;
+  color: #4a4a4a;
 }
 
 .article-tiptap-html > :is(h1, h2, h3):first-child {
