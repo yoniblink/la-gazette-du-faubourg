@@ -388,8 +388,24 @@ body {
   display: block;
 }
 
+/* Image standalone (hors lead-media et hors split) : même largeur que la colonne split (60%) */
+.article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-img-zoom-wrap,
+.article-tiptap-html.article-tiptap-elementor-structure > figure,
+.article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-figure {
+  max-width: 60% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
 .article-tiptap-html.article-tiptap-elementor-structure > * + .article-tiptap-split {
   margin-top: 30px;
+}
+
+/* Espace entre un bloc split et l'image standalone qui suit */
+.article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-split + .article-tiptap-img-zoom-wrap,
+.article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-split + figure,
+.article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-split + .article-tiptap-figure {
+  margin-top: 60px !important;
 }
 
 .article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-lead-media + .article-tiptap-split {
@@ -604,6 +620,12 @@ body {
   text-underline-offset: 4px;
 }
 
+/* Contenu article : ne jamais déborder du padding de la colonne */
+.article-tiptap-html {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
 /* Images hors figure / legacy : même échelle que --row-gap:30px entre blocs Elementor */
 .article-tiptap-html img {
   margin-top: 30px;
@@ -617,6 +639,9 @@ body {
 .article-tiptap-html .article-tiptap-img-zoom-wrap {
   overflow: hidden;
   border-radius: 4px;
+  /* Surcharge le style inline TipTap (max-width: XX%) : jamais plus large que la colonne */
+  max-width: 100% !important;
+  box-sizing: border-box;
 }
 
 /* La figure porte le 30px vertical ; le wrap n’ajoute pas un second creux (inline margin TipTap). */
