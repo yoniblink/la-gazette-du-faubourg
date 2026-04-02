@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/rencontres/3-questions-a-john-nollet-directeur-artistique-maison-carila",
-        destination: "/rencontres/3-questions-a-john-nollet-directeur-artistique-maison-carlita",
+        destination: "/rencontres/3-questions-a-john-nollet-directeur-artistique-maison-carita",
         permanent: true,
       },
       { source: "/rubrique/rencontre", destination: "/rencontres", permanent: true },

@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { garamondNavItalic } from "@/lib/fonts/garamond-nav";
+import { ZoomableImage } from "@/components/ui/ZoomableImage";
 
 /** Paragraphe visible dans le hero (identique à la maquette : bloc principal seul avant le CTA). */
 const p1 =
@@ -58,13 +59,15 @@ const CHAPO_TITLE_WIDTH_ROUND = 10;
  */
 export function Hero() {
   const [open, setOpen] = useState(false);
-  const [reduceMotion, setReduceMotion] = useState(false);
+  const [reduceMotion, setReduceMotion] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  });
   const chapoTitleRef = useRef(null);
   const [chapoCopyWidthPx, setChapoCopyWidthPx] = useState(null);
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduceMotion(mq.matches);
     const onChange = () => setReduceMotion(mq.matches);
     mq.addEventListener("change", onChange);
     return () => mq.removeEventListener("change", onChange);
@@ -125,7 +128,7 @@ export function Hero() {
               className="flex min-h-0 min-w-0 flex-col justify-center max-[1024px]:mb-[-40px] max-[767px]:mb-[-80px] lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:justify-center lg:pr-4 xl:pr-8"
             >
               <div className="w-full text-center lg:flex lg:justify-end lg:text-right">
-                <Image
+                <ZoomableImage
                   src="/aquarelle-gazette-hero.png"
                   alt="Illustration aquarelle — La Gazette du Faubourg"
                   width={1096}

@@ -79,8 +79,9 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
 
   /** Cormorant Garamond italic (next/font) — les .ttf locaux du repo sont souvent absents, Safari ne fait pas tomber sur une typo correcte. */
   const linkDesktopClass = [
-    garamondNavItalic.className,
-    "relative inline-block shrink-0 whitespace-nowrap py-1 text-left text-[17px] font-medium leading-none text-[#111111] [font-synthesis:none] opacity-100 antialiased transition-opacity duration-300 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:origin-left after:scale-x-0 after:bg-[#111111]/40 after:transition-transform after:duration-300 after:ease-out hover:opacity-65 hover:after:scale-x-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0a0a0a]/20 focus-visible:after:scale-x-100 sm:text-[18px] md:text-[18px] lg:text-[19px] xl:text-[20px]",
+    // Elementor (WP) nav: font-family "Garamond Italic", font-size 20px, font-weight 500.
+    "font-garamond-italic",
+    'relative inline-block shrink-0 whitespace-nowrap py-1 text-left text-[20px] font-medium leading-none text-[#111111] [font-synthesis:none] opacity-100 antialiased transition-opacity duration-300 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:origin-left after:scale-x-0 after:bg-[#111111]/40 after:transition-transform after:duration-300 after:ease-out hover:opacity-65 hover:after:scale-x-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0a0a0a]/20 focus-visible:after:scale-x-100',
   ].join(" ");
 
   const headerNode = (
@@ -243,7 +244,7 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
                 <Link
                   href="/"
                   onClick={closeMenu}
-                  className={`border-b border-black/[0.06] py-4 pl-4 pr-3 font-[family-name:var(--font-sans)] text-[11px] font-medium uppercase tracking-[0.16em] transition-[opacity,border-color] ${
+                  className={`border-b border-black/[0.06] py-4 pl-4 pr-3 ${garamondNavItalic.className} text-[20px] font-medium leading-none antialiased [font-synthesis:none] transition-[opacity,border-color] ${
                     pathname === "/"
                       ? "border-l-2 border-l-[#c9a962] pl-[calc(1rem-2px)] text-[#0a0a0a] opacity-100"
                       : "border-l-2 border-l-transparent text-[#0a0a0a] opacity-55 hover:opacity-100"
@@ -260,7 +261,7 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
                       key={r.slug}
                       href={href}
                       onClick={closeMenu}
-                      className={`border-b border-black/[0.06] py-4 pl-4 pr-3 font-[family-name:var(--font-sans)] text-[11px] font-medium uppercase tracking-[0.16em] transition-[opacity,border-color] ${
+                      className={`border-b border-black/[0.06] py-4 pl-4 pr-3 ${garamondNavItalic.className} text-[20px] font-medium leading-none antialiased [font-synthesis:none] transition-[opacity,border-color] ${
                         active
                           ? "border-l-2 border-l-[#c9a962] pl-[calc(1rem-2px)] text-[#0a0a0a] opacity-100"
                           : "border-l-2 border-l-transparent text-[#0a0a0a] opacity-55 hover:opacity-100"
@@ -274,7 +275,7 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
                 <Link
                   href="/contact"
                   onClick={closeMenu}
-                  className={`border-b border-black/[0.06] py-4 pl-4 pr-3 font-[family-name:var(--font-sans)] text-[11px] font-medium uppercase tracking-[0.16em] transition-[opacity,border-color] ${
+                  className={`border-b border-black/[0.06] py-4 pl-4 pr-3 ${garamondNavItalic.className} text-[20px] font-medium leading-none antialiased [font-synthesis:none] transition-[opacity,border-color] ${
                     pathname === "/contact"
                       ? "border-l-2 border-l-[#c9a962] pl-[calc(1rem-2px)] text-[#0a0a0a] opacity-100"
                       : "border-l-2 border-l-transparent text-[#0a0a0a] opacity-55 hover:opacity-100"

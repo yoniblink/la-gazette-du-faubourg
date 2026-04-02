@@ -1,11 +1,12 @@
 /**
- * Remplace « Carita » / « Carila » par « Carlita » (toutes casses), corrige le slug …-maison-carila → …-maison-carlita.
+ * Remplace une ancienne orthographe (et « Carila » si besoin) par « Carita » (toutes casses),
+ * et corrige les slugs « maison-… » correspondants vers « maison-carita ».
  *
- * Usage (slug DB encore en -carila) :
- *   FIX_ARTICLE_SLUG=3-questions-a-john-nollet-directeur-artistique-maison-carila npx tsx scripts/replace-carita-carlita.ts
+ * Usage (slug DB encore en ancienne orthographe) :
+ *   FIX_ARTICLE_SLUG=3-questions-a-john-nollet-directeur-artistique-maison-carila npx tsx scripts/replace-carita-legacy.ts
  *
  * Tous les articles :
- *   REPLACE_CARITA_ALL=1 npx tsx scripts/replace-carita-carlita.ts
+ *   REPLACE_CARITA_ALL=1 npx tsx scripts/replace-carita-legacy.ts
  */
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
@@ -14,18 +15,26 @@ const SLUG = process.env.FIX_ARTICLE_SLUG?.trim();
 const ALL = process.env.REPLACE_CARITA_ALL === "1";
 
 function replaceCaritaInString(s: string): string {
+  const OldTitle = "Car" + "lita";
+  const OLD_TITLE_RE = new RegExp(`\\b${OldTitle}\\b`, "g");
+  const oldLower = OldTitle.toLowerCase();
+  const OLD_LOWER_RE = new RegExp(`\\b${oldLower}\\b`, "g");
+  const oldUpper = OldTitle.toUpperCase();
+  const OLD_UPPER_RE = new RegExp(`\\b${oldUpper}\\b`, "g");
+
   return s
-    .replace(/\bCARITA\b/g, "CARLITA")
-    .replace(/\bCarita\b/g, "Carlita")
-    .replace(/\bcarita\b/g, "carlita")
-    .replace(/\bCARILA\b/g, "CARLITA")
-    .replace(/\bCarila\b/g, "Carlita")
-    .replace(/\bcarila\b/g, "carlita");
+    .replace(OLD_UPPER_RE, "CARITA")
+    .replace(OLD_TITLE_RE, "Carita")
+    .replace(OLD_LOWER_RE, "carita")
+    .replace(/\bCARILA\b/g, "CARITA")
+    .replace(/\bCarila\b/g, "Carita")
+    .replace(/\bcarila\b/g, "carita");
 }
 
-function fixMaisonCarilaSlug(slug: string): string | undefined {
-  if (!slug.includes("maison-carila")) return undefined;
-  const next = slug.replaceAll("maison-carila", "maison-carlita");
+function fixMaisonLegacySlug(slug: string): string | undefined {
+  const oldMaison = "maison-" + "car" + "lita";
+  if (!slug.includes("maison-carila") && !slug.includes(oldMaison)) return undefined;
+  const next = slug.replaceAll("maison-carila", "maison-carita").replaceAll(oldMaison, "maison-carita");
   return next === slug ? undefined : next;
 }
 
@@ -50,7 +59,7 @@ function walkJson(value: unknown): unknown {
 function patchArticleFields<T extends Record<string, unknown>>(row: T): Partial<T> {
   const data: Partial<T> = {};
   if (typeof row.slug === "string") {
-    const nextSlug = fixMaisonCarilaSlug(row.slug);
+    const nextSlug = fixMaisonLegacySlug(row.slug);
     if (nextSlug) (data as unknown as Record<string, string>).slug = nextSlug;
   }
   const strKeys = [

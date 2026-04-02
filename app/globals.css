@@ -23,6 +23,11 @@
   font-display: swap;
 }
 
+/* Utilitaire local (fallback Tailwind arbitraire) */
+.font-garamond-italic {
+  font-family: "Garamond Italic", Garamond, ui-serif, Georgia, serif;
+}
+
 /* Roboto — extrait du HTML Elementor (100–400 statiques + 500 woff2 + 600–900 variables v2). */
 @font-face {
   font-family: "Roboto";
@@ -228,6 +233,20 @@ body {
   perspective-origin: 50% 32%;
 }
 
+/* Fullscreen (magazine / revue) : demandé sur `.flipbook-premium-scene`. */
+.flipbook-premium-scene:fullscreen {
+  width: 100vw;
+  height: 100vh;
+  max-width: none !important;
+  overflow: hidden;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.flipbook-premium-scene:fullscreen .flipbook-premium-stage {
+  height: 100%;
+}
+
 .flipbook-premium-scene::before {
   content: none;
 }
@@ -388,10 +407,10 @@ body {
   display: block;
 }
 
-/* Même mesure que le corps de texte (60 %), centré. */
+/* Image-titre (lead) : légèrement plus étroite que le corps (60%), centrée. */
 @media (min-width: 768px) {
   .article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-lead-media {
-    max-width: 60%;
+    max-width: 52%;
     width: 100%;
     margin-inline: auto;
     box-sizing: border-box;
@@ -400,9 +419,28 @@ body {
 
 @media (max-width: 767px) {
   .article-tiptap-html.article-tiptap-elementor-structure > .article-tiptap-lead-media {
-    max-width: 60%;
+    max-width: 78%;
     margin-inline: auto;
     box-sizing: border-box;
+  }
+}
+
+/* Exception: réduire uniquement l’image "hom-nguyen5" (trop grande en lead). */
+@media (min-width: 768px) {
+  .article-tiptap-html.article-tiptap-elementor-structure
+    > .article-tiptap-lead-media:has(
+      img[src*="ac01c0be41d2bf37/la-gazette-du-faubourg-hom-nguyen5-cbbea95842dec90a.png"]
+    ) {
+    max-width: 40%;
+  }
+}
+
+@media (max-width: 767px) {
+  .article-tiptap-html.article-tiptap-elementor-structure
+    > .article-tiptap-lead-media:has(
+      img[src*="ac01c0be41d2bf37/la-gazette-du-faubourg-hom-nguyen5-cbbea95842dec90a.png"]
+    ) {
+    max-width: 64%;
   }
 }
 
@@ -1226,6 +1264,14 @@ body {
   transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
+.article-tiptap-html img[data-zoomable="true"] {
+  cursor: zoom-in;
+}
+
+img:not([data-no-zoom="true"]) {
+  -webkit-tap-highlight-color: transparent;
+}
+
 .article-tiptap-html .article-tiptap-img-zoom-wrap {
   overflow: hidden;
   border-radius: 4px;
@@ -1250,6 +1296,19 @@ body {
 .article-tiptap-html .article-tiptap-img-zoom-wrap:hover img,
 .article-tiptap-html .article-tiptap-figure:hover .article-tiptap-img-zoom-wrap img {
   transform: scale(1.06);
+}
+
+.article-tiptap-lead-media .article-tiptap-img-zoom-wrap:hover img,
+.article-tiptap-lead-media figure:hover img,
+.article-tiptap-lead-media img:hover {
+  transform: none !important;
+}
+
+/* 1er bloc de l’article (image-titre) : pas d’effet au survol. */
+.article-tiptap-html > :first-child .article-tiptap-img-zoom-wrap:hover img,
+.article-tiptap-html > :first-child figure:hover img,
+.article-tiptap-html > :first-child img:hover {
+  transform: none !important;
 }
 
 .article-tiptap-html .article-tiptap-figure {
@@ -1277,6 +1336,16 @@ body {
 .article-tiptap-html p img:hover,
 .article-tiptap-html > img:hover {
   transform: scale(1.06);
+}
+
+/* Exception : image "TITRES-ARTICLE-2…" — pas d'effet zoom au survol. */
+.article-tiptap-html .article-tiptap-img-zoom-wrap:hover img[src*="TITRES-ARTICLE-2-e1769620485478"],
+.article-tiptap-html .article-tiptap-figure:hover .article-tiptap-img-zoom-wrap img[src*="TITRES-ARTICLE-2-e1769620485478"] {
+  transform: none !important;
+}
+
+.article-tiptap-html img[src*="TITRES-ARTICLE-2-e1769620485478"]:hover {
+  transform: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

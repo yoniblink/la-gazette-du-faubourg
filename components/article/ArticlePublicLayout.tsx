@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { ZoomableImage } from "@/components/ui/ZoomableImage";
 import Link from "next/link";
 
 export type ArticleInlineEditProps = {
@@ -75,7 +75,7 @@ export function ArticlePublicLayout({
           >
             {showCover ? (
               <>
-                <Image
+                <ZoomableImage
                   src={coverImageUrl.trim()}
                   alt={coverImageAlt || ""}
                   fill

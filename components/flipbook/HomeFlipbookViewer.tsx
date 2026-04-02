@@ -113,13 +113,38 @@ export function HomeFlipbookViewer({
   }, []);
   const [currentPage, setCurrentPage] = useState(0);
   const [sceneFlipping, setSceneFlipping] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const flipbookRef = useRef<unknown>(null);
+  const sceneRootRef = useRef<HTMLDivElement | null>(null);
   const bookShiftRef = useRef<HTMLDivElement>(null);
   const rightNavShiftRef = useRef<HTMLDivElement>(null);
   const reduceMotionRef = useRef(false);
   const currentPageRef = useRef(0);
   currentPageRef.current = currentPage;
   const { markLoaded } = useFlipbookLoadedPages(pageUrls.length);
+
+  useEffect(() => {
+    const onFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+    onFullscreenChange();
+    return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
+  }, []);
+
+  const toggleFullscreen = useCallback(async () => {
+    const el = sceneRootRef.current;
+    if (!el) return;
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else {
+        await el.requestFullscreen();
+      }
+    } catch {
+      // Certaines compatibilités navigateurs bloquent la demande sans contexte adéquat.
+    }
+  }, []);
 
   useFlipbookPreload(pageUrls, currentPage);
   useFlipbookLinkPreload(pageUrls, 3);
@@ -242,7 +267,41 @@ export function HomeFlipbookViewer({
   const showNav = pageUrls.length > 1;
 
   return (
-    <div className={sceneClass}>
+    <div ref={sceneRootRef} className={`${sceneClass} relative`}>
+      <button
+        type="button"
+        aria-label={isFullscreen ? "Quitter le plein écran" : "Passer en plein écran"}
+        aria-pressed={isFullscreen}
+        className={`${publicExternalNavButtonClass} absolute right-2 top-2 md:right-4 md:top-4`}
+        onClick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          void toggleFullscreen();
+        }}
+      >
+        {isFullscreen ? (
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden className="relative h-5 w-5">
+            <path
+              d="M9 3H3v6M15 3h6v6M9 21H3v-6M15 21h6v-6"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        ) : (
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden className="relative h-5 w-5">
+            <path
+              d="M9 3H3v6M15 3h6v6M9 21H3v-6M15 21h6v-6"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              transform="rotate(180 12 12)"
+            />
+          </svg>
+        )}
+      </button>
       <div className="flipbook-premium-stage flex flex-col items-stretch">
         <div
           className={`flipbook-premium-tilt relative flex w-full min-w-0 items-center ${showNav ? "gap-2 sm:gap-3 md:gap-4 lg:gap-5" : "justify-center"}`}

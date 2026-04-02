@@ -17,7 +17,7 @@
     "import:wp-mode": "tsx scripts/import-wp-category-articles.ts",
     "import:wp-art-culture": "WORDPRESS_IMPORT_CATEGORY_ID=17 GAZETTE_IMPORT_CATEGORY_SLUG=art-culture tsx scripts/import-wp-category-articles.ts",
     "import:wp-gastronomie": "WORDPRESS_IMPORT_CATEGORY_ID=18 GAZETTE_IMPORT_CATEGORY_SLUG=gastronomie tsx scripts/import-wp-category-articles.ts",
-    "import:wp-rencontres": "WORDPRESS_IMPORT_POST_SLUGS=3-questions-a-john-nollet-directeur-artistique-maison-carlita GAZETTE_IMPORT_CATEGORY_SLUG=rencontres tsx scripts/import-wp-category-articles.ts",
+    "import:wp-rencontres": "WORDPRESS_IMPORT_POST_SLUGS=3-questions-a-john-nollet-directeur-artistique-maison-carita GAZETTE_IMPORT_CATEGORY_SLUG=rencontres tsx scripts/import-wp-category-articles.ts",
     "import:wp-media": "tsx scripts/import-wp-media.ts",
     "import:wp-media:resync": "IMPORT_WP_MEDIA_RESYNC=1 tsx scripts/import-wp-media.ts",
     "sync:article-covers": "tsx scripts/sync-article-covers-from-imported-media.ts",

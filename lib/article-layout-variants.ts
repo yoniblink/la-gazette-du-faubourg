@@ -21,11 +21,14 @@ export function isSplitCarouselArticle(articleSlug: string): boolean {
 
 /** Sections split initiales hors carrousel (intro au-dessus de la galerie). */
 export function splitCarouselSkipLeadingSplits(articleSlug: string): number {
-  if (articleSlug === "reine-de-naples9935-8925") return 1;
+  // L’article commence par une série de splits “éditoriaux” (intro + explications),
+  // puis termine par une série de splits “montres” qui doit seule passer en carrousel.
+  if (articleSlug === "reine-de-naples9935-8925") return 5;
   return 0;
 }
 
 /** Exclut du carrousel les splits avec chapô (h1–h3 dans la colonne texte) : restent au-dessus de la galerie. */
 export function splitCarouselExcludeHeadingSplits(articleSlug: string): boolean {
-  return articleSlug === "reine-de-naples9935-8925";
+  void articleSlug;
+  return false;
 }

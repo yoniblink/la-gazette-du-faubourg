@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { memo, useEffect, useRef, useState } from "react";
+import { Lightbox } from "@/components/ui/Lightbox";
 
 export type FlipbookPageImageProps = {
   src: string;
@@ -34,6 +35,7 @@ export const FlipbookPageImage = memo(function FlipbookPageImage({
   onLoadComplete,
 }: FlipbookPageImageProps) {
   const [visible, setVisible] = useState(false);
+  const [zoomOpen, setZoomOpen] = useState(false);
   const onLoadCompleteRef = useRef(onLoadComplete);
 
   useEffect(() => {
@@ -54,29 +56,43 @@ export const FlipbookPageImage = memo(function FlipbookPageImage({
           aria-hidden
         />
       ) : null}
-      <Image
-        src={src}
-        alt={alt}
-        width={width}
-        height={height}
-        sizes={sizes}
-        quality={100}
-        unoptimized
-        priority={isPriority}
-        {...(loadingProp !== undefined ? { loading: loadingProp } : {})}
-        draggable={false}
-        className={`h-full w-full select-none object-contain transition-opacity duration-500 ease-out motion-reduce:transition-none ${
-          visible ? "opacity-100" : "opacity-0"
-        }`}
-        onLoad={() => {
-          setVisible(true);
-          onLoadCompleteRef.current?.(index);
+      <button
+        type="button"
+        className="block h-full w-full"
+        data-zoom-handled="true"
+        aria-label={alt?.trim() ? `Agrandir : ${alt}` : "Agrandir l’image"}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setZoomOpen(true);
         }}
-        onError={() => {
-          setVisible(true);
-          onLoadCompleteRef.current?.(index);
-        }}
-      />
+      >
+        <Image
+          src={src}
+          alt={alt}
+          width={width}
+          height={height}
+          sizes={sizes}
+          quality={100}
+          unoptimized
+          priority={isPriority}
+          data-zoomable="true"
+          {...(loadingProp !== undefined ? { loading: loadingProp } : {})}
+          draggable={false}
+          className={`h-full w-full select-none object-contain transition-opacity duration-500 ease-out motion-reduce:transition-none cursor-zoom-in ${
+            visible ? "opacity-100" : "opacity-0"
+          }`}
+          onLoad={() => {
+            setVisible(true);
+            onLoadCompleteRef.current?.(index);
+          }}
+          onError={() => {
+            setVisible(true);
+            onLoadCompleteRef.current?.(index);
+          }}
+        />
+      </button>
+      <Lightbox open={zoomOpen} src={src} alt={alt} onClose={() => setZoomOpen(false)} />
     </div>
   );
 }, areFlipbookPageImagePropsEqual);

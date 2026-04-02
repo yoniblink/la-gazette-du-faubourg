@@ -64,6 +64,7 @@ export const ArticleImage = Image.extend({
       "img",
       mergeAttributes(HTMLAttributes, {
         style: imgStyle,
+        "data-zoomable": "true",
         "data-align": align,
         "data-width": String(width),
         ...(caption ? { "data-caption": caption } : {}),

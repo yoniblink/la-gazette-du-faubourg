@@ -22,7 +22,7 @@ const ACTUALITES_HUB_MANUAL_ORDER = [
   "grand-lady-kalla",
   "christophe-chottin-a-la-tete-de-maison-blossom",
   "hotel-de-crillon-a-rosewood-hotel",
-  "3-questions-a-john-nollet-directeur-artistique-maison-carlita",
+  "3-questions-a-john-nollet-directeur-artistique-maison-carita",
   "traits-pour-tres",
 ] as const;
 
